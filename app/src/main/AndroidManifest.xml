@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.holger.mashpit">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application
+        android:name="com.holger.mashpit.MashPit"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
+        <!-- Notice this tag which provides the database name -->
+        <meta-data
+            android:name="AA_DB_NAME"
+            android:value="MPTestDB.db" />
+
+        <!-- Notice this tag which provides the database version -->
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="5" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="com.holger.mptest.model.Temperature, com.holger.mptest.model.Process" />
+
+        <activity
+            android:name="com.holger.mashpit.MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service android:name="com.holger.mashpit.TemperatureService" />
+
+        <activity
+            android:name="com.holger.mashpit.LineChartActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="Freezer Temperature"
+            android:screenOrientation="landscape"></activity>
+        <activity
+            android:name="com.holger.mashpit.TempChartActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name="com.holger.mashpit.prefs.SettingsActivity"
+            android:label="Preferences"></activity>
+        <activity
+            android:name="com.holger.mashpit.SubscribeListActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name="com.holger.mashpit.SubscribeEdit"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name="com.holger.mashpit.FindServerActivity"
+            android:label="@string/title_activity_find_server"
+            android:theme="@style/Theme.AppCompat.Translucent"/>
+    </application>
+
+</manifest>

@@ -1,0 +1,29 @@
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context="com.holger.mashpit.MainActivity">
+    <item
+        android:id="@+id/action_procsettings"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_menu_settings"
+        android:title="Mash Process Settings"/>
+    <item
+        android:id="@+id/action_menu"
+        android:title="Menu"
+        android:orderInCategory="100"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/menu_stopservice"
+                android:title="Stop Service"/>
+            <item
+                android:id="@+id/menu_linechart"
+                android:title="LineChart"/>
+            <item
+                android:id="@+id/menu_templist"
+                android:title="Temperature List"/>
+    </menu>
+</item>
+</menu>
+
