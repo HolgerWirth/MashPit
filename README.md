@@ -1,0 +1,3 @@
+# MashPit
+An Android app with a MQTT server running on a RaspberryPi supporting the brewing process.
+Still under heavy development....
