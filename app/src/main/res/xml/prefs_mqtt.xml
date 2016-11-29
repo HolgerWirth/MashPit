@@ -34,8 +34,8 @@
 
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.holger.mptest"
-            android:targetClass="com.holger.mptest.SubscribeListActivity"
+            android:targetPackage="com.holger.mashpit"
+            android:targetClass="com.holger.mashpit.SubscribeListActivity"
             />
     </Preference>
 </PreferenceScreen>

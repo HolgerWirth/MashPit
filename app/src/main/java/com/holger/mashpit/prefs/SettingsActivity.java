@@ -52,19 +52,19 @@ public class SettingsActivity extends PreferenceActivity
     {
         Log.i(DEBUG_TAG, "isValidFragment: "+fragmentName);
 
-        if(fragmentName.equals("TempChartSettings"))
+        if(fragmentName.equals("com.holger.mashpit.prefs.TempChartSettings"))
         {
             return TempChartSettings.class.getName().equals(fragmentName);
         }
-        if(fragmentName.equals("MQTTSettings"))
+        if(fragmentName.equals("com.holger.mashpit.prefs.MQTTSettings"))
         {
             return MQTTSettings.class.getName().equals(fragmentName);
         }
-        if(fragmentName.equals("ProcessSettings"))
+        if(fragmentName.equals("com.holger.mashpit.prefs.ProcessSettings"))
         {
             return ProcessSettings.class.getName().equals(fragmentName);
         }
-        if(fragmentName.equals("ServiceSettings"))
+        if(fragmentName.equals("com.holger.mashpit.prefs.ServiceSettings"))
         {
             return ServiceSettings.class.getName().equals(fragmentName);
         }
