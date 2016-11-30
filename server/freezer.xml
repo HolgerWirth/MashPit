@@ -1,0 +1,8 @@
+<freezer>
+<config>
+<topic>/temp/S1/600</topic>
+<maxtemp>4.4</maxtemp>
+<freeze>15</freeze>
+</config>
+</freezer>
+

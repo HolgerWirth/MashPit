@@ -1,0 +1,22 @@
+<sensors>
+<sensor>
+<name>1. Sensor</name>
+<id>28-0314624d38ff</id>
+<topic>S1</topic>
+<mode>cooler</mode>
+<timer>
+<interval>600</interval>
+<persist>1</persist>
+</timer>
+</sensor>
+<sensor>
+<name>S2</name>
+<id>28-0214630dc7ff</id>
+<topic>sensor2</topic>
+<mode>cooler</mode>
+<timer>
+<interval>300</interval>
+<persist>0</persist>
+</timer>
+</sensor>
+</sensors>
