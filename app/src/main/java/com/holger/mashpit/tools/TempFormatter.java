@@ -1,14 +1,14 @@
 package com.holger.mashpit.tools;
 
-import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.formatter.ValueFormatter;
-import com.github.mikephil.charting.formatter.YAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.DecimalFormat;
 
-public class TempFormatter implements ValueFormatter, YAxisValueFormatter {
+public class TempFormatter implements IValueFormatter, IAxisValueFormatter {
 
     private DecimalFormat mFormat;
 
@@ -21,9 +21,8 @@ public class TempFormatter implements ValueFormatter, YAxisValueFormatter {
         return mFormat.format(value) + "°";
     }
 
-
     @Override
-    public String getFormattedValue(float value, YAxis yAxis) {
+    public String getFormattedValue(float value, AxisBase axis) {
         return mFormat.format(value) + "°";
     }
 }

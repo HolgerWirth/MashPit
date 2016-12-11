@@ -15,7 +15,9 @@ import android.view.View;
 
 import com.activeandroid.query.Select;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -26,23 +28,20 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.tools.TempFormatter;
+import com.holger.mashpit.tools.TimestampFormatter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class LineChartActivity extends AppCompatActivity implements OnChartGestureListener {
 
     private static final String DEBUG_TAG = "LineChartActivity" ;
 
-    private ArrayList<String> xVals = new ArrayList<>();
     private ArrayList<Entry> yVals1 = new ArrayList<>();
     private ArrayList<Entry> yVals2 = new ArrayList<>();
     private int lastEntry;
@@ -59,6 +58,8 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.i(DEBUG_TAG,"onCreate()");
 
         tempdata = TempChartData.getInstance();
 
@@ -80,6 +81,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Toolbar toolbar= (Toolbar) findViewById(R.id.my_chart_toolbar);
+
         if (toolbar != null) {
             toolbar.setTitle(MashPit.prefGetName(prefs,TempMode));
         }
@@ -109,10 +111,11 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         tempMin= MashPit.prefGetMin(prefs,TempMode);
         tempMax= MashPit.prefGetMax(prefs,TempMode);
 
-        mChart.setDescription(descTitle);
-        mChart.setNoDataTextDescription("You need to provide data for the chart.");
+        Description desc = new Description();
+        desc.setText(descTitle);
+        mChart.setDescription(desc);
 
-        setTempData();
+        if(!setTempData()) return;
 
         mChart.animateXY(1000, 2000);
 
@@ -120,6 +123,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         {
             EventBus.getDefault().register(this);
         }
+
         Legend l = mChart.getLegend();
 
         l.setForm(Legend.LegendForm.LINE);
@@ -170,17 +174,12 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         Log.i(DEBUG_TAG, "getTemperatureEvent");
         if(myEvent != null) {
             if (myEvent.getQoS() > 0) {
-                SimpleDateFormat fmtout = new SimpleDateFormat("HH:mm", Locale.GERMANY);
-                Date df = new java.util.Date(myEvent.getTimestamp() * 1000);
-                Log.i(DEBUG_TAG, myEvent.getSensor() + ": Timestamp: " + Long.toString(myEvent.getTimestamp()) + " Format: " + fmtout.format(df));
-                xVals.add(fmtout.format(df));
-
                 lastEntry++;
                 if (myEvent.getSensor().equalsIgnoreCase("sensor1")) {
-                    yVals1.add(new Entry(round(myEvent.getTemperature(), 1), lastEntry));
+                    yVals1.add(new Entry(myEvent.getTimestamp(),round(myEvent.getTemperature(), 1), lastEntry));
                 }
                 if (myEvent.getSensor().equalsIgnoreCase("sensor2")) {
-                    yVals2.add(new Entry(round(myEvent.getTemperature(), 1), lastEntry));
+                    yVals2.add(new Entry(myEvent.getTimestamp(),round(myEvent.getTemperature(), 1), lastEntry));
                 }
                 mChart.notifyDataSetChanged();
                 Log.i(DEBUG_TAG, "DataSet changed");
@@ -188,7 +187,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         }
     }
 
-    public void setTempData()
+    public boolean setTempData()
     {
         Log.i(DEBUG_TAG,"setTempData");
 
@@ -224,43 +223,44 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         leftAxis.setValueFormatter (new TempFormatter());
         leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
 
-        leftAxis.setAxisMaxValue(MashPit.prefGetMax(prefs,TempMode));
-        leftAxis.setAxisMinValue(MashPit.prefGetMin(prefs,TempMode));
+        leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
+        leftAxis.setAxisMinimum(MashPit.prefGetMin(prefs,TempMode));
+
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setValueFormatter(new TimestampFormatter());
 
         mChart.getAxisRight().setEnabled(false);
 
         if(mpos<0) {
             List<Temperature> temps = getAll(24);
-            SimpleDateFormat fmtout = new SimpleDateFormat("HH:mm", Locale.GERMANY);
             if(temps.size()==0)
             {
                 temps = getAll(30 * 24);
-                fmtout = new SimpleDateFormat("dd.MM. HH:mm", Locale.GERMANY);
             }
+            if(temps.size()==0) return false;
 
             int i=0;
             for (Temperature temperature : temps) {
-                Date df = new Date(temperature.timeStamp * 1000);
-
-                xVals.add(fmtout.format(df));
-
                 if (temperature.Name.equalsIgnoreCase("sensor1")) {
-                    yVals1.add(new Entry(round(temperature.Temp, 1), i));
+                    yVals1.add(new Entry(temperature.timeStamp,round(temperature.Temp, 1)));
                 }
                 if (temperature.Name.equalsIgnoreCase("sensor2")) {
-                    yVals2.add(new Entry(round(temperature.Temp, 1), i));
+                    yVals2.add(new Entry(temperature.timeStamp,round(temperature.Temp, 1)));
                 }
                 i++;
             }
             lastEntry = i;
-            data = new LineData(xVals, dataSets);
+//            data = new LineData(xVals, dataSets);
+            data = new LineData(dataSets);
         }
         else {
             data = tempdata.getData(mpos);
-            lastEntry = data.getXValCount();
+            data.getEntryCount();
+//            lastEntry = data.getXValCount();
         }
         // set data
         mChart.setData(data);
+        return true;
     }
 
     public static float round(float d, int decimalPlace) {

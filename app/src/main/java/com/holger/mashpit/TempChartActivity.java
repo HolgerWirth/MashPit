@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,6 +32,8 @@ import android.widget.Toast;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -43,13 +46,11 @@ import com.holger.mashpit.prefs.SettingsActivity;
 import com.holger.mashpit.prefs.TempChartSettings;
 import com.holger.mashpit.tools.SnackBar;
 import com.holger.mashpit.tools.TempFormatter;
+import com.holger.mashpit.tools.TimestampFormatter;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class TempChartActivity extends AppCompatActivity {
 
@@ -224,7 +225,7 @@ public class TempChartActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         menuItem.setChecked(true);
                         mDrawerLayout.closeDrawers();
                         MashPit.menu_action=true;
@@ -314,23 +315,17 @@ public class TempChartActivity extends AppCompatActivity {
         DESC[2]="30 Tage";
 
         @SuppressWarnings({"unchecked"})
-        ArrayList<String>[] xVals = new ArrayList[LINES];
-        @SuppressWarnings({"unchecked"})
         List<List<Entry>>[] yVals = new ArrayList[LINES];
         @SuppressWarnings({"unchecked"})
         ArrayList<ILineDataSet>[]  set = new ArrayList[LINES];
-        SimpleDateFormat[] fmtout = new SimpleDateFormat[LINES];
         int[] count = new int[LINES];
         long[] ts = new long[LINES];
 
         for(int i=0;i<LINES;i++) {
-            xVals[i] = new ArrayList<>();
             yVals[i] = new ArrayList<>();
             set[i] = new ArrayList<>();
             count[i]=0;
             ts[i]=getFromTimestamp(HOURS[i]);
-            fmtout[i] = new SimpleDateFormat("dd.MM. HH:mm", Locale.GERMANY);
-            if(HOURS[i]<=24) fmtout[i] = new SimpleDateFormat("HH:mm", Locale.GERMANY);
         }
 
         ArrayList<Integer> linecolor = new ArrayList<>();
@@ -348,7 +343,6 @@ public class TempChartActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "generateData "+temps.size());
 
         for (Temperature temperature : temps) {
-            Date df = new Date(temperature.timeStamp * 1000);
             float entry=round(temperature.Temp,1);
 
             if (!(sensors.contains(temperature.Name))) {
@@ -361,8 +355,7 @@ public class TempChartActivity extends AppCompatActivity {
 
             for(int i=0;i<LINES;i++) {
                 if (temperature.timeStamp > ts[i]) {
-                    xVals[i].add(fmtout[i].format(df));
-                    yVals[i].get(sensindex).add(new Entry(entry, count[i]));
+                    yVals[i].get(sensindex).add(new Entry((float)temperature.timeStamp,entry));
                     count[i]++;
                 }
             }
@@ -387,7 +380,7 @@ public class TempChartActivity extends AppCompatActivity {
             }
             Log.i(DEBUG_TAG, "generated Data" + k + ": " + count[k]);
             if(count[k]>0) {
-                tempdata.setData(new LineData(xVals[k], set[k]));
+                tempdata.setData(new LineData(set[k]));
                 tempdata.setDesc(DESC[k]);
             }
         }
@@ -438,13 +431,14 @@ public class TempChartActivity extends AppCompatActivity {
 
     private class ChartDataAdapter extends ArrayAdapter<LineData> {
 
-        public ChartDataAdapter(Context context, List<LineData> objects) {
+        ChartDataAdapter(Context context, List<LineData> objects) {
             super(context, 0, objects);
 
         }
 
+        @NonNull
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
 
             LineData data = getItem(position);
 
@@ -469,11 +463,15 @@ public class TempChartActivity extends AppCompatActivity {
 //            leftAxis.addLimitLine(ll1);
 //            leftAxis.addLimitLine(ll2);
 
-            leftAxis.setAxisMaxValue(MashPit.prefGetMax(prefs,TempMode));
-            leftAxis.setAxisMinValue(MashPit.prefGetMin(prefs,TempMode));
+            leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
+            leftAxis.setAxisMinimum(MashPit.prefGetMin(prefs,TempMode));
 
 // set the formatter
             holder.chart.getAxisRight().setEnabled(false);
+
+            XAxis xAxis = holder.chart.getXAxis();
+//            xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+            xAxis.setValueFormatter(new TimestampFormatter());
 
             // apply styling
 //            holder.chart.setDescription("");
@@ -489,7 +487,9 @@ public class TempChartActivity extends AppCompatActivity {
             holder.chart.animateXY(1000, 2000);
 
             Log.i(DEBUG_TAG, "Pos: "+position+" Desc: "+tempdata.getDesc(position));
-            holder.chart.setDescription(tempdata.getDesc(position));
+            Description desc = new Description();
+            desc.setText(tempdata.getDesc(position));
+            holder.chart.setDescription(desc);
 
             holder.chart.setOnChartGestureListener(new OnChartGestureListener() {
 

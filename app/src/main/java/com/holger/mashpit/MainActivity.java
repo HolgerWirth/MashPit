@@ -33,10 +33,11 @@ import android.widget.Toast;
 import com.activeandroid.query.Select;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
@@ -114,9 +115,6 @@ public class MainActivity extends AppCompatActivity {
             mChart.setDrawSliceText(true);
             mChart.setHoleRadius(60f);
             mChart.setTransparentCircleRadius(63f);
-
-            mChart.setDescriptionTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-            mChart.setDescriptionTextSize((float) 16.0);
 
             mChart.setDrawCenterText(true);
 
@@ -415,37 +413,6 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
                 startActivity(intent);
                 break;
-/*
-            case R.id.nav_freezer:
-                Log.i(DEBUG_TAG, "Freezer selected!");
-                Intent j = new Intent(getApplicationContext(), TempChartActivity.class);
-                j.putExtra("MODE", "freezer");
-                startActivity(j);
-                break;
-
-            case R.id.nav_wort:
-                Log.i(DEBUG_TAG, "Wort selected!");
-                Intent k = new Intent(getApplicationContext(), TempChartActivity.class);
-                k.putExtra("MODE", "wort");
-                startActivity(k);
-                break;
-
-
-            case R.id.menu_linechart:
-                Intent i = new Intent(getApplicationContext(), LineChartActivity.class);
-                startActivity(i);
-                break;
-
-            case R.id.menu_stopservice:
-                if (serviceIsRunning()) {
-                    Log.i(DEBUG_TAG, "Stopping service");
-
-                    Intent startIntent = new Intent(MainActivity.this, TemperatureService.class);
-                    startIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
-                    startService(startIntent);
-
-                }
-*/
         }
 
         return super.onOptionsItemSelected(item);
@@ -557,21 +524,16 @@ public class MainActivity extends AppCompatActivity {
 
         degree_step = (float) (360 / cDauer);
 
-        ArrayList<String> xVals = new ArrayList<>();
-        for (int i = 0; i < count; i++)
-            xVals.add(mRast[i] + " " + mTemp[i] + "°");
-
-        ArrayList<Entry> yVals1 = new ArrayList<>();
-
+        List<PieEntry> entries = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            yVals1.add(new Entry(mDauer[i], i));
+              entries.add(new PieEntry(mDauer[i], mRast[i] + " " + mTemp[i] + "°"));
         }
-        PieDataSet dataSet = new PieDataSet(yVals1, "");
+        PieDataSet dataSet = new PieDataSet(entries,"");
         dataSet.setSliceSpace(3f);
 
         dataSet.setColors(ColorTemplate.JOYFUL_COLORS);
 
-        PieData data = new PieData(xVals, dataSet);
+        PieData data = new PieData(dataSet);
         data.setValueFormatter(new RastFormatter());
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.BLACK);
@@ -597,7 +559,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             obj = new JSONObject(message);
             descTitle=obj.getString("title");
-            mChart.setDescription(obj.getString("title"));
+            Description desc = new Description();
+            desc.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            desc.setTextSize((float) 16.0);
+            desc.setText(descTitle);
+            mChart.setDescription(desc);
 
             if (obj.getString("Heizen").equals("an")) {
                 String toTemp = obj.getString("Ziel");
