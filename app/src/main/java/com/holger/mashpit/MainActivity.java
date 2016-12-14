@@ -70,11 +70,10 @@ public class MainActivity extends AppCompatActivity {
 
     private PieChart mChart;
     String centerText = "---°";
-    float degree = (float) 270.0;
-    float degree_step = (float) 1.0;
-    float cdegree = degree;
     String currTemp = "---°";
     String descTitle;
+    float cAngle=270f;
+//    int mCount=0;
 
     private DrawerLayout mDrawerLayout;
     SnackBar snb;
@@ -112,7 +111,9 @@ public class MainActivity extends AppCompatActivity {
         if (mChart != null) {
             mChart.setUsePercentValues(false);
 
-            mChart.setDrawSliceText(true);
+            mChart.setMaxAngle(360);
+            mChart.setDrawEntryLabels(true);
+//            mChart.setDrawSliceText(true);
             mChart.setHoleRadius(60f);
             mChart.setTransparentCircleRadius(63f);
 
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
             mChart.setDrawHoleEnabled(true);
 
-            mChart.setRotationAngle(degree);
+            mChart.setRotationAngle(cAngle);
             // enable rotation of the chart by touch
             mChart.setRotationEnabled(false);
             mChart.setCenterTextTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Semibold.ttf"));
@@ -146,6 +147,15 @@ public class MainActivity extends AppCompatActivity {
                     if (rect.contains(me.getX(), me.getY())) {
                         Log.i(DEBUG_TAG, "Gesture: single tapped in circle");
                         selectLineChart("mash");
+/*
+                        float[] mAngles = mChart.getAbsoluteAngles();
+                        float[] dAngles = mChart.getDrawAngles();
+                        Log.i(DEBUG_TAG, "mCount: "+mCount);
+                        float step=dAngles[2]/1f;
+                        mChart.setRotationAngle(270f + 1 - (float)(mAngles[1] + (mCount * step)));
+                        mCount++;
+                        mChart.invalidate();
+*/
                     }
                 }
 
@@ -200,7 +210,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Legend l = mChart.getLegend();
-        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        l.setOrientation(Legend.LegendOrientation.VERTICAL);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(5f);
 
@@ -220,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mChart.animateXY(1500, 1500);
-        mChart.spin(2000, 0, cdegree, Easing.EasingOption.EaseInOutCirc);
+        mChart.spin(2000, 0, cAngle, Easing.EasingOption.EaseInOutCirc);
 
         if (!serviceIsRunning()) {
             Log.i(DEBUG_TAG, "Starting service");
@@ -513,16 +525,12 @@ public class MainActivity extends AppCompatActivity {
         String[] mRast = new String[count];
         Float[] mDauer = new Float[count];
         String[] mTemp = new String[count];
-        int cDauer = 0;
         for (int i = 0; i < count; i++) {
             JSONObject jproc = jprocess.getJSONObject(i);
             mRast[i] = jproc.getString("name");
             mTemp[i] = jproc.getString("temp");
             mDauer[i] = (float) jproc.getInt("length");
-            cDauer += jproc.getInt("length");
         }
-
-        degree_step = (float) (360 / cDauer);
 
         List<PieEntry> entries = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -538,6 +546,14 @@ public class MainActivity extends AppCompatActivity {
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.BLACK);
         mChart.setData(data);
+
+/*
+        float[] mAngles = mChart.getAbsoluteAngles();
+        float[] dAngles = mChart.getDrawAngles();
+        Log.i(DEBUG_TAG,"mAngles: "+mAngles[0]+", "+mAngles[1]+", "+mAngles[2]);
+        Log.i(DEBUG_TAG,"dAngles: "+dAngles[0]+", "+dAngles[1]+", "+dAngles[2]);
+*/
+        mChart.invalidate();
     }
 
     protected void updatePieData(String currtemp) {
@@ -575,24 +591,31 @@ public class MainActivity extends AppCompatActivity {
                 int mMin = obj.getInt("Minute");
                 String name = obj.getString("Rast");
                 JSONArray jprocess = obj.getJSONArray("Proc");
+
+                float[] mAngles = mChart.getAbsoluteAngles();
+                float[] dAngles = mChart.getDrawAngles();
+                float step=1.0f;
                 int count = jprocess.length();
-                int pDauer = 0;
+                int cRast = 0;
                 for (int i = 0; i < count; i++) {
                     JSONObject jproc;
                     jproc = jprocess.getJSONObject(i);
                     if (jproc.getString("name").equals(name)) {
+                        int pDauer = jproc.getInt("length");
+                        step=(dAngles[i]/pDauer);
+                        cRast=i;
                         break;
                     }
-                    pDauer += jproc.getInt("length");
                 }
 
-                mChart.setRotationAngle((270f - ((pDauer + mMin + 1) * degree_step)));
-                /*
-                float angle=(270 - ((pDauer + mMin + 1) * degree_step));
-                PointF rotate=getPosition(mChart.getCenter(),mChart.getRadius(),angle);
-                mChart.setRotationX(rotate.x);
-                mChart.setRotationY(rotate.y);
-                */
+                if(cRast==0)
+                {
+                    cAngle=(270f + (mMin * step));
+                }
+                else {
+                    cAngle = (270f - mAngles[cRast-1] + (mMin * step));
+                }
+                mChart.setRotationAngle(cAngle);
             }
             if (obj.getString("Heizen").equals("ende")) {
                 setCenterEnd(currtemp);
@@ -601,15 +624,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-/*
-    private PointF getPosition(PointF center, float radius, float angle) {
 
-        PointF p = new PointF((float) (center.x + radius * Math.cos(Math.toRadians(angle))),
-                (float) (center.y + radius* Math.sin(Math.toRadians(angle))));
-
-        return p;
-    }
-*/
     @Override
     public void onBackPressed() {
         if (doubleBackToExitPressedOnce) {
