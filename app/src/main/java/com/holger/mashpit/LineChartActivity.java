@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -27,6 +28,8 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Temperature;
+import com.holger.mashpit.prefs.SettingsActivity;
+import com.holger.mashpit.prefs.TempChartSettings;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
 
@@ -131,8 +134,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_line_chart, menu);
+        getMenuInflater().inflate(R.menu.menu_tempchart, menu);
         return true;
     }
 
@@ -143,11 +145,18 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+        switch (id) {
 
+            case R.id.action_tempsettings:
+                Log.i(DEBUG_TAG, "Settings selected");
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, TempChartSettings.class.getName() );
+                intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
+                intent.putExtra("EXTRA_MODE",TempMode);
+                startActivity(intent);
+                break;
+
+        }
         return super.onOptionsItemSelected(item);
     }
 
