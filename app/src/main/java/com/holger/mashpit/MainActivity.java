@@ -610,10 +610,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if(cRast==0)
                 {
-                    cAngle=(270f + (mMin * step));
+                    cAngle=(270f - ((mMin+1) * step));
                 }
                 else {
-                    cAngle = (270f - mAngles[cRast-1] + (mMin * step));
+                    cAngle = (270f - mAngles[cRast-1] - ((mMin+1) * step));
                 }
                 mChart.setRotationAngle(cAngle);
             }
