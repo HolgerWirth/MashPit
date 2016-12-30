@@ -7,6 +7,7 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -47,7 +48,10 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
                 entries.add(temperature.Mode);
             }
         }
+
         for (String head : entries) {
+            Log.i(DEBUG_TAG,"Creating preferences for: "+head);
+
             PreferenceCategory dialogBasedPrefCat = new PreferenceCategory(root.getContext());
             dialogBasedPrefCat.setTitle(getString(R.string.prefs_mode_category)+head+"'");
             root.addPreference(dialogBasedPrefCat); //Adding a category
@@ -115,20 +119,43 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
             editText.setInputType(InputType.TYPE_CLASS_TEXT);
             dialogBasedPrefCat.addPreference(editTextMenu);
 
-            if(!MashPit.sensors.isEmpty()) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(root.getContext());
+            String disp_sensor=prefs.getString(head + "_sens_name_0","");
+/*
+            Map<String, ?> allEntries = prefs.getAll();
+            for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+                if(entry.getKey().startsWith(head)) {
+                    Log.i(DEBUG_TAG,"Prefs: "+ entry.getKey() + ": " + entry.getValue().toString());
+                }
+            }
+
+            prefs.edit().remove("cooler_sens_name_1").commit();
+            prefs.edit().remove("mash_sens_name_1").commit();
+*/
+            if(!disp_sensor.isEmpty()) {
                 PreferenceCategory sensorBasedPrefCat = new PreferenceCategory(root.getContext());
                 sensorBasedPrefCat.setTitle("Display Settings");
                 root.addPreference(sensorBasedPrefCat); //Adding a category
 
-                for (int j = 0; j < MashPit.sensors.size(); j++) {
+                int j=0;
+                while(true) {
+                    disp_sensor=prefs.getString(head + "_sens_name_"+j,"");
+                    Log.i(DEBUG_TAG,"Check: "+head+"_sens_name_"+j+": "+disp_sensor);
+                    if(disp_sensor.isEmpty())
+                    {
+                        Log.i(DEBUG_TAG,"isEmpty()");
+                        break;
+                    }
+
                     EditTextPreference editSensorName = new SettingsEdit(root.getContext());
-                    editSensorName.setTitle("Alias Name for: " + MashPit.sensors.get(j));
-                    editSensorName.setDefaultValue(MashPit.sensors.get(j));
+                    editSensorName.setTitle("Alias Name for " + (j+1)+". Sensor");
+                    editSensorName.setDefaultValue(disp_sensor);
                     editSensorName.setKey(head + "_sens_name_" + j);
-                    editSensorName.setSummary(MashPit.sensors.get(j));
+                    editSensorName.setSummary(disp_sensor);
                     editText = editTextMenu.getEditText();
                     editText.setInputType(InputType.TYPE_CLASS_TEXT);
                     sensorBasedPrefCat.addPreference(editSensorName);
+                    j++;
                 }
             }
         }

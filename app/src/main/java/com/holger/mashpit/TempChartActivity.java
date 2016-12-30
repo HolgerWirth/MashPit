@@ -114,7 +114,6 @@ public class TempChartActivity extends AppCompatActivity {
 
         progress = (ProgressBar) findViewById(R.id.progressBar1);
 
-        MashPit.sensors.clear();
         startLoadingData();
 
         CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.main_content);
@@ -139,7 +138,6 @@ public class TempChartActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Log.i(DEBUG_TAG, "onDestroy");
-        MashPit.sensors.clear();
         snb.stopEvents();
         super.onDestroy();
     }
@@ -346,6 +344,7 @@ public class TempChartActivity extends AppCompatActivity {
             float entry=round(temperature.Temp,1);
 
             if (!(sensors.contains(temperature.Name))) {
+                Log.i(DEBUG_TAG,"Found sensor: "+temperature.Name);
                 sensors.add(temperature.Name);
                 for(int i=0;i<LINES;i++) {
                     yVals[i].add(new ArrayList<Entry>());
@@ -385,7 +384,6 @@ public class TempChartActivity extends AppCompatActivity {
             }
         }
 
-        MashPit.sensors=sensors;
         Log.i(DEBUG_TAG, "generateData finished!");
     }
 

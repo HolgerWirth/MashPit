@@ -22,7 +22,6 @@ public class MashPit extends com.activeandroid.app.Application {
     public static String broker_url;
     public static String broker_port;
     public static List<Temperature> TempModes;
-    public static ArrayList<String> sensors = new ArrayList<>();
     public static boolean modedeleted;
     public static String mDeviceId;
 
@@ -142,6 +141,10 @@ public class MashPit extends com.activeandroid.app.Application {
         if(prefs.contains(key))
         {
             return prefs.getString(key,def);
+        }
+        else
+        {
+            prefs.edit().putString(key, def).apply();
         }
         return def;
     }
