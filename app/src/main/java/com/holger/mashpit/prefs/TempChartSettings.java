@@ -128,9 +128,6 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
                     Log.i(DEBUG_TAG,"Prefs: "+ entry.getKey() + ": " + entry.getValue().toString());
                 }
             }
-
-            prefs.edit().remove("cooler_sens_name_1").commit();
-            prefs.edit().remove("mash_sens_name_1").commit();
 */
             if(!disp_sensor.isEmpty()) {
                 PreferenceCategory sensorBasedPrefCat = new PreferenceCategory(root.getContext());
