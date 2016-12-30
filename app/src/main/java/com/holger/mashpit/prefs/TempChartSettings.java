@@ -185,6 +185,18 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
 
     private void deleteAllData(String mode) {
         new Delete().from(Temperature.class).where("mode = ?", mode).execute();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getPreferenceScreen().getContext());
+        int j=0;
+        while(true) {
+            String disp_sensor = prefs.getString(mode + "_sens_name_" + j, "");
+            if (disp_sensor.isEmpty()) {
+                break;
+            }
+            prefs.edit().remove(mode + "_sens_name_" + j).apply();
+            Log.i(DEBUG_TAG, "Pref deleted: " + mode + "_sens_name_" + j + ": " + disp_sensor);
+            j++;
+        }
         MashPit.modedeleted=true;
     }
 }
