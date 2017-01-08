@@ -45,9 +45,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
     private static final String DEBUG_TAG = "LineChartActivity" ;
 
-    private ArrayList<Entry> yVals1 = new ArrayList<>();
-    private ArrayList<Entry> yVals2 = new ArrayList<>();
-    private int lastEntry;
     private static String TempMode = "";
     SharedPreferences prefs;
     float tempMin;
@@ -56,6 +53,9 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     LineData data;
     TempChartData tempdata;
     String descTitle;
+
+    List<List<Entry>> yVals = new ArrayList<>();
+    ArrayList<String> sensors = new ArrayList<>();
 
     private LineChart mChart;
     @Override
@@ -140,9 +140,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         switch (id) {
@@ -183,13 +180,17 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         Log.i(DEBUG_TAG, "getTemperatureEvent");
         if(myEvent != null) {
             if (myEvent.getQoS() > 0) {
-                lastEntry++;
-                if (myEvent.getSensor().equalsIgnoreCase("sensor1")) {
-                    yVals1.add(new Entry(myEvent.getTimestamp(),round(myEvent.getTemperature(), 1), lastEntry));
+
+                float entry=round(myEvent.getTemperature(),1);
+
+                if (!(sensors.contains(myEvent.getSensor()))) {
+                    sensors.add(myEvent.getSensor());
+                    yVals.add(new ArrayList<Entry>());
                 }
-                if (myEvent.getSensor().equalsIgnoreCase("sensor2")) {
-                    yVals2.add(new Entry(myEvent.getTimestamp(),round(myEvent.getTemperature(), 1), lastEntry));
-                }
+
+                int sensindex = sensors.indexOf(myEvent.getSensor());
+                yVals.get(sensindex).add(new Entry((float)myEvent.getTimestamp(),entry));
+
                 mChart.notifyDataSetChanged();
                 Log.i(DEBUG_TAG, "DataSet changed");
             }
@@ -199,34 +200,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     public boolean setTempData()
     {
         Log.i(DEBUG_TAG,"setTempData");
-
-        LineDataSet set1 = new LineDataSet(yVals1, "Sensor 1");
-        LineDataSet set2 = new LineDataSet(yVals2, "Sensor 2");
-        set1.setValueFormatter(new TempFormatter());
-        set1.setCubicIntensity(0.4f);
-
-        set1.setColor(Color.BLACK);
-        set1.setCircleColor(Color.BLACK);
-        set1.setLineWidth(2f);
-        set1.setDrawCircleHole(false);
-        set1.setValueTextSize(9f);
-        set1.setFillAlpha(65);
-        set1.setFillColor(Color.BLACK);
-
-        set2.setValueFormatter(new TempFormatter());
-        set2.setCubicIntensity(0.4f);
-        set2.enableDashedLine(10f, 5f, 0f);
-        set2.setColor(Color.RED);
-        set2.setCircleColor(Color.RED);
-        set2.setLineWidth(2f);
-        set2.setDrawCircleHole(false);
-        set2.setValueTextSize(9f);
-        set2.setFillAlpha(65);
-        set2.setFillColor(Color.RED);
-
-        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-        dataSets.add(set1); // add the datasets
-        dataSets.add(set2); // add the datasets
 
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setValueFormatter (new TempFormatter());
@@ -241,33 +214,62 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         mChart.getAxisRight().setEnabled(false);
 
         if(mpos<0) {
+            ArrayList<ILineDataSet>  set = new ArrayList<>();
+
             List<Temperature> temps = getAll(24);
             if(temps.size()==0)
             {
                 temps = getAll(30 * 24);
             }
+
             if(temps.size()==0) return false;
 
-            int i=0;
+            ArrayList<Integer> linecolor = new ArrayList<>();
+            linecolor.add(Color.BLACK);
+            linecolor.add(Color.RED);
+            linecolor.add(Color.BLUE);
+            linecolor.add(Color.YELLOW);
+            linecolor.add(Color.CYAN);
+            linecolor.add(Color.GREEN);
+            linecolor.add(Color.MAGENTA);
+            linecolor.add(Color.GRAY);
+
             for (Temperature temperature : temps) {
-                if (temperature.Name.equalsIgnoreCase("sensor1")) {
-                    yVals1.add(new Entry(temperature.timeStamp,round(temperature.Temp, 1)));
+
+                float entry=round(temperature.Temp,1);
+
+                if (!(sensors.contains(temperature.Name))) {
+                    Log.i(DEBUG_TAG,"Found sensor: "+temperature.Name);
+                    sensors.add(temperature.Name);
+                    yVals.add(new ArrayList<Entry>());
                 }
-                if (temperature.Name.equalsIgnoreCase("sensor2")) {
-                    yVals2.add(new Entry(temperature.timeStamp,round(temperature.Temp, 1)));
-                }
-                i++;
+
+                int sensindex = sensors.indexOf(temperature.Name);
+                yVals.get(sensindex).add(new Entry((float)temperature.timeStamp,entry));
+
             }
-            lastEntry = i;
-//            data = new LineData(xVals, dataSets);
-            data = new LineData(dataSets);
+            LineDataSet xset;
+            for (int j=0;j<sensors.size();j++) {
+                xset = new LineDataSet(yVals.get(j), MashPit.prefGetSensorName(prefs, TempMode, j, sensors.get(j)));
+
+                xset.setValueFormatter(new TempFormatter());
+                xset.setCubicIntensity(0.4f);
+                xset.setLineWidth(2f);
+                xset.setDrawCircleHole(false);
+                xset.setValueTextSize(9f);
+                xset.setFillAlpha(65);
+
+                xset.setColor(linecolor.get(j));
+                xset.setCircleColor(linecolor.get(j));
+                xset.setFillColor(linecolor.get(j));
+                set.add(xset);
+            }
+            data = new LineData(set);
         }
         else {
             data = tempdata.getData(mpos);
             data.getEntryCount();
-//            lastEntry = data.getXValCount();
         }
-        // set data
         mChart.setData(data);
         return true;
     }
