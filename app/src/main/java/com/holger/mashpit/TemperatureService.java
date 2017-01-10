@@ -77,8 +77,8 @@ public class TemperatureService extends Service implements MqttCallback {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(DEBUG_TAG, "onCreate()...");
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -133,6 +133,17 @@ public class TemperatureService extends Service implements MqttCallback {
                 startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
                         builder.build());
 
+                if(!EventBus.getDefault().isRegistered(this)) {
+                    Log.i(DEBUG_TAG, "EventBus register");
+                    EventBus.getDefault().register(this);
+                }
+
+                TemperatureEvent myEvent = EventBus.getDefault().getStickyEvent(TemperatureEvent.class);
+                if (myEvent != null) {
+                    Log.i(DEBUG_TAG, "Found sticky event!");
+                    updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
+                }
+
                 registerBroadcastReceivers();
 
                 try {
@@ -181,6 +192,7 @@ public class TemperatureService extends Service implements MqttCallback {
         }
         return START_STICKY;
     }
+
 
     @Override
     public void onDestroy() {
