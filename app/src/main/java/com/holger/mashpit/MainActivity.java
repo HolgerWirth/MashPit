@@ -66,7 +66,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "MainActivity";
-    private static final String SERVICE_CLASSNAME = "TemperatureService";
+    private static final String SERVICE_CLASSNAME = "com.holger.mashpit.TemperatureService";
 
     private PieChart mChart;
     String centerText = "---°";
@@ -457,15 +457,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        if (!serviceIsRunning()) {
-            if(MashPit.reconnect_action) {
-                Log.i(DEBUG_TAG, "Reconnect service");
-                MashPit.reconnect_action = false;
-                Intent startIntent = new Intent(MainActivity.this, TemperatureService.class);
-                startIntent.setAction(Constants.ACTION.RECONNECT_ACTION);
-                startService(startIntent);
-            }
-        }
     }
 
     private boolean selectTempChart(int resid)
