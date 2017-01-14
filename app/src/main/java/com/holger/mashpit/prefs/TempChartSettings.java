@@ -29,7 +29,7 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String Mode = getActivity().getIntent().getExtras().getString("EXTRA_MODE");
+        String Mode = getActivity().getIntent().getStringExtra("EXTRA_MODE");
         Log.i(DEBUG_TAG, "Mode: " + Mode);
 
         MashPit.modedeleted=false;
