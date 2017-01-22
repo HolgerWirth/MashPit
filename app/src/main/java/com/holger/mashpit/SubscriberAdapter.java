@@ -13,14 +13,14 @@ import com.holger.mashpit.model.Subscriber;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.SubscriberViewHolder> {
+class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.SubscriberViewHolder> {
 
     private static final String DEBUG_TAG = "SubscriberAdapter";
 
     private List<Subscriber> subscriberList;
     private List<Subscriber> delsubscriberList = new ArrayList<>();
 
-    public SubscriberAdapter(List<Subscriber> subscriberList) {
+    SubscriberAdapter(List<Subscriber> subscriberList) {
 
         this.subscriberList = subscriberList;
         if(subscriberList != null) Log.i(DEBUG_TAG, "Subscribers: "+this.subscriberList.size());
@@ -57,14 +57,14 @@ public class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Su
         return new SubscriberViewHolder(itemView);
     }
 
-    public class SubscriberViewHolder extends RecyclerView.ViewHolder {
+    class SubscriberViewHolder extends RecyclerView.ViewHolder {
         protected TextView topic;
-        protected TextView interval;
+        TextView interval;
         protected TextView persistent;
-        protected TextView remark;
-        public CardView mCardView;
+        TextView remark;
+        CardView mCardView;
 
-        public SubscriberViewHolder(final View v) {
+        SubscriberViewHolder(final View v) {
             super(v);
             topic =  (TextView) v.findViewById(R.id.sTitel);
             interval = (TextView)  v.findViewById(R.id.sInterval);
@@ -83,31 +83,31 @@ public class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Su
 
         }
     }
-    public void addItem(Subscriber dataObj, int index) {
+    void addItem(Subscriber dataObj, int index) {
         subscriberList.add(index, dataObj);
         notifyItemInserted(index);
     }
 
-    public void addItem(Subscriber dataObj) {
+    void addItem(Subscriber dataObj) {
         subscriberList.add(dataObj);
         notifyItemInserted(subscriberList.size());
     }
 
-    public void addDelItem(Subscriber dataObj) {
+    void addDelItem(Subscriber dataObj) {
         delsubscriberList.add(dataObj);
     }
 
-    public Subscriber getItem(int index) {
+    Subscriber getItem(int index) {
         return subscriberList.get(index);
     }
 
-    public void deleteItem(int index) {
+    void deleteItem(int index) {
         addDelItem(getItem(index));
         subscriberList.remove(index);
         notifyItemRemoved(index);
     }
 
-    public void changeItem(int index,Subscriber dataObj) {
+    void changeItem(int index, Subscriber dataObj) {
         Subscriber sub=subscriberList.get(index);
         sub.topic=dataObj.topic;
         sub.interval=dataObj.interval;
@@ -117,11 +117,11 @@ public class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Su
         notifyItemChanged(index);
     }
 
-    public List<Subscriber> getSubscriberList()
+    List<Subscriber> getSubscriberList()
     {
         return subscriberList;
     }
-    public List<Subscriber> getDelSubscriberList()
+    List<Subscriber> getDelSubscriberList()
     {
         return delsubscriberList;
     }
