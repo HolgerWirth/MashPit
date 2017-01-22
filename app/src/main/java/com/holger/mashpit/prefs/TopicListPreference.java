@@ -22,7 +22,7 @@ import java.util.Set;
 public class TopicListPreference extends MultiSelectListPreference {
 
     private static final String DEBUG_TAG = "TopicListPreference";
-    SharedPreferences prefs;
+    private SharedPreferences prefs;
 
     public TopicListPreference(Context context, AttributeSet attrs)
     {

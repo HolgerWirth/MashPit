@@ -6,7 +6,7 @@ import com.github.mikephil.charting.data.LineData;
 
 import java.util.ArrayList;
 
-public class TempChartData {
+class TempChartData {
     private static TempChartData instance;
     private ArrayList<LineData> glist = new ArrayList<>();
     private ArrayList<String> desc = new ArrayList<>();
@@ -19,12 +19,12 @@ public class TempChartData {
     public void setData(LineData chartdata){
         this.glist.add(chartdata);
     }
-    public void setDesc(String description){ this.desc.add(description); }
+    void setDesc(String description){ this.desc.add(description); }
 
-    public LineData getData(int pos){
+    LineData getData(int pos){
         return this.glist.get(pos);
     }
-    public String getDesc(int pos){
+    String getDesc(int pos){
         return this.desc.get(pos);
     }
 
@@ -32,12 +32,12 @@ public class TempChartData {
         return this.glist;
     }
 
-    public void clearData(){
+    void clearData(){
         this.glist.clear();
         this.desc.clear();
     }
 
-    public static synchronized TempChartData getInstance(){
+    static synchronized TempChartData getInstance(){
         if(instance==null){
             Log.i(DEBUG_TAG, "instance==null");
             instance=new TempChartData();
