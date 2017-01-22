@@ -31,4 +31,11 @@
     <string name="save_events1">Daten speichern</string>
     <string name="title_activity_find_server">MQTT Server suchen</string>
     <string name="MQTTchanged_cancel">Cancel</string>
+    <string name="MQTTchanged_alert_title">MQTT Server wurde geändert</string>
+    <string name="MQTTchanged_button">Neu verbinden</string>
+    <string name="MQTTchanged_text">Wollen Sie sich neu verbinden?</string>
+    <string name="pref_topic_list_summary">"Wähle "</string>
+    <string name="prefs_tempchart_title">Titel</string>
+    <string name="pref_topic_list_title">Topic Auswahl</string>
+    <string name="title_activity_line_chart">LineChartActivity</string>
 </resources>
