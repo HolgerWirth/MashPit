@@ -29,7 +29,7 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String Mode = getActivity().getIntent().getStringExtra("EXTRA_MODE");
+        final String Mode = getActivity().getIntent().getStringExtra("EXTRA_MODE");
         Log.i(DEBUG_TAG, "Mode: " + Mode);
 
         MashPit.modedeleted=false;
@@ -49,7 +49,7 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
             }
         }
 
-        for (String head : entries) {
+        for (final String head : entries) {
             Log.i(DEBUG_TAG,"Creating preferences for: "+head);
 
             PreferenceCategory dialogBasedPrefCat = new PreferenceCategory(root.getContext());
@@ -64,14 +64,13 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
             editTextDel.setSummary(getString(R.string.prefs_delete_sum)+head+"'");
             editTextDel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
-                    final String mode=preference.getPreferenceManager().getSharedPreferences().getString(preference.getKey(),"");
                     AlertDialog.Builder builder = new AlertDialog.Builder(preference.getContext());
-                    builder.setTitle(getString(R.string.delete_alert_title)+" '"+mode+"'");
+                    builder.setTitle(getString(R.string.delete_alert_title)+" '"+head+"'");
                     builder.setMessage(getString(R.string.delete_alert));
                     builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            deleteAllData(mode);
+                            deleteAllData(head);
                         }
                     });
                     builder.setNegativeButton("Cancel", null);
