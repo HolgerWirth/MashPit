@@ -574,6 +574,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (obj.getString("Heizen").equals("an")) {
                 String toTemp = obj.getString("Ziel");
+                mChart.setRotationAngle(cAngle);
                 setCenterHeater(currtemp, toTemp);
             }
             if (obj.getString("Heizen").equals("aus")) {
