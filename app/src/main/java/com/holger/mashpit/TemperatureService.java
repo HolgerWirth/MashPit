@@ -74,7 +74,6 @@ public class TemperatureService extends Service implements MqttCallback {
         backgroundDataEnabled = true;
     }
     private NetworkConnectionIntentReceiver networkConnectionMonitor;
-    private BackgroundDataPreferenceReceiver backgroundDataPreferenceMonitor;
     SharedPreferences prefs;
 
     @Override
@@ -103,101 +102,105 @@ public class TemperatureService extends Service implements MqttCallback {
             action=Constants.ACTION.STARTFOREGROUND_ACTION;
         }
 
-        switch (action) {
-            case Constants.ACTION.STARTFOREGROUND_ACTION:
-                Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
-                Intent notificationIntent = new Intent(this, MainActivity.class);
-                notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
-                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                        notificationIntent, 0);
+        if (action != null) {
+            switch (action) {
+                case Constants.ACTION.STARTFOREGROUND_ACTION:
+                    Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
+                    Intent notificationIntent = new Intent(this, MainActivity.class);
+                    notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                            notificationIntent, 0);
 
-                Intent previousIntent = new Intent(this, TemperatureService.class);
-                previousIntent.setAction(Constants.ACTION.CANCEL_ACTION);
-                PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
-                        previousIntent, 0);
+                    Intent previousIntent = new Intent(this, TemperatureService.class);
+                    previousIntent.setAction(Constants.ACTION.CANCEL_ACTION);
+                    PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
+                            previousIntent, 0);
 
-                Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                        R.drawable.ic_launcher);
+                    Bitmap icon = BitmapFactory.decodeResource(getResources(),
+                            R.drawable.ic_launcher);
 
-                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_DEFAULT);
-                    notificationManager.createNotificationChannel(notificationChannel);
-                }
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+                        if (notificationManager != null) {
+                            notificationManager.createNotificationChannel(notificationChannel);
+                        }
+                    }
 
-                builder = new NotificationCompat.Builder(this,NOTIFICATION_CHANNEL_ID)
-                        .setContentTitle("Temperature Title")
-                        .setTicker("Temperature Ticker")
-                        .setContentText("My Temperature")
-                        .setSmallIcon(R.drawable.ic_stat_name)
-                        .setLargeIcon(
-                                Bitmap.createScaledBitmap(icon, 128, 128, false))
-                        .setContentIntent(pendingIntent)
-                        .setOngoing(true)
-                        .addAction(android.R.drawable.ic_menu_close_clear_cancel,
-                                "Stop Service", ppreviousIntent);
+                    builder = new NotificationCompat.Builder(this,NOTIFICATION_CHANNEL_ID)
+                            .setContentTitle("Temperature Title")
+                            .setTicker("Temperature Ticker")
+                            .setContentText("My Temperature")
+                            .setSmallIcon(R.drawable.ic_stat_name)
+                            .setLargeIcon(
+                                    Bitmap.createScaledBitmap(icon, 128, 128, false))
+                            .setContentIntent(pendingIntent)
+                            .setOngoing(true)
+                            .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                                    "Stop Service", ppreviousIntent);
 
-                startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                        builder.build());
+                    startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                            builder.build());
 
-                if(!EventBus.getDefault().isRegistered(this)) {
-                    Log.i(DEBUG_TAG, "EventBus register");
-                    EventBus.getDefault().register(this);
-                }
+                    if(!EventBus.getDefault().isRegistered(this)) {
+                        Log.i(DEBUG_TAG, "EventBus register");
+                        EventBus.getDefault().register(this);
+                    }
 
-                TemperatureEvent myEvent = EventBus.getDefault().getStickyEvent(TemperatureEvent.class);
-                if (myEvent != null) {
-                    Log.i(DEBUG_TAG, "Found sticky event!");
-                    updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
-                }
+                    TemperatureEvent myEvent = EventBus.getDefault().getStickyEvent(TemperatureEvent.class);
+                    if (myEvent != null) {
+                        Log.i(DEBUG_TAG, "Found sticky event!");
+                        updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
+                    }
 
-                registerBroadcastReceivers();
+                    registerBroadcastReceivers();
 
-                try {
-                    connect();
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
+                    try {
+                        connect();
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
 
-                break;
-            case Constants.ACTION.STOPFOREGROUND_ACTION:
-                Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
-                unregisterBroadcastReceivers();
-                disconnect();
-                stopForeground(true);
-                stopSelf();
-                break;
-            case Constants.ACTION.CANCEL_ACTION:
-                Log.i(DEBUG_TAG, "Clicked Cancel");
-                unregisterBroadcastReceivers();
-                disconnect();
-                stopForeground(true);
-                stopSelf();
-                break;
-            case Constants.ACTION.CONNECT_ACTION:
-                Log.i(DEBUG_TAG, "Clicked Connect");
-                try {
-                    connect();
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case Constants.ACTION.RECONNECT_ACTION:
-                Log.i(DEBUG_TAG, "Clicked Reconnect");
-                disconnect();
-                try {
-                    connect();
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case Constants.ACTION.CHECK_ACTION:
-                Log.i(DEBUG_TAG, "Check action");
-                checkConnection();
-                break;
+                    break;
+                case Constants.ACTION.STOPFOREGROUND_ACTION:
+                    Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
+                    unregisterBroadcastReceivers();
+                    disconnect();
+                    stopForeground(true);
+                    stopSelf();
+                    break;
+                case Constants.ACTION.CANCEL_ACTION:
+                    Log.i(DEBUG_TAG, "Clicked Cancel");
+                    unregisterBroadcastReceivers();
+                    disconnect();
+                    stopForeground(true);
+                    stopSelf();
+                    break;
+                case Constants.ACTION.CONNECT_ACTION:
+                    Log.i(DEBUG_TAG, "Clicked Connect");
+                    try {
+                        connect();
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case Constants.ACTION.RECONNECT_ACTION:
+                    Log.i(DEBUG_TAG, "Clicked Reconnect");
+                    disconnect();
+                    try {
+                        connect();
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case Constants.ACTION.CHECK_ACTION:
+                    Log.i(DEBUG_TAG, "Check action");
+                    checkConnection();
+                    break;
 
+            }
         }
         return START_STICKY;
     }
@@ -233,7 +236,7 @@ public class TemperatureService extends Service implements MqttCallback {
         String url = String.format(Locale.US, MQTT_URL_FORMAT, MQTT_BROKER, MQTT_PORT);
         Log.i(DEBUG_TAG,"Connecting with URL: " + url);
 
-        String mDeviceId = String.format(DEVICE_ID_FORMAT,
+        @SuppressLint("HardwareIds") String mDeviceId = String.format(DEVICE_ID_FORMAT,
                 Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
         Log.i(DEBUG_TAG,"Devcice ID: " + mDeviceId);
 
@@ -427,19 +430,6 @@ public class TemperatureService extends Service implements MqttCallback {
                           registerReceiver(networkConnectionMonitor, new IntentFilter(
                                           ConnectivityManager.CONNECTIVITY_ACTION));
                   }
-
-                  if (Build.VERSION.SDK_INT < 14 /**Build.VERSION_CODES.ICE_CREAM_SANDWICH**/) {
-                          // Support the old system for background data preferences
-                          ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-                          backgroundDataEnabled = cm.getBackgroundDataSetting();
-                          if (backgroundDataPreferenceMonitor == null) {
-                                  backgroundDataPreferenceMonitor = new BackgroundDataPreferenceReceiver();
-                                  registerReceiver(
-                                          backgroundDataPreferenceMonitor,
-                                          new IntentFilter(
-                                                  ConnectivityManager.ACTION_BACKGROUND_DATA_SETTING_CHANGED));
-                          }
-                  }
     }
 
     private void unregisterBroadcastReceivers(){
@@ -447,12 +437,6 @@ public class TemperatureService extends Service implements MqttCallback {
                   unregisterReceiver(networkConnectionMonitor);
                   networkConnectionMonitor = null;
           }
-
-          if (Build.VERSION.SDK_INT < 14 /**Build.VERSION_CODES.ICE_CREAM_SANDWICH**/) {
-                  if(backgroundDataPreferenceMonitor != null){
-                          unregisterReceiver(backgroundDataPreferenceMonitor);
-                  }
-                  }
     }
 
        private class NetworkConnectionIntentReceiver extends BroadcastReceiver {
@@ -465,10 +449,15 @@ public class TemperatureService extends Service implements MqttCallback {
                 // by requesting a wake lock - we request the minimum possible wake
                 // lock - just enough to keep the CPU running until we've finished
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
+            PowerManager.WakeLock wl = null;
+            if (pm != null) {
+                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
+            }
+            if (wl != null) {
                 wl.acquire(1);
+            }
 
-                Log.i(DEBUG_TAG, "Internal network status receive called with: "+intent);
+            Log.i(DEBUG_TAG, "Internal network status receive called with: "+intent);
 
                 boolean noConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
                 String reason = intent.getStringExtra(ConnectivityManager.EXTRA_REASON);
@@ -503,7 +492,9 @@ public class TemperatureService extends Service implements MqttCallback {
                    }
             }
 
+            if (wl != null) {
                 wl.release();
+            }
         }
     }
 
@@ -511,32 +502,8 @@ public class TemperatureService extends Service implements MqttCallback {
      * @return whether the android service can be regarded as online
      */
     public boolean isOnline() {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() != null
-                && cm.getActiveNetworkInfo().isAvailable()
-                && cm.getActiveNetworkInfo().isConnected()
-                && backgroundDataEnabled;
-
-    }
-
-    private class BackgroundDataPreferenceReceiver extends BroadcastReceiver {
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-                ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-                if (cm.getBackgroundDataSetting()) {
-                        if (!backgroundDataEnabled) {
-                                backgroundDataEnabled = true;
-                                // we have the Internet connection - have another try at
-                                // connecting
-                                reconnectIfNecessary();
-                        }
-                } else {
-                        backgroundDataEnabled = false;
-                                Log.i(DEBUG_TAG, "NotifClientsOffline");
-                }
-        }
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        return cm != null && cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected() && backgroundDataEnabled;
     }
 
     @Override
@@ -577,7 +544,9 @@ public class TemperatureService extends Service implements MqttCallback {
         builder.setContentTitle(event);
         builder.setContentText(new StringBuilder().append(sensor).append(" / ").append(fmtout.format(df)));
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
+        if (mNotificationManager != null) {
+            mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
+        }
     }
 
     @Override
