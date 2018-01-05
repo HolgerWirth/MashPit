@@ -1,6 +1,7 @@
 package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -55,6 +56,8 @@ import java.util.Set;
 public class TemperatureService extends Service implements MqttCallback {
 
     private static final String DEBUG_TAG = "TemperatureService";
+
+    private static final String NOTIFICATION_CHANNEL_ID = "MashPitChannel_1";
 
     private MqttDefaultFilePersistence mDataStore=null;
 
@@ -118,7 +121,13 @@ public class TemperatureService extends Service implements MqttCallback {
                 Bitmap icon = BitmapFactory.decodeResource(getResources(),
                         R.drawable.ic_launcher);
 
-                builder = new NotificationCompat.Builder(this)
+                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+                    notificationManager.createNotificationChannel(notificationChannel);
+                }
+
+                builder = new NotificationCompat.Builder(this,NOTIFICATION_CHANNEL_ID)
                         .setContentTitle("Temperature Title")
                         .setTicker("Temperature Ticker")
                         .setContentText("My Temperature")
@@ -457,7 +466,7 @@ public class TemperatureService extends Service implements MqttCallback {
                 // lock - just enough to keep the CPU running until we've finished
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
                 PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
-                wl.acquire();
+                wl.acquire(1);
 
                 Log.i(DEBUG_TAG, "Internal network status receive called with: "+intent);
 
@@ -599,7 +608,6 @@ public class TemperatureService extends Service implements MqttCallback {
                 if (message.getQos() > 0) {
                     temp.save();
                     Log.i(DEBUG_TAG, "Mode: " + tempEvent.getMode() + " Temperature: " + tempEvent.getEvent() + " inserted!");
-
                 }
                 EventBus.getDefault().postSticky(tempEvent);
         } catch (JSONException e) {

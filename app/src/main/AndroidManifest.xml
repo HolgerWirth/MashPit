@@ -15,6 +15,13 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
+        <provider
+            android:name="com.activeandroid.content.ContentProvider"
+            android:authorities="com.holger.mashpit"
+            android:enabled="true"
+            android:exported="false">
+        </provider>
+
         <!-- Notice this tag which provides the database name -->
         <meta-data
             android:name="AA_DB_NAME"
@@ -45,13 +52,13 @@
             android:name="com.holger.mashpit.LineChartActivity"
             android:configChanges="orientation|screenSize"
             android:label="Freezer Temperature"
-            android:screenOrientation="landscape"></activity>
+            android:screenOrientation="landscape" />
         <activity
             android:name="com.holger.mashpit.TempChartActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name="com.holger.mashpit.prefs.SettingsActivity"
-            android:label="Preferences"></activity>
+            android:label="Preferences" />
         <activity
             android:name="com.holger.mashpit.SubscribeListActivity"
             android:configChanges="orientation|screenSize" />
