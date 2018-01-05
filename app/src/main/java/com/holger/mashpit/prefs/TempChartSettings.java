@@ -176,7 +176,9 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
         Log.i(DEBUG_TAG, "Key: " + key);
 
         Preference etp = findPreference(key);
-        etp.setSummary(prefs.getString(key, ""));
+        if(etp != null) {
+            etp.setSummary(prefs.getString(key, ""));
+        }
     }
 
     private void deleteAllData(String mode) {
