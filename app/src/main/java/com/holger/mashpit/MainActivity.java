@@ -29,7 +29,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-
 import com.activeandroid.query.Select;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
@@ -41,6 +40,11 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.Wearable;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Process;
@@ -63,6 +67,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.holger.share.Constants;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "MainActivity";
@@ -73,7 +79,8 @@ public class MainActivity extends AppCompatActivity {
     String currTemp = "---°";
     String descTitle;
     float cAngle=270f;
-//    int mCount=0;
+
+    private GoogleApiClient mGoogleApiClient;
 
     private DrawerLayout mDrawerLayout;
     SnackBar snb;
@@ -88,7 +95,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Log.i(DEBUG_TAG, "Connect to Android Wear");
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle bundle) {
+                        Log.i(DEBUG_TAG, "Wear: connected!");
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int i) {
+                        Log.i(DEBUG_TAG, "Wear: suspended");
+                    }
+                }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Log.i(DEBUG_TAG, "Wear: connect failed!");
+                    }
+                }).addApi(Wearable.API)
+                .build();
+        mGoogleApiClient.connect();
+
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
 
         final ActionBar ab = getSupportActionBar();
@@ -96,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
         ab.setHomeAsUpIndicator(R.drawable.ic_drawer);
         ab.setDisplayHomeAsUpEnabled(true);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mDrawerLayout = findViewById(R.id.drawerLayout);
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             setupDrawerContent(navigationView);
         }
@@ -106,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         TempChartData tempdata = TempChartData.getInstance();
         tempdata.clearData();
 
-        mChart = (PieChart) findViewById(R.id.chart1);
+        mChart = findViewById(R.id.chart1);
 
         if (mChart != null) {
             mChart.setUsePercentValues(false);
@@ -295,10 +323,12 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean serviceIsRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (SERVICE_CLASSNAME.equals(service.service.getClassName())) {
-                Log.i(DEBUG_TAG, "Service: service is running");
-                return true;
+        if (manager != null) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (SERVICE_CLASSNAME.equals(service.service.getClassName())) {
+                    Log.i(DEBUG_TAG, "Service: service is running");
+                    return true;
+                }
             }
         }
         return false;
@@ -311,6 +341,14 @@ public class MainActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "getTempEvent");
         if (myEvent != null) {
             Log.i(DEBUG_TAG, "TempEvent arrived: " + myEvent.getTopic());
+
+            if(mGoogleApiClient.isConnected()) {
+                final PutDataMapRequest putRequest = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
+                final DataMap map = putRequest.getDataMap();
+                map.putString(Constants.WEAR.KEY_TITLE, "Temperature");
+                map.putString(Constants.WEAR.KEY_CONTENT, myEvent.getEvent());
+                Wearable.DataApi.putDataItem(mGoogleApiClient, putRequest.asPutDataRequest());
+            }
 
             if(myEvent.getQoS()==2) {
                 boolean found = false;
@@ -443,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         Log.i(DEBUG_TAG, "OnStart()...");
         EventBus.getDefault().register(this);
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.main_content);
+        CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb=new SnackBar(coordinatorLayout);
 
         snb.setmOnClickListener(
@@ -459,7 +497,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean selectTempChart(int resid)
+
+
+    private void selectTempChart(int resid)
     {
         Temperature temp = MashPit.TempModes.get(resid);
         Log.i(DEBUG_TAG,"selectTempChart: "+temp.Mode);
@@ -467,10 +507,9 @@ public class MainActivity extends AppCompatActivity {
         k.putExtra("MODE", temp.Mode);
         startActivity(k);
         finish();
-        return true;
     }
 
-    private boolean selectLineChart(String linemode)
+    private void selectLineChart(String linemode)
     {
         Log.i(DEBUG_TAG,"selectLineChart: "+linemode);
         Intent k = new Intent(getApplicationContext(), LineChartActivity.class);
@@ -478,7 +517,6 @@ public class MainActivity extends AppCompatActivity {
         k.putExtra("POS",-1);
         k.putExtra("TITLE",descTitle);
         startActivity(k);
-        return true;
     }
 
     public static List<Process> getAll() {
@@ -537,13 +575,6 @@ public class MainActivity extends AppCompatActivity {
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.BLACK);
         mChart.setData(data);
-
-/*
-        float[] mAngles = mChart.getAbsoluteAngles();
-        float[] dAngles = mChart.getDrawAngles();
-        Log.i(DEBUG_TAG,"mAngles: "+mAngles[0]+", "+mAngles[1]+", "+mAngles[2]);
-        Log.i(DEBUG_TAG,"dAngles: "+dAngles[0]+", "+dAngles[1]+", "+dAngles[2]);
-*/
         mChart.invalidate();
     }
 
