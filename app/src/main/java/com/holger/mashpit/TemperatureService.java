@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import com.holger.share.Constants;
+
 public class TemperatureService extends Service implements MqttCallback {
 
     private static final String DEBUG_TAG = "TemperatureService";
