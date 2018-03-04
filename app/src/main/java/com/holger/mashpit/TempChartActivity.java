@@ -48,6 +48,8 @@ import com.holger.mashpit.tools.SnackBar;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
 
+import com.holger.share.Constants;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
