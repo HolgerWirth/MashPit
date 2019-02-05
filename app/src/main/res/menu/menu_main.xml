@@ -8,22 +8,5 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_menu_settings"
         android:title="Mash Process Settings"/>
-    <item
-        android:id="@+id/action_menu"
-        android:title="Menu"
-        android:orderInCategory="100"
-        app:showAsAction="never">
-        <menu>
-            <item
-                android:id="@+id/menu_stopservice"
-                android:title="Stop Service"/>
-            <item
-                android:id="@+id/menu_linechart"
-                android:title="LineChart"/>
-            <item
-                android:id="@+id/menu_templist"
-                android:title="Temperature List"/>
-    </menu>
-</item>
 </menu>
 

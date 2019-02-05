@@ -23,10 +23,11 @@
     <string name="proc_heat">Heat to\n</string>
     <string name="proc_stop">Stop\n</string>
     <string name="click_back">Please click BACK again to exit</string>
-    <string name="chart_24h">24 Hours</string>
-    <string name="chart_7d">7 Days</string>
-    <string name="chart_30d">30 Days</string>
-    <string name="topicchars" translatable="false">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890</string>
+    <string name="chart_24h">24 hours</string>
+    <string name="chart_7d">7 days</string>
+    <string name="chart_30d">30 days</string>
+    <string name="topicchars" translatable="false">/#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890</string>
+    <string name="namechars" translatable="false">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890</string>
     <string name="intervall">Interval:</string>
     <string name="save_events">Save events:</string>
     <string name="remark">Remark:</string>
@@ -45,6 +46,28 @@
     <string name="MQTTchanged_cancel">Cancel</string>
     <string name="pref_del_sum">Delete all temp. data for mode: \'</string>
     <string name="prefs_delete_temp">Delete all temp. data</string>
-
-
+    <string name="confActive">Active:</string>
+    <string name="confTopicTitle">Event:</string>
+    <string name="confTopic">Event</string>
+    <string name="confTempTitle">Temperature:</string>
+    <string name="confTemp">Temp</string>
+    <string name="confTimeTitle">Time:</string>
+    <string name="confHyst">Hyst</string>
+    <string name="confHystTitle">Hysterese:</string>
+    <string name="confTime">Time</string>
+    <string name="pubConfig">Publish Config</string>
+    <string name="pubConfOK">Configuration published!</string>
+    <string name="pubConfNOK">Publish failed!</string>
+    <string name="confNameTitle">Name:</string>
+    <string name="confdelAlert">Do you really want to delete and publish the config \'%1$s\'?</string>
+    <string name="confPublishAlert">Do you really want to publish the config to the \'%1$s\' process?</string>
+    <string name="menu_configuration">Server configuration</string>
+    <string name="menu_settings">App preferences</string>
+    <string name="meun_process">Meshing</string>
+    <string name="nav_profile">Brewing made easy!</string>
+    <string name="prefs_send_mqtt_broker">Send MQTT Broker</string>
+    <string name="prefs_send_mqtt_port">Send Broker Port</string>
+    <string name="conf_deleted">Config \'%1$s\' deleted!</string>
+    <string name="status_connect_OK">Connected to MQTT broker</string>
+    <string name="status_connect_NOK">Can\'t connect to MQTT broker</string>
 </resources>

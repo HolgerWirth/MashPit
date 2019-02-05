@@ -83,7 +83,7 @@ public class TempChartActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_temp_chart);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
 
         final ActionBar ab = getSupportActionBar();
@@ -91,9 +91,9 @@ public class TempChartActivity extends AppCompatActivity {
         ab.setHomeAsUpIndicator(R.drawable.ic_drawer);
         ab.setDisplayHomeAsUpEnabled(true);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mDrawerLayout = findViewById(R.id.drawerLayout);
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             setupDrawerContent(navigationView);
         }
@@ -114,11 +114,11 @@ public class TempChartActivity extends AppCompatActivity {
         tempMax= MashPit.prefGetMax(prefs,TempMode);
         ab.setTitle(MashPit.prefGetName(prefs,TempMode));
 
-        progress = (ProgressBar) findViewById(R.id.progressBar1);
+        progress = findViewById(R.id.progressBar1);
 
         startLoadingData();
 
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.main_content);
+        CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb= new SnackBar(coordinatorLayout);
         snb.setmOnClickListener(
                 mOnClickListener = new View.OnClickListener() {
@@ -207,7 +207,7 @@ public class TempChartActivity extends AppCompatActivity {
                 handler.post(new Runnable(){
                     public void run() {
                         progress.setVisibility(View.GONE);
-                        ListView lv = (ListView) findViewById(R.id.listView1);
+                        ListView lv = findViewById(R.id.listView1);
                         Log.i(DEBUG_TAG, "Creating list");
                         cda = new ChartDataAdapter(getApplicationContext(), tempdata.getData());
                         if (lv != null) {
@@ -258,13 +258,17 @@ public class TempChartActivity extends AppCompatActivity {
                                 startActivity(l);
                                 break;
 
+                            case R.id.nav_config:
+                                Intent n = new Intent(getApplicationContext(), ConfListActivity.class);
+                                startActivity(n);
+                                break;
                         }
                         return true;
                     }
                 });
     }
 
-    private boolean selectTempChart(int resid)
+    private void selectTempChart(int resid)
     {
         Temperature temp = MashPit.TempModes.get(resid);
         Log.i(DEBUG_TAG,"selectTempChart: "+temp.Mode);
@@ -272,7 +276,6 @@ public class TempChartActivity extends AppCompatActivity {
         k.putExtra("MODE", temp.Mode);
         startActivity(k);
         finish();
-        return true;
     }
 
     @Override
@@ -310,9 +313,9 @@ public class TempChartActivity extends AppCompatActivity {
         HOURS[2]=30*24;
 
         String[] DESC = new String[LINES];
-        DESC[0]="24 Stunden";
-        DESC[1]="7 Tage";
-        DESC[2]="30 Tage";
+        DESC[0]=getString(R.string.chart_24h);
+        DESC[1]=getString(R.string.chart_7d);
+        DESC[2]=getString(R.string.chart_30d);
 
         @SuppressWarnings({"unchecked"})
         List<List<Entry>>[] yVals = new ArrayList[LINES];
@@ -449,7 +452,7 @@ public class TempChartActivity extends AppCompatActivity {
                 holder = new ViewHolder();
 
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_tempchart,parent, false );
-                holder.chart= (LineChart) convertView.findViewById(R.id.chartitem);
+                holder.chart= convertView.findViewById(R.id.chartitem);
 
                 convertView.setTag(holder);
 
@@ -543,14 +546,13 @@ public class TempChartActivity extends AppCompatActivity {
         }
     }
 
-    private boolean selectLineChart(String linemode,int pos)
+    private void selectLineChart(String linemode, int pos)
     {
         Log.i(DEBUG_TAG,"selectLineChart: "+pos);
         Intent k = new Intent(getApplicationContext(), LineChartActivity.class);
         k.putExtra("POS",pos);
         k.putExtra("MODE", linemode);
         startActivity(k);
-        return true;
     }
 
     @Override

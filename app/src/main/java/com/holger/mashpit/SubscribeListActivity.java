@@ -44,7 +44,7 @@ public class SubscribeListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subscribelist);
 
-        final CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.sublist_content);
+        final CoordinatorLayout coordinatorLayout = findViewById(R.id.sublist_content);
         snb = new SnackBar(coordinatorLayout);
         snb.setmOnClickListener(
                 mOnClickListener = new View.OnClickListener() {
@@ -55,13 +55,13 @@ public class SubscribeListActivity extends AppCompatActivity {
                     }
                 });
 
-        final RecyclerView recList = (RecyclerView) findViewById(R.id.cardList);
+        final RecyclerView recList = findViewById(R.id.cardList);
 
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.subscriber_toolbar);
+        Toolbar toolbar = findViewById(R.id.subscriber_toolbar);
         setSupportActionBar(toolbar);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -72,9 +72,9 @@ public class SubscribeListActivity extends AppCompatActivity {
             }
         });
 
-        cancelButton = (FloatingActionButton) findViewById(R.id.cancelButton);
-        deleteButton = (FloatingActionButton) findViewById(R.id.deleteMButton);
-        actionButton = (FloatingActionButton) findViewById(R.id.actionButton);
+        cancelButton = findViewById(R.id.cancelButton);
+        deleteButton = findViewById(R.id.deleteMButton);
+        actionButton = findViewById(R.id.actionButton);
         actionButton.setVisibility(View.VISIBLE);
 
         //start listeners
@@ -121,6 +121,7 @@ public class SubscribeListActivity extends AppCompatActivity {
         List<Subscriber> result = new ArrayList<>();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String subs = prefs.getString("sublist", "");
+        assert subs != null;
         if (subs.length() > 0) {
             try {
                 JSONObject subscribers = new JSONObject(subs);
@@ -148,6 +149,7 @@ public class SubscribeListActivity extends AppCompatActivity {
         ca = new SubscriberAdapter(result);
 
         String delsubs = prefs.getString("delsublist", "");
+        assert delsubs != null;
         if (delsubs.length() > 0) {
             try {
                 JSONObject subscribers = new JSONObject(delsubs);

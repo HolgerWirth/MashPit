@@ -1,7 +1,8 @@
 <sensors>
 <sensor>
 <name>1. Sensor</name>
-<id>28-0314624d38ff</id>
+<id>28-021463118aff</id>
+<active>1</active>
 <topic>S1</topic>
 <mode>cooler</mode>
 <timer>
@@ -12,6 +13,7 @@
 <sensor>
 <name>S2</name>
 <id>28-0214630dc7ff</id>
+<active>1</active>
 <topic>sensor2</topic>
 <mode>cooler</mode>
 <timer>
@@ -19,4 +21,20 @@
 <persist>0</persist>
 </timer>
 </sensor>
+<sensor>
+<name>3. Sensor</name>
+<id>28-0214630fdaff</id>
+<active>0</active>
+<topic>W1</topic>
+<mode>wort</mode>
+<timer>
+<interval>60</interval>
+<persist>0</persist>
+</timer>
+<timer>
+<interval>600</interval>
+<persist>1</persist>
+</timer>
+</sensor>
 </sensors>
+

@@ -30,13 +30,13 @@ public class SubscribeEdit extends AppCompatActivity {
 
         setContentView(R.layout.activity_subscriber_edit);
 
-        EditText topicText = (EditText) findViewById(R.id.subTopic);
-        EditText intervalText = (EditText) findViewById(R.id.subInterval);
-        EditText remarkText = (EditText) findViewById(R.id.subRemark);
+        EditText topicText = findViewById(R.id.subTopic);
+        EditText intervalText = findViewById(R.id.subInterval);
+        EditText remarkText = findViewById(R.id.subRemark);
 
-        deleteButton = (FloatingActionButton) findViewById(R.id.deleteButton);
-        cancelButton = (FloatingActionButton) findViewById(R.id.cancelButton);
-        actionButton = (FloatingActionButton) findViewById(R.id.editButton);
+        deleteButton = findViewById(R.id.deleteButton);
+        cancelButton = findViewById(R.id.cancelButton);
+        actionButton = findViewById(R.id.editButton);
 
         buttonCheck(1,text1);
         buttonCheck(2,text2);
@@ -64,7 +64,7 @@ public class SubscribeEdit extends AppCompatActivity {
 
         cancelButton.setVisibility(View.VISIBLE);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.subedit_toolbar);
+        Toolbar toolbar = findViewById(R.id.subedit_toolbar);
         setSupportActionBar(toolbar);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {

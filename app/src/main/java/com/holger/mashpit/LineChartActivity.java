@@ -83,7 +83,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         Log.i(DEBUG_TAG, "Title: "+descTitle);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Toolbar toolbar= (Toolbar) findViewById(R.id.my_chart_toolbar);
+        Toolbar toolbar= findViewById(R.id.my_chart_toolbar);
 
         if (toolbar != null) {
             toolbar.setTitle(MashPit.prefGetName(prefs,TempMode));
@@ -100,7 +100,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             });
         }
 
-        mChart = (LineChart) findViewById(R.id.chart2);
+        mChart = findViewById(R.id.chart2);
         if (mChart != null) {
             mChart.setOnChartGestureListener(this);
             mChart.setTouchEnabled(true);

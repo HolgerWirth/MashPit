@@ -19,9 +19,22 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+import com.holger.mashpit.events.ConfEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.events.TemperatureEvent;
@@ -55,7 +68,7 @@ import java.util.Set;
 
 import com.holger.share.Constants;
 
-public class TemperatureService extends Service implements MqttCallback {
+public class TemperatureService extends Service implements MqttCallback,DataClient.OnDataChangedListener {
 
     private static final String DEBUG_TAG = "TemperatureService";
 
@@ -132,9 +145,9 @@ public class TemperatureService extends Service implements MqttCallback {
                     }
 
                     builder = new NotificationCompat.Builder(this,NOTIFICATION_CHANNEL_ID)
-                            .setContentTitle("Temperature Title")
-                            .setTicker("Temperature Ticker")
-                            .setContentText("My Temperature")
+                            .setContentTitle("")
+                            .setTicker("")
+                            .setContentText("")
                             .setSmallIcon(R.drawable.ic_stat_name)
                             .setLargeIcon(
                                     Bitmap.createScaledBitmap(icon, 128, 128, false))
@@ -158,6 +171,8 @@ public class TemperatureService extends Service implements MqttCallback {
                     }
 
                     registerBroadcastReceivers();
+                    Wearable.getDataClient(this).addListener(this);
+
 
                     try {
                         connect();
@@ -169,6 +184,7 @@ public class TemperatureService extends Service implements MqttCallback {
                 case Constants.ACTION.STOPFOREGROUND_ACTION:
                     Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
                     unregisterBroadcastReceivers();
+                    Wearable.getDataClient(this).removeListener(this);
                     disconnect();
                     stopForeground(true);
                     stopSelf();
@@ -176,6 +192,7 @@ public class TemperatureService extends Service implements MqttCallback {
                 case Constants.ACTION.CANCEL_ACTION:
                     Log.i(DEBUG_TAG, "Clicked Cancel");
                     unregisterBroadcastReceivers();
+                    Wearable.getDataClient(this).removeListener(this);
                     disconnect();
                     stopForeground(true);
                     stopSelf();
@@ -231,6 +248,7 @@ public class TemperatureService extends Service implements MqttCallback {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         MQTT_BROKER=prefs.getString("broker_url","192.168.1.50");
+        //noinspection ConstantConditions
         MQTT_PORT= Integer.parseInt(prefs.getString("broker_port","1884"));
 
         Log.i(DEBUG_TAG, "Preferences read: MQTT Server: "+MQTT_BROKER+" Port: "+MQTT_PORT);
@@ -266,6 +284,7 @@ public class TemperatureService extends Service implements MqttCallback {
                     List<Subscriber> delresult = new ArrayList<>();
                     String delsubs=prefs.getString("delsublist","");
                     int subs_count;
+                    assert delsubs != null;
                     if(delsubs.length()>0) {
                         try {
                             JSONObject subscribers = new JSONObject(delsubs);
@@ -304,6 +323,7 @@ public class TemperatureService extends Service implements MqttCallback {
 
                     List<Subscriber> result = new ArrayList<>();
                     String subs=prefs.getString("sublist","");
+                    assert subs != null;
                     if(subs.length()>0) {
                         try {
                             JSONObject subscribers = new JSONObject(subs);
@@ -322,8 +342,8 @@ public class TemperatureService extends Service implements MqttCallback {
                         }
 
                     }
-                    topic = new String[result.size()+1];
-                    int[] qos = new int[result.size()+1];
+                    topic = new String[result.size()+2];
+                    int[] qos = new int[result.size()+2];
                     for(int i=0;i<result.size();i++)
                     {
                         Subscriber sub = result.get(i);
@@ -339,6 +359,9 @@ public class TemperatureService extends Service implements MqttCallback {
                     }
                     topic[result.size()]="/process";
                     qos[result.size()]=0;
+
+                    topic[result.size()+1]="/conf/#";
+                    qos[result.size()+1]=0;
 
                     for(int i=0;i<topic.length;i++)
                     {
@@ -441,7 +464,7 @@ public class TemperatureService extends Service implements MqttCallback {
           }
     }
 
-       private class NetworkConnectionIntentReceiver extends BroadcastReceiver {
+    private class NetworkConnectionIntentReceiver extends BroadcastReceiver {
 
         @SuppressLint("Wakelock")
                 @Override
@@ -453,7 +476,7 @@ public class TemperatureService extends Service implements MqttCallback {
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             PowerManager.WakeLock wl = null;
             if (pm != null) {
-                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
+                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT:MashPit");
             }
             if (wl != null) {
                 wl.acquire(1);
@@ -555,17 +578,19 @@ public class TemperatureService extends Service implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         TemperatureEvent tempEvent = new TemperatureEvent();
         ProcessEvent processEvent = new ProcessEvent();
+        ConfEvent confEvent = new ConfEvent();
+        JSONObject obj;
 
         String mess= new String(message.getPayload());
-        JSONObject obj = new JSONObject(mess);
 
         String[] parts = topic.split("/");
         tempEvent.setTopic(parts[1]);
         processEvent.setTopic(parts[1]);
 
-        Log.i(DEBUG_TAG, "'"+parts[1]+"' messageArrived with QoS: "+message.getQos()+" Message: "+mess);
+        Log.i(DEBUG_TAG, "'"+parts[1]+"' messageArrived with QoS: "+message.getQos());
 
         if(parts[1].equals("temp")) {
+            obj = new JSONObject(mess);
             try {
                 tempEvent.setEvent(obj.getString("Temp") + "°");
                 tempEvent.setTemperature(obj.getString("Temp"));
@@ -581,15 +606,16 @@ public class TemperatureService extends Service implements MqttCallback {
                     Log.i(DEBUG_TAG, "Mode: " + tempEvent.getMode() + " Temperature: " + tempEvent.getEvent() + " inserted!");
                 }
                 EventBus.getDefault().postSticky(tempEvent);
-        } catch (JSONException e) {
+
+                sendData(tempEvent.getEvent());
+
+            } catch (JSONException e) {
             e.printStackTrace();
         }
     }
         if(parts[1].equals("process"))
         {
             Log.i(DEBUG_TAG, "Process: ");
-//            processEvent.setTemp(obj.getString("temp") + "°");
-
             Process proc = Process.load(Process.class,1);
             if(proc==null) {
                 Process nproc = new Process(mess);
@@ -604,11 +630,20 @@ public class TemperatureService extends Service implements MqttCallback {
             }
             EventBus.getDefault().postSticky(processEvent);
         }
+
+        if(parts[1].equals("conf"))
+        {
+            Log.i(DEBUG_TAG, "Configuration: ");
+            confEvent.setConfTopic(parts[2]);
+            confEvent.setXMLString(mess);
+            EventBus.getDefault().postSticky(confEvent);
+        }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onEventMainThread(TemperatureEvent myEvent) {
         Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
+        assert prefdefaults != null;
         if(prefdefaults.contains(myEvent.getSensor()+"/"+String.valueOf(myEvent.getInterval())))
         {
             Log.i(DEBUG_TAG, "Notification updated");
@@ -619,5 +654,49 @@ public class TemperatureService extends Service implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
 
+    }
+
+    @Override
+    public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
+        Log.d(DEBUG_TAG, "onDataChanged: " + dataEventBuffer);
+        for (DataEvent event : dataEventBuffer) {
+            if (event.getType() == DataEvent.TYPE_CHANGED) {
+                String path = event.getDataItem().getUri().getPath();
+                if (Constants.WEAR.RUN_UPDATE_NOTIFICATION.equals(path)) {
+                    DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                    String message = dataMapItem.getDataMap().getString(Constants.WEAR.KEY_CONTENT);
+                    Log.d(DEBUG_TAG, "Wear activity received message: " + message);
+                } else {
+                    Log.d(DEBUG_TAG, "Unrecognized path: " + path);
+                }
+            } else if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d(DEBUG_TAG, "Data deleted : " + event.getDataItem().toString());
+            } else {
+                Log.d(DEBUG_TAG, "Unknown data event Type = " + event.getType());
+            }
+        }
+    }
+
+    private void sendData(String message) {
+        PutDataMapRequest dataMap = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
+        dataMap.getDataMap().putString(Constants.WEAR.KEY_TITLE, "Temperature");
+        dataMap.getDataMap().putString(Constants.WEAR.KEY_CONTENT, message);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d(DEBUG_TAG, "Sending message was successful: " + dataItem);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(DEBUG_TAG, "Sending message failed: " + e);
+                    }
+                });
     }
 }

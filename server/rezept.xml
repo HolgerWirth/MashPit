@@ -1,17 +1,12 @@
 <rezept>
-<name>Maerzen OG</name>
+<name>Koelsch</name>
 <rast>
 <name>1. Rast</name>
-<starttemp>58</starttemp>
-<dauer>10</dauer>
+<starttemp>65</starttemp>
+<dauer>30</dauer>
 </rast>
 <rast>
 <name>2. Rast</name>
-<starttemp>63</starttemp>
-<dauer>45</dauer>
-</rast>
-<rast>
-<name>3. Rast</name>
 <starttemp>72</starttemp>
 <dauer>20</dauer>
 </rast>

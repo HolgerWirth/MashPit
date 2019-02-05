@@ -3,7 +3,6 @@ import paho.mqtt.client as mqtt
 import time
 import json
 import logging
-import os
 import RPi.GPIO as GPIO
 
 def readxml(xmlfile,name1,name2):
@@ -84,19 +83,17 @@ GPIO.output(11, GPIO.LOW)
 while True:
    templist=[0.0,0.0,0.0]
    count=0
-   freeze=int(readxml("freezer.xml","config","freeze"))
    mqttc = mqtt.Client()
    mqttc.connect("localhost", 1883, 10)
    mqtt_connect()
    topic=readxml("freezer.xml","config","topic")
    mqttc.subscribe(topic, 0)
-#   mqttc.subscribe("/temp/W1/600", 0)
 
    mqttc.loop_forever()
    time.sleep(1)
+   freeze=int(readxml("freezer.xml","config","freeze"))
    logger.debug("Freezer starts freezing for %s minutes",str(freeze))
    GPIO.output(11, GPIO.HIGH) 
-   os.system("send 11111 2 1")
 
    t=0
    while t < freeze:
@@ -107,6 +104,5 @@ while True:
    time.sleep(1)
    logger.debug("Freezer stopped freezing")
    GPIO.output(11, GPIO.LOW) 
-   os.system("send 11111 2 0")
    time.sleep(600)
   

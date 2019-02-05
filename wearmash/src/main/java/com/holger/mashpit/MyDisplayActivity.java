@@ -1,13 +1,14 @@
 package com.holger.mashpit;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
@@ -17,56 +18,32 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.DataItem;
-import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
-
 import com.holger.share.Constants;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyDisplayActivity extends Activity implements DataClient.OnDataChangedListener {
+public class MyDisplayActivity extends WearableActivity implements DataClient.OnDataChangedListener {
 
     private PieChart mChart;
     float cAngle = 270f;
-    GoogleApiClient mGoogleApiClient;
 
     private static final String DEBUG_TAG = "MyDisplayActivity";
+    private static final int MSG_UPDATE_SCREEN = 0;
+
+    private final Handler mActiveModeUpdateHandler = new ActiveModeUpdateHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
         Log.i(DEBUG_TAG, "OnCreate()");
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                    @Override
-                    public void onConnected(Bundle bundle) {
-                        Log.i(DEBUG_TAG, "Connected");
-                        Wearable.DataApi.addListener(mGoogleApiClient, MyDisplayActivity.this);
-                    }
-
-                    @Override
-                    public void onConnectionSuspended(int i) {
-
-                    }
-                })
-                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-                    }
-                })
-                .build();
-        mGoogleApiClient.connect();
 
         mChart = findViewById(R.id.wearchart1);
 
@@ -152,7 +129,36 @@ public class MyDisplayActivity extends Activity implements DataClient.OnDataChan
 
             mChart.animateXY(1500, 1500);
             mChart.spin(2000, 0, cAngle, Easing.EasingOption.EaseInOutCirc);
+
+            setAmbientEnabled();
         }
+    }
+
+    protected void initPieDataAmbient() {
+        Log.d(DEBUG_TAG, "initPieDataAmbient()");
+
+        List<PieEntry> entries = new ArrayList<>();
+        for (int i = 0; i < 1; i++) {
+            entries.add(new PieEntry(360, ""));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setSliceSpace(3f);
+
+        dataSet.setColor(Color.BLACK);
+        dataSet.setHighlightEnabled(false);
+        PieData data = new PieData(dataSet);
+        data.setDrawValues(false);
+
+        mChart.setBackgroundColor(Color.BLACK);
+        mChart.setHoleColor(Color.BLACK);
+        mChart.setTransparentCircleColor(Color.DKGRAY);
+        mChart.setCenterTextColor(Color.WHITE);
+
+        mChart.setData(data);
+        mChart.setDrawEntryLabels(false);
+        mChart.highlightValue(0, 0);
+        mChart.invalidate();
     }
 
     protected void initPieData() {
@@ -169,47 +175,100 @@ public class MyDisplayActivity extends Activity implements DataClient.OnDataChan
         PieData data = new PieData(dataSet);
         data.setDrawValues(false);
 
+        mChart.setBackgroundColor(Color.BLUE);
+        mChart.setHoleColor(Color.WHITE);
+//        mChart.setTransparentCircleColor(Color.BLUE);
+        mChart.setCenterTextColor(Color.BLACK);
+
         mChart.setData(data);
         mChart.setDrawEntryLabels(false);
         mChart.highlightValue(0, 0);
         mChart.invalidate();
-
-//        updateTemperature("20.233°");
     }
 
     protected void updateTemperature(String temp)
     {
         mChart.setCenterText(temp);
-        mChart.setCenterTextSize(30);
         mChart.invalidate();
     }
+
+        @Override
+        public void onEnterAmbient(Bundle ambientDetails) {
+            super.onEnterAmbient(ambientDetails);
+            Log.d(DEBUG_TAG, "onEnterAmbient()");
+
+            /* Clears Handler queue (only needed for updates in active mode). */
+            mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
+            initPieDataAmbient();
+        }
+
+        @Override
+        public void onUpdateAmbient() {
+            Log.d(DEBUG_TAG, "onUpdateAmbient()");
+            super.onUpdateAmbient();
+        }
+            /** Restores the UI to active (non-ambient) mode. */
+            @Override
+            public void onExitAmbient () {
+                super.onExitAmbient();
+                Log.d(DEBUG_TAG, "onExitAmbient()");
+                initPieData();
+            }
 
     @Override
     public void onResume() {
         super.onResume();
         Log.d(DEBUG_TAG, "onResume()");
-        Wearable.DataApi.addListener(mGoogleApiClient, MyDisplayActivity.this);
+        Wearable.getDataClient(this).addListener(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(DEBUG_TAG, "onPause()");
-        Wearable.DataApi.removeListener(mGoogleApiClient, MyDisplayActivity.this);
+        Wearable.getDataClient(this).removeListener(this);
     }
 
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
-        Log.d(DEBUG_TAG, "onDataChanged()");
+        Log.d(DEBUG_TAG, "onDataChanged: " + dataEventBuffer);
         for (DataEvent event : dataEventBuffer) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
-                DataItem item = event.getDataItem();
-                if (item.getUri().getPath().compareTo(Constants.WEAR.RUN_UPDATE_NOTIFICATION) == 0) {
-                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    Log.d(DEBUG_TAG, "DataItem changed: " + event.getDataItem().getUri());
-                    updateTemperature(dataMap.getString(Constants.WEAR.KEY_CONTENT));
-//                    Toast toast = Toast.makeText(getApplicationContext(), dataMap.getString(Constants.WEAR.KEY_CONTENT), Toast.LENGTH_SHORT);
-//                    toast.show();
+                String path = event.getDataItem().getUri().getPath();
+                if (Constants.WEAR.RUN_UPDATE_NOTIFICATION.equals(path)) {
+                    DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                    String message = dataMapItem.getDataMap().getString(Constants.WEAR.KEY_CONTENT);
+                    Log.d(DEBUG_TAG, "Wear activity received message: " + message);
+                    updateTemperature(dataMapItem.getDataMap().getString(Constants.WEAR.KEY_CONTENT));
+
+                } else {
+                    Log.d(DEBUG_TAG, "Unrecognized path: " + path);
+                }
+            } else if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d(DEBUG_TAG, "Data deleted : " + event.getDataItem().toString());
+            } else {
+                Log.d(DEBUG_TAG, "Unknown data event Type = " + event.getType());
+            }
+        }
+    }
+
+    /** Handler separated into static class to avoid memory leaks. */
+    private static class ActiveModeUpdateHandler extends Handler {
+        private final WeakReference<MyDisplayActivity> mMainActivityWeakReference;
+
+        ActiveModeUpdateHandler(MyDisplayActivity reference) {
+            mMainActivityWeakReference = new WeakReference<>(reference);
+        }
+
+        @Override
+        public void handleMessage(Message message) {
+            MyDisplayActivity mainActivity = mMainActivityWeakReference.get();
+            Log.d(DEBUG_TAG, "handleMessage()");
+
+            if (mainActivity != null) {
+                switch (message.what) {
+                    case MSG_UPDATE_SCREEN:
+                        break;
                 }
             }
         }

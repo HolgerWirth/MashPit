@@ -1,5 +1,6 @@
 package com.holger.mashpit;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.Subscriber;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
     }
 
     @Override
-    public void onBindViewHolder(SubscriberViewHolder subscriberViewHolder, int i) {
+    public void onBindViewHolder(@NonNull SubscriberViewHolder subscriberViewHolder, int i) {
         Subscriber sub = this.subscriberList.get(i);
         subscriberViewHolder.topic.setText(sub.topic);
         subscriberViewHolder.interval.setText(sub.interval);
@@ -48,8 +50,9 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
         }
     }
 
+    @NonNull
     @Override
-    public SubscriberViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public SubscriberViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
                 inflate(R.layout.subscribercard, viewGroup, false);
@@ -66,12 +69,12 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
 
         SubscriberViewHolder(final View v) {
             super(v);
-            topic =  (TextView) v.findViewById(R.id.sTitel);
-            interval = (TextView)  v.findViewById(R.id.sInterval);
-            persistent = (TextView)  v.findViewById(R.id.sPersist);
-            remark = (TextView)  v.findViewById(R.id.sRemark);
+            topic = v.findViewById(R.id.sTitel);
+            interval = v.findViewById(R.id.sInterval);
+            persistent = v.findViewById(R.id.sPersist);
+            remark = v.findViewById(R.id.sRemark);
 
-            mCardView = (CardView) v.findViewById(R.id.card_view);
+            mCardView = v.findViewById(R.id.card_view);
 
            v.setOnClickListener(new View.OnClickListener() {
                 @Override

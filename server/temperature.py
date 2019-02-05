@@ -115,9 +115,11 @@ for i in t:
    x1=redev.match(i)
    for sensor in root.findall('sensor'):
       if sensor.find('id').text == x1.group(1):
-         for durat in sensor.findall('timer'):
-            thread.append(temperatureTimer(int(durat.find('interval').text),push1,x1.group(1),fname,sensor.find('name').text,sensor.find('topic').text,sensor.find('mode').text,int(durat.find('persist').text)))
-         break
+         if sensor.find('active').text == '1':
+            print sensor.find('id').text
+            for durat in sensor.findall('timer'):
+               thread.append(temperatureTimer(int(durat.find('interval').text),push1,x1.group(1),fname,sensor.find('name').text,sensor.find('topic').text,sensor.find('mode').text,int(durat.find('persist').text)))
+            break
 
 for i in thread:
    i.start()

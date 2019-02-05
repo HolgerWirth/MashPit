@@ -9,23 +9,24 @@ def on_connect(mqttc, obj, rc):
     logger.debug("Process connected to MQTT")
     online=True
 
+def on_disconnect(mqttc, obj, rc):
+    logger.debug("Process discconnected from MQTT")
+
 def on_message(mqttc, obj, msg):
     global reached
-    global ignore
 
-    if ignore==False:
-       decjson = json.JSONDecoder()
+    decjson = json.JSONDecoder()
 
-       mytemp=decjson.decode(msg.payload)
-       temperature=float(mytemp['Temp'])
-       if temperature>=(float(temperatur)-0.4):
-          logger.debug("(%s) Temperatur erreicht (%s)",mytemp['Temp'],str(reached))
-          reached = reached+1
-          if reached > 4:
-             mqttc.disconnect()
-             online=False
-       else:
-          reached=0
+    mytemp=decjson.decode(msg.payload)
+    temperature=float(mytemp['Temp'])
+    if temperature>=(float(temperatur)-0.2):
+       logger.debug("(%s) Temperatur erreicht (%s)",mytemp['Temp'],str(reached))
+       reached = reached+1
+       if reached > 4:
+          mqttc.disconnect()
+          online=False
+    else:
+       reached=0
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
     logger.debug("Successfully subscribed")
@@ -34,9 +35,45 @@ def mqtt_connect():
    mqttc.on_message = on_message
    mqttc.on_connect = on_connect
    mqttc.on_subscribe = on_subscribe
+   mqttc.on_disconnect = on_disconnect
 
 def mqtt_publish(topic,message):
    mqttc.publish(topic,message.encode("iso-8859-1"),0,1)
+
+def rast_on_connect(mqttc2, obj1, rc1):
+    global rast_online
+    logger.debug("Rast: Process connected to MQTT")
+    rast_online=True
+
+def rast_on_message(mqttc2, obj1, msg):
+    global reached
+    global status
+
+    decjson = json.JSONDecoder()
+
+    mytemp=decjson.decode(msg.payload)
+    temperature=float(mytemp['Temp'])
+    if temperature<(float(temperatur)-0.4):
+       reached = reached+1
+       if reached > 4:
+          logger.debug("Rast: (%s) Nachheizen!",mytemp['Temp'])
+          status="an"
+          reached=0
+    else:
+       status="aus"
+       reached=0
+
+def rast_on_subscribe(mqttc2, obj1, mid, granted_qos):
+    logger.debug("Rast: Successfully subscribed")
+
+def rast_mqtt_connect(): 
+   mqttc2.on_message = rast_on_message
+   mqttc2.on_connect = rast_on_connect
+   mqttc2.on_subscribe = rast_on_subscribe
+
+def rast_mqtt_publish(topic,message):
+   mqttc2.publish(topic,message.encode("iso-8859-1"),0,1)
+
 
 tree = ET.parse('rezept.xml')
 root = tree.getroot()
@@ -78,7 +115,6 @@ for rast in root.findall('rast'):
    mqttc = mqtt.Client()
    mqttc.connect("localhost", 1883, 10)
    mqtt_connect()
-#   mqttc.subscribe("/temp/sensor1/10", 0)
    mqttc.subscribe("/temp/#", 0)
    status="an"
    minute=0
@@ -93,25 +129,32 @@ for rast in root.findall('rast'):
 
    mqttc.loop_forever()
    logger.debug("%s erreicht bei Temperatur %s erreicht!",name,temperatur)
+   mqttc.disconnect()
 
-   mqttc.reconnect()
-   while online==False:
-      logger.debug("Warte auf MQTT Reconnect")
-      time.sleep(1)
- 
-   mqttc.loop_start()
+   rast_online=False
+   mqttc2 = mqtt.Client()
+   mqttc2.reinitialise()
+   rast_mqtt_connect()
+   mqttc2.connect("localhost", 1883, 10)
+   mqttc2.subscribe("/temp/#", 0)
+   reached = 0
    status="aus"
-   ignore=True
+ 
+   mqttc2.loop_start()
    t=0
    while t < int(dauer):
       ts=int(time.time())
       logger.debug("Warte noch %s Minuten",str(int(dauer)-t))
+      if status == "an":
+         logger.debug("Nacheizen: an")
       tmessage={'title': title,'TS': ts,'Rast': name,'Dauer': dauer,'Minute': str(t),'Heizen': status,'Ziel': temperatur,'Proc': allrast}
       message=myjson.encode(tmessage)
-      mqttc.publish(topic,message.encode("iso-8859-1"),0,1)
+      mqttc2.publish(topic,message.encode("iso-8859-1"),0,1)
       time.sleep(60) 
       t=t+1
-   mqttc.disconnect()
+   mqttc2.disconnect()
+   reached = 0
+   status="aus"
    time.sleep(1)
 status="ende"
 mqttc = mqtt.Client()

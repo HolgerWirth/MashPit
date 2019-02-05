@@ -18,6 +18,18 @@
                 android:inputType="number"
                 android:digits="0123456789"
                 android:defaultValue="1883"/>
+            <com.holger.mashpit.prefs.SettingsEdit
+                android:key="send_broker_url"
+                android:title="@string/prefs_send_mqtt_broker"
+                android:summary="@string/prefs_mqtt_broker_sum"
+                android:defaultValue="192.168.1.20"/>
+            <com.holger.mashpit.prefs.SettingsEdit
+                android:key="send_broker_port"
+                android:title="@string/prefs_send_mqtt_port"
+                android:summary="1883"
+                android:inputType="number"
+                android:digits="0123456789"
+                android:defaultValue="1883"/>
             <Preference android:title="@string/title_activity_find_server"
                 android:key="find server">
             </Preference>
@@ -26,7 +38,7 @@
                 android:title="Device ID"
                 android:summary=""
                 android:enabled="false"
-                android:defaultValue=""/>
+                android:defaultValue="xxx"/>
         </PreferenceCategory>
     <Preference
         android:title="Subscriber List"

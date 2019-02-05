@@ -10,6 +10,7 @@ import android.view.SubMenu;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
+import com.holger.mashpit.events.ConfEvent;
 import com.holger.mashpit.model.Temperature;
 
 import java.util.ArrayList;
@@ -21,9 +22,13 @@ public class MashPit extends com.activeandroid.app.Application {
     public static Boolean reconnect_action=false;
     public static String broker_url;
     public static String broker_port;
+    public static String send_broker_url;
+    public static String send_broker_port;
     public static List<Temperature> TempModes;
     public static boolean modedeleted;
     public static String mDeviceId;
+
+    public static ArrayList<ConfEvent> confXMLList = new ArrayList<>();
 
     @Override
     public void onCreate() {

@@ -24,7 +24,7 @@ public class FindServerActivity extends AppCompatActivity {
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         setContentView(R.layout.activity_find_server);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.findServer_toolbar);
+        Toolbar toolbar = findViewById(R.id.findServer_toolbar);
         setSupportActionBar(toolbar);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -53,8 +53,9 @@ public class FindServerActivity extends AppCompatActivity {
                     Log.i(DEBUG_TAG, "Found server: "+myUdp.getSenderIP());
                     Log.i(DEBUG_TAG, "Message: "+myUdp.getMessage());
 
-                    data.putExtra("IP",myUdp.getSenderIP());
-                    data.putExtra("port",myUdp.getMessage());
+                    String[] udpResult = myUdp.getMessage().split(":");
+                    data.putExtra("IP",udpResult[0]);
+                    data.putExtra("port",udpResult[1]);
                     setResult(1,data);
                 }
                 Log.i(DEBUG_TAG, "Finished!");

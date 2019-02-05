@@ -40,11 +40,7 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.PutDataMapRequest;
-import com.google.android.gms.wearable.Wearable;
+import com.holger.mashpit.events.ConfEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Process;
@@ -80,8 +76,6 @@ public class MainActivity extends AppCompatActivity {
     String descTitle;
     float cAngle=270f;
 
-    private GoogleApiClient mGoogleApiClient;
-
     private DrawerLayout mDrawerLayout;
     SnackBar snb;
     View.OnClickListener mOnClickListener;
@@ -94,27 +88,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Log.i(DEBUG_TAG, "Connect to Android Wear");
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                    @Override
-                    public void onConnected(Bundle bundle) {
-                        Log.i(DEBUG_TAG, "Wear: connected!");
-                    }
-
-                    @Override
-                    public void onConnectionSuspended(int i) {
-                        Log.i(DEBUG_TAG, "Wear: suspended");
-                    }
-                }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Log.i(DEBUG_TAG, "Wear: connect failed!");
-                    }
-                }).addApi(Wearable.API)
-                .build();
-        mGoogleApiClient.connect();
 
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -175,15 +148,6 @@ public class MainActivity extends AppCompatActivity {
                     if (rect.contains(me.getX(), me.getY())) {
                         Log.i(DEBUG_TAG, "Gesture: single tapped in circle");
                         selectLineChart("mash");
-/*
-                        float[] mAngles = mChart.getAbsoluteAngles();
-                        float[] dAngles = mChart.getDrawAngles();
-                        Log.i(DEBUG_TAG, "mCount: "+mCount);
-                        float step=dAngles[2]/1f;
-                        mChart.setRotationAngle(270f + 1 - (float)(mAngles[1] + (mCount * step)));
-                        mCount++;
-                        mChart.invalidate();
-*/
                     }
                 }
 
@@ -260,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mChart.animateXY(1500, 1500);
-        mChart.spin(2000, 0, cAngle, Easing.EasingOption.EaseInOutCirc);
+        mChart.spin(2000, 0, cAngle, Easing.EaseInOutCirc);
 
         if (!serviceIsRunning()) {
             Log.i(DEBUG_TAG, "Starting service");
@@ -306,7 +270,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         switch (id) {
-
                             case android.R.id.home:
                                 mDrawerLayout.openDrawer(GravityCompat.START);
                                 return true;
@@ -315,7 +278,13 @@ public class MainActivity extends AppCompatActivity {
                                 Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
                                 startActivity(l);
                                 break;
-                     }
+
+                            case R.id.nav_config:
+                                Intent m = new Intent(getApplicationContext(), ConfListActivity.class);
+                                startActivity(m);
+                                break;
+
+                        }
                         return true;
                     }
                 });
@@ -342,14 +311,6 @@ public class MainActivity extends AppCompatActivity {
         if (myEvent != null) {
             Log.i(DEBUG_TAG, "TempEvent arrived: " + myEvent.getTopic());
 
-            if(mGoogleApiClient.isConnected()) {
-                final PutDataMapRequest putRequest = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
-                final DataMap map = putRequest.getDataMap();
-                map.putString(Constants.WEAR.KEY_TITLE, "Temperature");
-                map.putString(Constants.WEAR.KEY_CONTENT, myEvent.getEvent());
-                Wearable.DataApi.putDataItem(mGoogleApiClient, putRequest.asPutDataRequest());
-            }
-
             if(myEvent.getQoS()==2) {
                 boolean found = false;
                 for (Temperature temperature : MashPit.TempModes) {
@@ -369,13 +330,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             Set<String> prefdefaults = prefs.getStringSet("process_topics", new HashSet<String>());
-            if(prefdefaults.contains(myEvent.getSensor()+"/"+String.valueOf(myEvent.getInterval()))) {
+            if (prefdefaults != null && prefdefaults.contains(myEvent.getSensor() + "/" + String.valueOf(myEvent.getInterval()))) {
                 currTemp = myEvent.getEvent();
                 updatePieData(currTemp);
             }
 
             mChart.invalidate();
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void getConfEvent(ConfEvent confEvent) {
+        Log.i(DEBUG_TAG, "getConfEvent: " + confEvent.getConfTopic());
+
+        boolean foundconf = false;
+        for (int i = 0; i < MashPit.confXMLList.size(); i++)
+            if (MashPit.confXMLList.get(i).getConfTopic().equals(confEvent.getConfTopic())) {
+                MashPit.confXMLList.get(i).setXMLString(confEvent.getXMLString());
+                foundconf = true;
+            }
+        if (foundconf) {
+            Log.i(DEBUG_TAG, "getConfEvent: " + confEvent.getConfTopic() + " conf found");
+            return;
+        }
+        MashPit.confXMLList.add(confEvent);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -496,8 +474,6 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
-
-
 
     private void selectTempChart(int resid)
     {

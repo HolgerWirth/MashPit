@@ -6,6 +6,15 @@ import logging
 import os
 import RPi.GPIO as GPIO
 
+def readxml(xmlfile,name1,name2):
+   tree = ET.parse(xmlfile)
+   root = tree.getroot()
+
+   for data in root.findall(name1):
+      value = data.find(name2).text
+
+   return value
+
 def on_connect(mqttc, obj, rc):
     global online
     logger.debug("Heater connected to MQTT")
@@ -22,12 +31,14 @@ def on_message(mqttc, obj, msg):
     mytemp=decjson.decode(msg.payload)
     temperature=float(mytemp['Temp'])
     templist[count]=temperature
-    logger.debug("Heater: %s ",str(min(templist)))
+    logger.debug("Heater: %s ",str(max(templist)))
     count = count+1
 
-    temperature=min(templist)
-    if temperature < 21:
-       logger.debug("Heater temperature reached: %s ",str(min(templist)))
+    temperature=max(templist)
+    mintemp=float(readxml("heater.xml","config","mintemp"))
+
+    if temperature < mintemp:
+       logger.debug("Heater temperature reached: %s ",str(max(templist)))
        mqttc.disconnect()
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -63,17 +74,19 @@ myjson = json.JSONEncoder()
 while True:
    templist=[99.0,99.0,99.0]
    count=0
-   freeze=15
+   freeze=10
    mqttc = mqtt.Client()
    mqttc.connect("localhost", 1883, 10)
    mqtt_connect()
-   mqttc.subscribe("/temp/S1/600", 0)
+   topic=readxml("heater.xml","config","topic")
+   mqttc.subscribe(topic, 0)
 
    mqttc.loop_forever()
    time.sleep(1)
+   freeze=int(readxml("heater.xml","config","heat"))
    logger.debug("Heater starts heating for %s minutes",str(freeze))
  #  GPIO.output(11, GPIO.HIGH) 
-   os.system("send 11111 1 1")
+   os.system("send 11111 2 1")
 
    t=0
    while t < freeze:
@@ -84,6 +97,6 @@ while True:
    time.sleep(1)
    logger.debug("Heater stopped heating")
 #   GPIO.output(11, GPIO.LOW) 
-   os.system("send 11111 1 0")
+   os.system("send 11111 2 0")
    time.sleep(600)
   
