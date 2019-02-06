@@ -164,7 +164,7 @@ public class ConfEdit extends AppCompatActivity {
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
                 Intent intent = createConfIntent();
-                setResult(3, intent);
+                setResult(0, intent);
                 finish();
             }
         });

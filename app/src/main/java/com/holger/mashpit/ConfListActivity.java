@@ -206,7 +206,7 @@ public class ConfListActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode== 3)
+        if(resultCode == 0 )
         {
             return;
         }
