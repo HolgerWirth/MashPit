@@ -70,4 +70,5 @@
     <string name="conf_deleted">Config \'%1$s\' deleted!</string>
     <string name="status_connect_OK">Connected to MQTT broker</string>
     <string name="status_connect_NOK">Can\'t connect to MQTT broker</string>
+    <string name="menu_title_charts">Temperature Charts</string>
 </resources>
