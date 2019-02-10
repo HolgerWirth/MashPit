@@ -81,7 +81,7 @@ public class MashPit extends com.activeandroid.app.Application {
         if (!MashPit.TempModes.isEmpty())
         {
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            SubMenu subMenu = menu.addSubMenu(1,0,0,"Temperature Charts");
+            SubMenu subMenu = menu.addSubMenu(1,0,0,context.getString(R.string.menu_title_charts));
             int i = 0;
             for (Temperature temperature : MashPit.TempModes) {
                 String key=temperature.Mode+"_key_name";
