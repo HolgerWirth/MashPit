@@ -164,15 +164,18 @@ public class ConfListActivity extends AppCompatActivity {
                 l = new Intent(getApplicationContext(), ConfEdit.class);
                 l.putExtra("ACTION", "edit");
                 l.putExtra("pos", position);
+                l.putExtra("confActive","0");
                 l.putExtra("confTopic", conf.topic);
                 if(conf.active)
                 {
                     l.putExtra("confActive","1");
                 }
-                else
+                l.putExtra("confMinMax", "0");
+                if(conf.minmax)
                 {
-                    l.putExtra("confActive","0");
+                    l.putExtra("confMinMax","1");
                 }
+
                 l.putExtra("confName", conf.name);
                 l.putExtra("confTime", conf.time);
                 l.putExtra("confTemp", conf.temp);
@@ -240,6 +243,10 @@ public class ConfListActivity extends AppCompatActivity {
             xmlSerializer.startTag("", "maxtemp");
             xmlSerializer.text(conf.temp);
             xmlSerializer.endTag("", "maxtemp");
+
+            xmlSerializer.startTag("", "minmax");
+            xmlSerializer.text(data.getStringExtra("confMinMax"));
+            xmlSerializer.endTag("", "minmax");
 
             xmlSerializer.startTag("", "freeze");
             xmlSerializer.text(conf.time);
@@ -352,6 +359,16 @@ public class ConfListActivity extends AppCompatActivity {
                             if (tagname.equalsIgnoreCase("maxtemp"))
                             {
                                 config.temp = text;
+                                break;
+                            }
+                            if (tagname.equalsIgnoreCase("minmax"))
+                            {
+                                if (text != null && text.equals("1")) {
+                                    config.minmax = true;
+                                }
+                                if (text != null && text.equals("0")) {
+                                    config.minmax = false;
+                                }
                                 break;
                             }
                             if (tagname.equalsIgnoreCase("freeze"))

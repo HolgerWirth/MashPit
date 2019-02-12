@@ -37,6 +37,7 @@ public class ConfEdit extends AppCompatActivity {
         final Switch active = findViewById(R.id.confActive);
         EditText topic = findViewById(R.id.confTopic);
         EditText temp = findViewById(R.id.confTemp);
+        final Switch minmax = findViewById(R.id.confMaxTemp);
         EditText time = findViewById(R.id.confTime);
         EditText hysterese = findViewById(R.id.confHyst);
         final EditText confName =  findViewById(R.id.confName);
@@ -59,13 +60,16 @@ public class ConfEdit extends AppCompatActivity {
             buttonCheck(1, false);
             buttonCheck(2, false);
             position = getIntent().getIntExtra("pos", 0);
+            active.setChecked(false);
             if(getIntent().getStringExtra("confActive").equals("1"))
             {
                 active.setChecked(true);
             }
-            else
+
+            minmax.setChecked(false);
+            if(getIntent().getStringExtra("confMinMax").equals("1"))
             {
-                active.setChecked(false);
+                minmax.setChecked(true);
             }
             topic.setText(getIntent().getStringExtra("confTopic"));
             temp.setText(getIntent().getStringExtra("confTemp"));
@@ -209,12 +213,20 @@ public class ConfEdit extends AppCompatActivity {
 
         intent.putExtra("confName",((EditText) findViewById(R.id.confName)).getText().toString());
         Switch active = findViewById(R.id.confActive);
+        Switch minmax = findViewById(R.id.confMaxTemp);
         if(active.isChecked())
         {
             intent.putExtra("confActive", "1");
         }
         else {
             intent.putExtra("confActive", "0");
+        }
+        if(minmax.isChecked())
+        {
+            intent.putExtra("confMinMax", "1");
+        }
+        else {
+            intent.putExtra("confMinMax", "0");
         }
         intent.putExtra("confTopic", ((EditText) findViewById(R.id.confTopic)).getText().toString());
         intent.putExtra("confTemp", ((EditText) findViewById(R.id.confTemp)).getText().toString());

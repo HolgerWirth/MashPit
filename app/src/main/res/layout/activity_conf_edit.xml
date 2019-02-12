@@ -69,17 +69,36 @@
             android:layout_height="wrap_content" />
 
         <TextView
+            android:layout_marginTop="10dp"
             android:textSize="@dimen/abc_text_size_medium_material"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/confTempTitle" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" >
         <EditText
             android:id="@+id/confTemp"
             android:textSize="@dimen/abc_text_size_medium_material"
             android:inputType="number"
-            android:digits="0123456789"
-            android:layout_width="match_parent"
+            android:digits="-0123456789"
+            android:layout_width="100dp"
             android:layout_height="wrap_content" />
+        <Switch
+            android:id="@+id/confMaxTemp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="150dp"
+            android:showText="true"
+            android:textOff="Min"
+            android:textOn="Max"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:theme="@style/TempMinMax" />
+    </LinearLayout>
 
         <TextView
             android:textSize="@dimen/abc_text_size_medium_material"
@@ -112,50 +131,50 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="bottom"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
-    <com.melnykov.fab.FloatingActionButton
+        <com.melnykov.fab.FloatingActionButton
             android:id="@+id/deleteButton"
-            fab:fabSize="normal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top|end"
-            android:layout_marginBottom="24dp"
             android:layout_marginRight="11dp"
-            android:src="@drawable/ic_delete_white_24dp"
+            android:layout_marginBottom="24dp"
             android:clickable="true"
+            android:src="@drawable/ic_delete_white_24dp"
             android:visibility="gone"
+            fab:fabSize="normal"
             fab:fab_colorNormal="#F44336"
             fab:fab_colorPressed="#C62828"
             fab:fab_colorRipple="#ff3b7095" />
 
         <com.melnykov.fab.FloatingActionButton
             android:id="@+id/cancelButton"
-            fab:fabSize="normal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top|end"
-            android:layout_marginBottom="24dp"
             android:layout_marginRight="11dp"
-            android:src="@drawable/ic_cancel_white_24dp"
+            android:layout_marginBottom="24dp"
             android:clickable="true"
+            android:src="@drawable/ic_cancel_white_24dp"
             android:visibility="gone"
+            fab:fabSize="normal"
             fab:fab_colorNormal="#F44336"
             fab:fab_colorPressed="#C62828"
             fab:fab_colorRipple="#ff3b7095" />
 
-    <com.melnykov.fab.FloatingActionButton
-        android:id="@+id/editButton"
-        fab:fabSize="normal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_done_white_24dp"
-        android:clickable="true"
-        android:layout_marginRight="11dp"
-        fab:fab_colorNormal="#144266"
-        fab:fab_colorPressed="#ff15304c"
-        fab:fab_colorRipple="#ff3b7095"/>
+        <com.melnykov.fab.FloatingActionButton
+            android:id="@+id/editButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|end"
+            android:layout_marginRight="11dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:src="@drawable/ic_done_white_24dp"
+            fab:fabSize="normal"
+            fab:fab_colorNormal="#144266"
+            fab:fab_colorPressed="#ff15304c"
+            fab:fab_colorRipple="#ff3b7095" />
     </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>
