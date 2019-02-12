@@ -38,16 +38,19 @@ class ConfAdapter extends RecyclerView.Adapter<ConfAdapter.ConfViewHolder> {
     public void onBindViewHolder(@NonNull ConfViewHolder confViewHolder, int i) {
         Config conf = this.confList.get(i);
         confViewHolder.confConf.setText(conf.name);
+        confViewHolder.confActive.setChecked(false);
         if(conf.active)
         {
             confViewHolder.confActive.setChecked(true);
         }
-        else
-        {
-            confViewHolder.confActive.setChecked(false);
-        }
         confViewHolder.confActive.setClickable(false);
         confViewHolder.confTemp.setText(conf.temp);
+        confViewHolder.confMinMax.setChecked(false);
+        if(conf.minmax)
+        {
+            confViewHolder.confMinMax.setChecked(true);
+        }
+        confViewHolder.confMinMax.setClickable(false);
         confViewHolder.confTime.setText(conf.time);
         confViewHolder.confTopic.setText(conf.topic);
         confViewHolder.confHyst.setText(conf.hysterese);
@@ -70,6 +73,7 @@ class ConfAdapter extends RecyclerView.Adapter<ConfAdapter.ConfViewHolder> {
         TextView confTemp;
         TextView confTime;
         TextView confHyst;
+        Switch confMinMax;
 
         CardView mCardView;
 
@@ -80,6 +84,7 @@ class ConfAdapter extends RecyclerView.Adapter<ConfAdapter.ConfViewHolder> {
             confTopic = v.findViewById(R.id.confTopic);
             confTemp = v.findViewById(R.id.confTemp);
             confTime = v.findViewById(R.id.confTime);
+            confMinMax = v.findViewById(R.id.confMaxTemp);
             confHyst = v.findViewById(R.id.confHyst);
 
             mCardView = v.findViewById(R.id.confcard_view);
@@ -93,10 +98,6 @@ class ConfAdapter extends RecyclerView.Adapter<ConfAdapter.ConfViewHolder> {
             });
 
         }
-    }
-    void addItem(Config dataObj, int index) {
-        confList.add(index, dataObj);
-        notifyItemInserted(index);
     }
 
     void addItem(Config dataObj) {
@@ -120,6 +121,7 @@ class ConfAdapter extends RecyclerView.Adapter<ConfAdapter.ConfViewHolder> {
         conf.active=dataObj.active;
         conf.hysterese=dataObj.hysterese;
         conf.temp=dataObj.temp;
+        conf.minmax=dataObj.minmax;
         conf.time=dataObj.time;
 
         notifyItemChanged(index);
