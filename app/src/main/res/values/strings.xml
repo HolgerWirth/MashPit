@@ -63,7 +63,7 @@
     <string name="confPublishAlert">Do you really want to publish the config to the \'%1$s\' process?</string>
     <string name="menu_configuration">Server configuration</string>
     <string name="menu_settings">App preferences</string>
-    <string name="meun_process">Meshing</string>
+    <string name="meun_process">Mashing</string>
     <string name="nav_profile">Brewing made easy!</string>
     <string name="prefs_send_mqtt_broker">Send MQTT Broker</string>
     <string name="prefs_send_mqtt_port">Send Broker Port</string>
