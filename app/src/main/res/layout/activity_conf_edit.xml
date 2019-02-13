@@ -84,7 +84,7 @@
             android:id="@+id/confTemp"
             android:textSize="@dimen/abc_text_size_medium_material"
             android:inputType="number"
-            android:digits="-0123456789"
+            android:digits="-.0123456789"
             android:layout_width="100dp"
             android:layout_height="wrap_content" />
         <Switch
