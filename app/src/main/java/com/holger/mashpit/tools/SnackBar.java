@@ -1,8 +1,8 @@
 package com.holger.mashpit.tools;
 
 import android.graphics.Color;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -49,8 +49,10 @@ public class SnackBar {
 
         // Changing action button text color
         View sbView = snackbar.getView();
+
         snackbar.setText(string_id);
-        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = sbView.findViewById(com.google.android.material.R.id.snackbar_text);
+
         textView.setTextColor(Color.YELLOW);
 
         snackbar.show();
@@ -63,7 +65,7 @@ public class SnackBar {
         // Changing action button text color
         View sbView = snackbar.getView();
         snackbar.setText(string_id);
-        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = sbView.findViewById(com.google.android.material.R.id.snackbar_text);
         textView.setTextColor(Color.GREEN);
 
         snackbar.show();
@@ -79,7 +81,7 @@ public class SnackBar {
 
         // Changing action button text color
         View sbView = snackbar.getView();
-        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = sbView.findViewById(com.google.android.material.R.id.snackbar_text);
         textView.setTextColor(Color.YELLOW);
 
         snackbar.show();

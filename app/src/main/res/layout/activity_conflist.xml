@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,7 +7,7 @@
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     tools:context="com.holger.mashpit.ConfListActivity">
 
-    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/conf_toolbar"
         android:layout_width="match_parent"
@@ -17,13 +17,13 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:navigationIcon="?attr/homeAsUpIndicator"/>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/confList"
         android:layout_marginTop="@dimen/abc_action_bar_default_height_material"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="bottom"
@@ -77,5 +77,5 @@
         fab:fab_colorNormal="#144266"
         fab:fab_colorPressed="#ff15304c"
         fab:fab_colorRipple="#ff3b7095"/>
-    </android.support.design.widget.CoordinatorLayout>
-    </android.support.design.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
