@@ -7,6 +7,10 @@
         android:icon="@drawable/ic_meshprocess_bw"
         android:title="@string/meun_process" />
     <item
+        android:id="@+id/nav_temppager"
+        android:icon="@drawable/ic_thermometer"
+        android:title="@string/menu_temppager" />
+    <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_menu_settings"
         android:title="@string/menu_settings" />

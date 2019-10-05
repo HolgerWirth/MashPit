@@ -63,4 +63,5 @@
     <string name="status_connect_NOK">Keine Verbindung zum MQTT Broker</string>
     <string name="status_connect_OK">Verbunden mit MQTT Broker</string>
     <string name="menu_title_charts">Temperatur Diagramme</string>
+    <string name="menu_temppager">Temperature</string>
 </resources>

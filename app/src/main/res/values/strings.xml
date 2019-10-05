@@ -71,4 +71,5 @@
     <string name="status_connect_OK">Connected to MQTT broker</string>
     <string name="status_connect_NOK">Can\'t connect to MQTT broker</string>
     <string name="menu_title_charts">Temperature Charts</string>
+    <string name="menu_temppager">Temperature</string>
 </resources>
