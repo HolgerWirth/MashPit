@@ -3,9 +3,9 @@
     android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical"
     tools:context="com.holger.mashpit.MyDisplayActivity" tools:deviceIds="wear">
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/pagerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </android.support.v4.view.ViewPager>
+    </androidx.viewpager.widget.ViewPager>
 </LinearLayout>
