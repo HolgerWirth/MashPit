@@ -1,27 +1,32 @@
 package com.holger.mashpit;
 
 import android.graphics.Color;
-import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.v4.view.ViewPager;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
-import android.view.MotionEvent;
+import android.view.View;
 
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.holger.share.Constants;
 
@@ -30,14 +35,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyDisplayActivity extends WearableActivity implements DataClient.OnDataChangedListener {
-
-    private PieChart mChart;
     float cAngle = 270f;
 
     private static final String DEBUG_TAG = "MyDisplayActivity";
     private static final int MSG_UPDATE_SCREEN = 0;
 
     private final Handler mActiveModeUpdateHandler = new ActiveModeUpdateHandler(this);
+    List<View> pieCharts = new ArrayList<>();
+    WearTempPagerAdapter pagerAdapter;
+    boolean xinit = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,98 +51,84 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         setContentView(R.layout.activity_display);
         Log.i(DEBUG_TAG, "OnCreate()");
 
-        mChart = findViewById(R.id.wearchart1);
+        ViewPager pager = findViewById(R.id.pagerview);
+        pagerAdapter = new WearTempPagerAdapter(pieCharts);
+        pager.setAdapter(pagerAdapter);
 
-        if (mChart != null) {
-            mChart.setMaxAngle(360);
-            mChart.setHoleRadius(60f);
+        PieChart mChart=createPiePage("--");
+        mChart.invalidate();
 
-            mChart.setTransparentCircleRadius(97f);
-
-            mChart.setDrawCenterText(true);
-            mChart.setDrawHoleEnabled(true);
-
-            mChart.setRotationAngle(cAngle);
-            // enable rotation of the chart by touch
-            mChart.setRotationEnabled(false);
-//            mChart.setCenterTextTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Semibold.ttf"));
-
-            mChart.setTouchEnabled(false);
-
-            mChart.setOnChartGestureListener(new OnChartGestureListener() {
-
-                @Override
-                public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture gesture) {
-                    Log.i(DEBUG_TAG, "Gesture: started");
-
-                }
-
-                @Override
-                public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture gesture) {
-                    Log.i(DEBUG_TAG, "Gesture: ended");
-
-                }
-
-                @Override
-                public void onChartSingleTapped(MotionEvent me) {
-                    Log.i(DEBUG_TAG, "Gesture: single tapped");
-                    RectF rect = mChart.getCircleBox();
-                    if (rect.contains(me.getX(), me.getY())) {
-                        Log.i(DEBUG_TAG, "Gesture: single tapped in circle");
-                    }
-                }
-
-                @Override
-                public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-                }
-
-                @Override
-                public void onChartTranslate(MotionEvent me, float dX, float dY) {
-
-                }
-
-                @Override
-                public void onChartLongPressed(MotionEvent me) {
-                    Log.i(DEBUG_TAG, "Gesture: long pressed");
-                }
-
-                @Override
-                public void onChartFling(MotionEvent me1, MotionEvent me2,
-                                         float velocityX, float velocityY) {
-                }
-
-                @Override
-                public void onChartDoubleTapped(MotionEvent me) {
-                    Log.i(DEBUG_TAG, "Gesture: double pressed");
-
-                }
-            });
-
-            Legend l = mChart.getLegend();
-            l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-            l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-            l.setOrientation(Legend.LegendOrientation.VERTICAL);
-            l.setXEntrySpace(7f);
-            l.setYEntrySpace(5f);
-
-            l.setEnabled(false);
-
-            mChart.setCenterText("--");
-            mChart.setCenterTextSize(20);
-
-            initPieData();
-
-            mChart.animateXY(1500, 1500);
-            mChart.spin(2000, 0, cAngle, Easing.EasingOption.EaseInOutCirc);
-
-            setAmbientEnabled();
+        if(pieCharts.isEmpty()) {
+            PieChart pieChart = createPiePage("--");
+            pieChart.setCenterText("--");
+            pieCharts.add(pieChart);
+            pagerAdapter.notifyDataSetChanged();
+            xinit = true;
         }
+
+        setAmbientEnabled();
+    }
+
+    private PieChart createPiePage(String desc) {
+        PieChart mChart = new PieChart(this);
+
+        mChart.setContentDescription(desc);
+        mChart.setMaxAngle(360);
+        mChart.setHoleRadius(60f);
+        mChart.setTransparentCircleRadius(97f);
+        mChart.setDrawCenterText(true);
+        mChart.setDrawHoleEnabled(true);
+        mChart.setRotationAngle(cAngle);
+        mChart.setRotationEnabled(false);
+
+        Legend l = mChart.getLegend();
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        l.setOrientation(Legend.LegendOrientation.VERTICAL);
+        l.setXEntrySpace(7f);
+        l.setYEntrySpace(5f);
+        l.setEnabled(false);
+
+        mChart.setCenterText("--");
+        mChart.setCenterTextSize(20);
+
+        List<PieEntry> entries = new ArrayList<>();
+        for (int t = 0; t < 1; t++) {
+            entries.add(new PieEntry(360, ""));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setSliceSpace(3f);
+
+        dataSet.setColor(Color.BLUE);
+        dataSet.setHighlightEnabled(true);
+        PieData data = new PieData(dataSet);
+        data.setDrawValues(false);
+        mChart.setBackgroundColor(Color.BLUE);
+        mChart.setHoleColor(Color.WHITE);
+        mChart.setCenterTextColor(Color.BLACK);
+
+        mChart.setData(data);
+        mChart.setDrawEntryLabels(false);
+        mChart.highlightValue(0, 0);
+
+        mChart.setBackgroundColor(Color.BLUE);
+
+        Description pieDesc = new Description();
+        pieDesc.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+        pieDesc.setTextSize((float) 16.0);
+        pieDesc.setText(desc);
+        mChart.setDescription(pieDesc);
+
+        return mChart;
     }
 
     protected void initPieDataAmbient() {
         Log.d(DEBUG_TAG, "initPieDataAmbient()");
 
+        if(pieCharts.size()==0) return;
+
+        PieChart mChart = (PieChart) pagerAdapter.getCurrentView();
         List<PieEntry> entries = new ArrayList<>();
         for (int i = 0; i < 1; i++) {
             entries.add(new PieEntry(360, ""));
@@ -153,7 +145,7 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         mChart.setBackgroundColor(Color.BLACK);
         mChart.setHoleColor(Color.BLACK);
         mChart.setTransparentCircleColor(Color.DKGRAY);
-        mChart.setCenterTextColor(Color.WHITE);
+        mChart.setCenterTextColor(Color.GRAY);
 
         mChart.setData(data);
         mChart.setDrawEntryLabels(false);
@@ -162,6 +154,9 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
     }
 
     protected void initPieData() {
+        if(pieCharts.size()==0) return;
+
+        PieChart mChart = (PieChart) pagerAdapter.getCurrentView();
         List<PieEntry> entries = new ArrayList<>();
         for (int i = 0; i < 1; i++) {
             entries.add(new PieEntry(360, ""));
@@ -186,10 +181,56 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         mChart.invalidate();
     }
 
-    protected void updateTemperature(String temp)
-    {
-        mChart.setCenterText(temp);
-        mChart.invalidate();
+    private void sendData() {
+        PutDataMapRequest dataMap = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
+        dataMap.getDataMap().putString(Constants.WEAR.KEY_TITLE, "Temperature");
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d(DEBUG_TAG, "Sending message was successful: " + dataItem);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(DEBUG_TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
+    protected void updateTemperature(String sensor,String temp) {
+        View pieChart;
+        boolean found = false;
+
+        if(xinit)
+        {
+            pieCharts.remove(0);
+            Log.i(DEBUG_TAG, "updateTemperature: xinit = true");
+            xinit=false;
+        }
+
+        for (int i = 0; i < pieCharts.size(); i++) {
+            pieChart = pieCharts.get(i);
+            if (sensor.contentEquals(pieChart.getContentDescription())) {
+                Log.i(DEBUG_TAG, "updateTemperature: " + pieChart.getContentDescription() + " found!");
+                ((PieChart) pieChart).setCenterText(temp);
+                pagerAdapter.notifyDataSetChanged();
+                pagerAdapter.updatePie(i);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            pieChart = createPiePage(sensor);
+            ((PieChart) pieChart).setCenterText(temp);
+            pieCharts.add(pieChart);
+            pagerAdapter.notifyDataSetChanged();
+        }
     }
 
         @Override
@@ -200,12 +241,14 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
             /* Clears Handler queue (only needed for updates in active mode). */
             mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
             initPieDataAmbient();
+            sendData();
         }
 
         @Override
         public void onUpdateAmbient() {
             Log.d(DEBUG_TAG, "onUpdateAmbient()");
             super.onUpdateAmbient();
+            sendData();
         }
             /** Restores the UI to active (non-ambient) mode. */
             @Override
@@ -220,6 +263,7 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         super.onResume();
         Log.d(DEBUG_TAG, "onResume()");
         Wearable.getDataClient(this).addListener(this);
+        sendData();
     }
 
     @Override
@@ -238,8 +282,9 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
                 if (Constants.WEAR.RUN_UPDATE_NOTIFICATION.equals(path)) {
                     DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                     String message = dataMapItem.getDataMap().getString(Constants.WEAR.KEY_CONTENT);
-                    Log.d(DEBUG_TAG, "Wear activity received message: " + message);
-                    updateTemperature(dataMapItem.getDataMap().getString(Constants.WEAR.KEY_CONTENT));
+                    String sensor = dataMapItem.getDataMap().getString(Constants.WEAR.KEY_SENSOR);
+                    Log.d(DEBUG_TAG, "Wear activity received message: " + sensor+"/"+message);
+                    updateTemperature(sensor,message);
 
                 } else {
                     Log.d(DEBUG_TAG, "Unrecognized path: " + path);
@@ -262,15 +307,14 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
 
         @Override
         public void handleMessage(Message message) {
-            MyDisplayActivity mainActivity = mMainActivityWeakReference.get();
+//            MyDisplayActivity mainActivity = mMainActivityWeakReference.get();
             Log.d(DEBUG_TAG, "handleMessage()");
 
-            if (mainActivity != null) {
-                switch (message.what) {
-                    case MSG_UPDATE_SCREEN:
-                        break;
-                }
-            }
+//           if (mainActivity != null) {
+//                if (message.what == MSG_UPDATE_SCREEN) {
+//                    return;
+//                }
+//            }
         }
     }
 }

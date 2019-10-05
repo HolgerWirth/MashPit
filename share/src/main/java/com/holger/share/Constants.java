@@ -16,6 +16,8 @@ public class Constants {
         String RUN_UPDATE_NOTIFICATION = "/MashPit";
         String KEY_TITLE = "/title";
         String KEY_CONTENT = "/content";
+        String KEY_SENSOR = "/sensor";
+        String KEY_MODE = "/mode";
     }
 
     public interface PREFS {
