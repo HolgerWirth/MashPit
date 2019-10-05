@@ -284,6 +284,12 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(m);
                                 break;
 
+                            case R.id.nav_temppager:
+                                Intent n = new Intent(getApplicationContext(), TempPagerActivity.class);
+                                startActivity(n);
+                                finish();
+                                break;
+
                         }
                         return true;
                     }
@@ -330,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             Set<String> prefdefaults = prefs.getStringSet("process_topics", new HashSet<String>());
-            if (prefdefaults != null && prefdefaults.contains(myEvent.getSensor() + "/" + String.valueOf(myEvent.getInterval()))) {
+            if (prefdefaults != null && prefdefaults.contains(myEvent.getSensor() + "/" + myEvent.getInterval())) {
                 currTemp = myEvent.getEvent();
                 updatePieData(currTemp);
             }
@@ -442,7 +448,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 

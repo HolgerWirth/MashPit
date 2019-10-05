@@ -607,7 +607,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 }
                 EventBus.getDefault().postSticky(tempEvent);
 
-                sendData(tempEvent.getEvent());
+                sendData(tempEvent.getMode(),tempEvent.getSensor(),tempEvent.getEvent());
 
             } catch (JSONException e) {
             e.printStackTrace();
@@ -677,9 +677,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
-    private void sendData(String message) {
+    private void sendData(String mode, String sensor, String message) {
         PutDataMapRequest dataMap = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
         dataMap.getDataMap().putString(Constants.WEAR.KEY_TITLE, "Temperature");
+        dataMap.getDataMap().putString(Constants.WEAR.KEY_SENSOR, sensor);
+        dataMap.getDataMap().putString(Constants.WEAR.KEY_MODE, mode);
         dataMap.getDataMap().putString(Constants.WEAR.KEY_CONTENT, message);
         PutDataRequest request = dataMap.asPutDataRequest();
         request.setUrgent();

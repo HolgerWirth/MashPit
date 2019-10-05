@@ -1,14 +1,10 @@
 package com.holger.mashpit.tools;
 
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IValueFormatter;
-import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.text.DecimalFormat;
 
-public class TempFormatter implements IValueFormatter, IAxisValueFormatter {
+public class TempFormatter extends ValueFormatter {
 
     private DecimalFormat mFormat;
 
@@ -17,12 +13,7 @@ public class TempFormatter implements IValueFormatter, IAxisValueFormatter {
     }
 
     @Override
-    public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-        return mFormat.format(value) + "°";
-    }
-
-    @Override
-    public String getFormattedValue(float value, AxisBase axis) {
+    public String getFormattedValue(float value) {
         return mFormat.format(value) + "°";
     }
 }

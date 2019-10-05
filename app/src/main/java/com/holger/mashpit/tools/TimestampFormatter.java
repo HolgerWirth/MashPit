@@ -1,13 +1,12 @@
 package com.holger.mashpit.tools;
 
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class TimestampFormatter implements IAxisValueFormatter {
+public class TimestampFormatter extends ValueFormatter {
 
     private long unixTime = System.currentTimeMillis() / 1000L;
     private long mTime = unixTime - (24 * 60 * 60);
@@ -16,8 +15,7 @@ public class TimestampFormatter implements IAxisValueFormatter {
     private SimpleDateFormat lformat = new SimpleDateFormat("dd.MM. HH:mm", Locale.GERMANY);
 
     @Override
-    public String getFormattedValue(float value, AxisBase axis) {
-
+    public String getFormattedValue(float value) {
         long ts = (long)(value*1000);
 
         Date df = new Date(ts);
