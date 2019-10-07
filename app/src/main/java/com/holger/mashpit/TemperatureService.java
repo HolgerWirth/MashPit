@@ -178,7 +178,101 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         connect();
                     } catch (MqttException e) {
                         e.printStackTrace();
+                        return(START_STICKY);
                     }
+
+                    List<Subscriber> delresult = new ArrayList<>();
+                    String delsubs=prefs.getString("delsublist","");
+                    int subs_count;
+                    assert delsubs != null;
+                    if(delsubs.length()>0) {
+                        try {
+                            JSONObject subscribers = new JSONObject(delsubs);
+                            JSONArray subarray = subscribers.getJSONArray("delsubscriber");
+                            subs_count=subarray.length();
+                            for (int i = 0; i < subs_count; i++) {
+                                JSONObject subobj = subarray.getJSONObject(i);
+                                Subscriber sub = new Subscriber();
+                                sub.topic = subobj.getString("topic");
+                                sub.interval = subobj.getString("interval");
+                                delresult.add(sub);
+                            }
+                        } catch (JSONException e) {
+                            Log.i(DEBUG_TAG, "delsublist preference does not exist");
+                        }
+                    }
+                    String[] topic = new String[delresult.size()];
+                    for(int i=0;i<delresult.size();i++)
+                    {
+                        Subscriber sub = delresult.get(i);
+                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
+                        topic[i]=mytopic;
+                    }
+                    for (String aTopic : topic) {
+                        Log.i(DEBUG_TAG, "Unubscribe from: " + aTopic);
+                    }
+                    try {
+                        mClient.unsubscribe(topic);
+                    }
+                    catch(MqttException e)
+                    {
+                        Log.i(DEBUG_TAG, "Can't unsubscribe");
+                    }
+                    prefs.edit().putString("delsublist","").apply();
+                    Log.i(DEBUG_TAG, "Successfully unsubscribed");
+
+                    List<Subscriber> result = new ArrayList<>();
+                    String subs=prefs.getString("sublist","");
+                    assert subs != null;
+                    if(subs.length()>0) {
+                        try {
+                            JSONObject subscribers = new JSONObject(subs);
+                            JSONArray subarray = subscribers.getJSONArray("subscriber");
+                            subs_count=subarray.length();
+                            for (int i = 0; i < subs_count; i++) {
+                                JSONObject subobj = subarray.getJSONObject(i);
+                                Subscriber sub = new Subscriber();
+                                sub.topic = subobj.getString("topic");
+                                sub.interval = subobj.getString("interval");
+                                sub.persistent = subobj.getBoolean("durable");
+                                result.add(sub);
+                            }
+                        } catch (JSONException e) {
+                            Log.i(DEBUG_TAG, "sublist preference does not exist");
+                        }
+
+                    }
+                    topic = new String[result.size()+2];
+                    int[] qos = new int[result.size()+2];
+                    for(int i=0;i<result.size();i++)
+                    {
+                        Subscriber sub = result.get(i);
+                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
+                        topic[i]=mytopic;
+                        if(sub.persistent) {
+                            qos[i] = 2;
+                        }
+                        else
+                        {
+                            qos[i]=0;
+                        }
+                    }
+                    topic[result.size()]="/process";
+                    qos[result.size()]=0;
+
+                    topic[result.size()+1]="/conf/#";
+                    qos[result.size()+1]=0;
+
+                    for(int i=0;i<topic.length;i++)
+                    {
+                        Log.i(DEBUG_TAG, "Subscribe to: "+topic[i]+" with qos: "+qos[i]);
+                    }
+
+                    try {
+                        mClient.subscribe(topic,qos);
+                    } catch (MqttException e) {
+                    }
+                    Log.i(DEBUG_TAG, "Successfully subscribed");
 
                     break;
                 case Constants.ACTION.STOPFOREGROUND_ACTION:
@@ -268,140 +362,37 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         mOpts.setCleanSession(false);
 
         mClient = new MqttAsyncClient(url,mDeviceId,mDataStore);
-        mClient.connect(mOpts,null, new IMqttActionListener() {
+        mClient.connect(mOpts, null, new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
-                try {
-                    isConnected=true;
-                    Log.i(DEBUG_TAG, "Successfully connected");
-                    mClient.setCallback(TemperatureService.this);
+                isConnected = true;
+                Log.i(DEBUG_TAG, "Successfully connected");
+                mClient.setCallback(TemperatureService.this);
 
-                    statusEvent.setTopic("mqttstatus");
-                    statusEvent.setMode("info");
-                    statusEvent.setStatus("Connected to broker");
-                    EventBus.getDefault().post(statusEvent);
+                statusEvent.setTopic("mqttstatus");
+                statusEvent.setMode("info");
+                statusEvent.setStatus("Connected to broker");
+                EventBus.getDefault().post(statusEvent);
 
-                    List<Subscriber> delresult = new ArrayList<>();
-                    String delsubs=prefs.getString("delsublist","");
-                    int subs_count;
-                    assert delsubs != null;
-                    if(delsubs.length()>0) {
-                        try {
-                            JSONObject subscribers = new JSONObject(delsubs);
-                            JSONArray subarray = subscribers.getJSONArray("delsubscriber");
-                            subs_count=subarray.length();
-                            for (int i = 0; i < subs_count; i++) {
-                                JSONObject subobj = subarray.getJSONObject(i);
-                                Subscriber sub = new Subscriber();
-                                sub.topic = subobj.getString("topic");
-                                sub.interval = subobj.getString("interval");
-                                delresult.add(sub);
-                            }
-                        } catch (JSONException e) {
-                            Log.i(DEBUG_TAG, "delsublist preference does not exist");
-                        }
-                    }
-                    String[] topic = new String[delresult.size()];
-                    for(int i=0;i<delresult.size();i++)
-                    {
-                        Subscriber sub = delresult.get(i);
-                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
-                        topic[i]=mytopic;
-                    }
-                    for (String aTopic : topic) {
-                        Log.i(DEBUG_TAG, "Unubscribe from: " + aTopic);
-                    }
-                    try {
-                        mClient.unsubscribe(topic);
-                    }
-                    catch(MqttException e)
-                    {
-                        Log.i(DEBUG_TAG, "Can't unsubscribe");
-                    }
-                    prefs.edit().putString("delsublist","").apply();
-                    Log.i(DEBUG_TAG, "Successfully unsubscribed");
-
-                    List<Subscriber> result = new ArrayList<>();
-                    String subs=prefs.getString("sublist","");
-                    assert subs != null;
-                    if(subs.length()>0) {
-                        try {
-                            JSONObject subscribers = new JSONObject(subs);
-                            JSONArray subarray = subscribers.getJSONArray("subscriber");
-                            subs_count=subarray.length();
-                            for (int i = 0; i < subs_count; i++) {
-                                JSONObject subobj = subarray.getJSONObject(i);
-                                Subscriber sub = new Subscriber();
-                                sub.topic = subobj.getString("topic");
-                                sub.interval = subobj.getString("interval");
-                                sub.persistent = subobj.getBoolean("durable");
-                                result.add(sub);
-                            }
-                        } catch (JSONException e) {
-                            Log.i(DEBUG_TAG, "sublist preference does not exist");
-                        }
-
-                    }
-                    topic = new String[result.size()+2];
-                    int[] qos = new int[result.size()+2];
-                    for(int i=0;i<result.size();i++)
-                    {
-                        Subscriber sub = result.get(i);
-                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
-                        topic[i]=mytopic;
-                        if(sub.persistent) {
-                            qos[i] = 2;
-                        }
-                        else
-                        {
-                            qos[i]=0;
-                        }
-                    }
-                    topic[result.size()]="/process";
-                    qos[result.size()]=0;
-
-                    topic[result.size()+1]="/conf/#";
-                    qos[result.size()+1]=0;
-
-                    for(int i=0;i<topic.length;i++)
-                    {
-                        Log.i(DEBUG_TAG, "Subscribe to: "+topic[i]+" with qos: "+qos[i]);
-                    }
-
-                    mClient.subscribe(topic,qos);
-                    Log.i(DEBUG_TAG, "Successfully subscribed");
-
-                    isConnecting=false;
-                } catch (MqttException e) {
-                    isConnected=true;
-                    isConnecting=false;
-                    Log.i(DEBUG_TAG,"Error during connect");
-                    Log.i(DEBUG_TAG, "Connection lost from broker! Reason: ",e);
-
-                    statusEvent.setTopic("mqttstatus");
-                    statusEvent.setMode("error");
-                    statusEvent.setStatus("Connection lost!");
-                    EventBus.getDefault().post(statusEvent);
-                }
+                isConnecting = false;
             }
 
             @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                isConnected=false;
-                isConnecting=false;
-                Log.i(DEBUG_TAG,"Connect failure");
+                isConnected = false;
+                isConnecting = false;
+                Log.i(DEBUG_TAG, "Connect failure");
                 Log.i(DEBUG_TAG, String.valueOf(exception));
                 statusEvent.setTopic("mqttstatus");
                 statusEvent.setMode("error");
                 statusEvent.setStatus("Can't connect to broker");
                 EventBus.getDefault().post(statusEvent);
-                if (mClient==null) {
+                if (mClient == null) {
                     disconnect();
                 }
             }
         });
     }
-
     private void checkConnection()
     {
         Log.i(DEBUG_TAG, "checkConnection()");
