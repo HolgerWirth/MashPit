@@ -42,11 +42,9 @@ import com.holger.mashpit.model.Process;
 import com.holger.mashpit.model.Subscriber;
 import com.holger.mashpit.model.Temperature;
 
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -76,7 +74,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private MqttDefaultFilePersistence mDataStore=null;
 
-    private MqttAsyncClient mClient;                                        // Mqtt Client
+    private MqttClient mClient;                                        // Mqtt Client
 
     private Boolean isConnected=false;
     private Boolean isConnecting=false;
@@ -189,7 +187,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         try {
                             JSONObject subscribers = new JSONObject(delsubs);
                             JSONArray subarray = subscribers.getJSONArray("delsubscriber");
-                            subs_count=subarray.length();
+                            subs_count = subarray.length();
                             for (int i = 0; i < subs_count; i++) {
                                 JSONObject subobj = subarray.getJSONObject(i);
                                 Subscriber sub = new Subscriber();
@@ -200,26 +198,23 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         } catch (JSONException e) {
                             Log.i(DEBUG_TAG, "delsublist preference does not exist");
                         }
+                        String[] topic = new String[delresult.size()];
+                        for (int i = 0; i < delresult.size(); i++) {
+                            Subscriber sub = delresult.get(i);
+                            String mytopic = "/temp/" + sub.topic + "/" + sub.interval;
+                            topic[i] = mytopic;
+                        }
+                        for (String aTopic : topic) {
+                            Log.i(DEBUG_TAG, "Unubscribe from: " + aTopic);
+                        }
+                        try {
+                            mClient.unsubscribe(topic);
+                        } catch (MqttException e) {
+                            Log.i(DEBUG_TAG, "Can't unsubscribe");
+                        }
+                        prefs.edit().putString("delsublist", "").apply();
+                        Log.i(DEBUG_TAG, "Successfully unsubscribed");
                     }
-                    String[] topic = new String[delresult.size()];
-                    for(int i=0;i<delresult.size();i++)
-                    {
-                        Subscriber sub = delresult.get(i);
-                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
-                        topic[i]=mytopic;
-                    }
-                    for (String aTopic : topic) {
-                        Log.i(DEBUG_TAG, "Unubscribe from: " + aTopic);
-                    }
-                    try {
-                        mClient.unsubscribe(topic);
-                    }
-                    catch(MqttException e)
-                    {
-                        Log.i(DEBUG_TAG, "Can't unsubscribe");
-                    }
-                    prefs.edit().putString("delsublist","").apply();
-                    Log.i(DEBUG_TAG, "Successfully unsubscribed");
 
                     List<Subscriber> result = new ArrayList<>();
                     String subs=prefs.getString("sublist","");
@@ -240,9 +235,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         } catch (JSONException e) {
                             Log.i(DEBUG_TAG, "sublist preference does not exist");
                         }
-
                     }
-                    topic = new String[result.size()+2];
+
+                    String[] topic = new String[result.size()+2];
                     int[] qos = new int[result.size()+2];
                     for(int i=0;i<result.size();i++)
                     {
@@ -359,40 +354,39 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         MqttConnectOptions mOpts = new MqttConnectOptions();
 //        mOpts.setKeepAliveInterval(0);
-        mOpts.setConnectionTimeout(5000);
+        mOpts.setConnectionTimeout(2);
         mOpts.setCleanSession(false);
 
-        mClient = new MqttAsyncClient(url,mDeviceId,mDataStore);
-        mClient.connect(mOpts, null, new IMqttActionListener() {
-            @Override
-            public void onSuccess(IMqttToken asyncActionToken) {
-                isConnected = true;
-                Log.i(DEBUG_TAG, "Successfully connected");
-                mClient.setCallback(TemperatureService.this);
+        mClient = new MqttClient(url,mDeviceId,mDataStore);
+        mClient.setCallback(this);
 
-                statusEvent.setTopic("mqttstatus");
-                statusEvent.setMode("info");
-                statusEvent.setStatus("Connected to broker");
-                EventBus.getDefault().post(statusEvent);
+        try {
+            mClient.connect(mOpts);
+        } catch (MqttException e) {
+            e.printStackTrace();
 
-                isConnecting = false;
+            isConnected = false;
+            isConnecting = false;
+            Log.i(DEBUG_TAG, "Connect failure");
+            Log.i(DEBUG_TAG, String.valueOf(e));
+            statusEvent.setTopic("mqttstatus");
+            statusEvent.setMode("error");
+            statusEvent.setStatus("Can't connect to broker");
+            EventBus.getDefault().post(statusEvent);
+            if (mClient == null) {
+                disconnect();
             }
+            return;
+        }
 
-            @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                isConnected = false;
-                isConnecting = false;
-                Log.i(DEBUG_TAG, "Connect failure");
-                Log.i(DEBUG_TAG, String.valueOf(exception));
-                statusEvent.setTopic("mqttstatus");
-                statusEvent.setMode("error");
-                statusEvent.setStatus("Can't connect to broker");
-                EventBus.getDefault().post(statusEvent);
-                if (mClient == null) {
-                    disconnect();
-                }
-            }
-        });
+        isConnected = true;
+        Log.i(DEBUG_TAG, "Successfully connected");
+        statusEvent.setTopic("mqttstatus");
+        statusEvent.setMode("info");
+        statusEvent.setStatus("Connected to broker");
+        EventBus.getDefault().post(statusEvent);
+
+        isConnecting = false;
     }
     private void checkConnection()
     {
