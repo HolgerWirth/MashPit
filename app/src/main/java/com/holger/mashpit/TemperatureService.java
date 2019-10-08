@@ -271,6 +271,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     try {
                         mClient.subscribe(topic,qos);
                     } catch (MqttException e) {
+                        e.printStackTrace();
                     }
                     Log.i(DEBUG_TAG, "Successfully subscribed");
 
@@ -439,7 +440,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void registerBroadcastReceivers() {
                   if (networkConnectionMonitor == null) {
                           networkConnectionMonitor = new NetworkConnectionIntentReceiver();
@@ -635,7 +635,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     public void onEventMainThread(TemperatureEvent myEvent) {
         Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
         assert prefdefaults != null;
-        if(prefdefaults.contains(myEvent.getSensor()+"/"+String.valueOf(myEvent.getInterval())))
+        if(prefdefaults.contains(myEvent.getSensor()+"/"+myEvent.getInterval()))
         {
             Log.i(DEBUG_TAG, "Notification updated");
             updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
