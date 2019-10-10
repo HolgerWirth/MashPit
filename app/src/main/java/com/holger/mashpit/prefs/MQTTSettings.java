@@ -88,46 +88,8 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                 getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             }
 
-            @Override
-            public void onSharedPreferenceChanged (SharedPreferences prefs, String key){
-                Log.i(DEBUG_TAG, "Key: " + key);
-                boolean changed=false;
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
 
-                if (key.equals("broker_url")) {
-                    changed=true;
-                    MashPit.broker_url = prefs.getString("broker_url", "");
-                    Log.i(DEBUG_TAG, "Broker URL changed: "+ MashPit.broker_url);
-                }
-                if (key.equals("broker_port")) {
-                    changed=true;
-                    MashPit.broker_port = prefs.getString("broker_port", "1883");
-                    Log.i(DEBUG_TAG, "Broker Port changed: "+ MashPit.broker_port);
-                }
-
-                if (key.equals("send_broker_url")) {
-                    changed=true;
-                    MashPit.send_broker_url = prefs.getString("send_broker_url", "");
-                    Log.i(DEBUG_TAG, "Send Broker URL changed: "+ MashPit.send_broker_url);
-                }
-                if (key.equals("send_broker_port")) {
-                    changed=true;
-                    MashPit.send_broker_port = prefs.getString("send_broker_port", "1883");
-                    Log.i(DEBUG_TAG, "Send Broker Port changed: "+ MashPit.send_broker_port);
-                }
-
-                if(changed) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getPreferenceScreen().getContext());
-                    builder.setTitle(getString(R.string.MQTTchanged_alert_title));
-                    builder.setMessage(getString(R.string.MQTTchanged_text));
-                    builder.setPositiveButton(getString(R.string.MQTTchanged_button), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.i(DEBUG_TAG, "Reconnect pressed!");
-                            MashPit.reconnect_action = true;
-                        }
-                    });
-                    builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
-                    builder.show();
-                }
-            }
-        }
+    }
+}
