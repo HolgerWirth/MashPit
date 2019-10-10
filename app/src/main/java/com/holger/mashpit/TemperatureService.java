@@ -332,14 +332,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         Log.i(DEBUG_TAG,"Connect!");
         String MQTT_BROKER;
         int MQTT_PORT;
+        String MQTT_USER;
+        String MQTT_PASSWORD;
         String MQTT_URL_FORMAT = "tcp://%s:%d";
         String DEVICE_ID_FORMAT = "TE_%s";
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         MQTT_BROKER=prefs.getString("broker_url","192.168.1.50");
-        //noinspection ConstantConditions
         MQTT_PORT= Integer.parseInt(prefs.getString("broker_port","1884"));
+        MQTT_USER = prefs.getString("broker_user","");
+        MQTT_PASSWORD = prefs.getString("broker_password","");
 
         Log.i(DEBUG_TAG, "Preferences read: MQTT Server: "+MQTT_BROKER+" Port: "+MQTT_PORT);
 
@@ -356,6 +359,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 //        mOpts.setKeepAliveInterval(0);
         mOpts.setConnectionTimeout(2);
         mOpts.setCleanSession(false);
+        assert MQTT_USER != null;
+        if(!MQTT_USER.isEmpty()) {
+            mOpts.setUserName(MQTT_USER);
+            assert MQTT_PASSWORD != null;
+            mOpts.setPassword(MQTT_PASSWORD.toCharArray());
+        }
 
         mClient = new MqttClient(url,mDeviceId,mDataStore);
         mClient.setCallback(this);
