@@ -19,5 +19,4 @@
         android:icon="@drawable/ic_server_bw"
         android:title="@string/menu_configuration" />
 </group>
-
 </menu>
