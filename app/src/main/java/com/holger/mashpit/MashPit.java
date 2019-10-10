@@ -20,10 +20,6 @@ public class MashPit extends com.activeandroid.app.Application {
     private static final String DEBUG_TAG = "MashPit";
     static Boolean menu_action=false;
     public static Boolean reconnect_action=false;
-    public static String broker_url;
-    public static String broker_port;
-    public static String send_broker_url;
-    public static String send_broker_port;
     public static List<Temperature> TempModes;
     public static boolean modedeleted;
     public static String mDeviceId;

@@ -43,21 +43,15 @@ public class MQTTSettingsSub extends PreferenceFragment implements SharedPrefere
 
                 if (key.equals("broker_url")) {
                     changed=true;
-                    MashPit.broker_url = prefs.getString("broker_url", "");
-                    Log.i(DEBUG_TAG, "Broker URL changed: "+ MashPit.broker_url);
                 }
                 if (key.equals("broker_port")) {
                     changed=true;
-                    MashPit.broker_port = prefs.getString("broker_port", "1883");
-                    Log.i(DEBUG_TAG, "Broker Port changed: "+ MashPit.broker_port);
                 }
                 if (key.equals("broker_user")) {
                     changed=true;
-                    Log.i(DEBUG_TAG, "Broker User changed: "+ MashPit.broker_port);
                 }
                 if (key.equals("broker_password")) {
                     changed=true;
-                    Log.i(DEBUG_TAG, "Broker Password changed: "+ MashPit.broker_port);
                 }
 
                 if(changed) {
