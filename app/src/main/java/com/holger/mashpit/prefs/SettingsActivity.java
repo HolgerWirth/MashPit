@@ -2,6 +2,7 @@ package com.holger.mashpit.prefs;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
@@ -38,7 +39,6 @@ public class SettingsActivity extends PreferenceActivity
                 finish();
             }
         });
-
     }
 
     @Override
