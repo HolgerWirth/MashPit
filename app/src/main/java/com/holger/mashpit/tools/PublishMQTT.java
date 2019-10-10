@@ -21,15 +21,37 @@ public class PublishMQTT {
         try {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-            String MQTT_BROKER=prefs.getString("send_broker_url","192.168.1.20");
-            @SuppressWarnings("ConstantConditions") int MQTT_PORT= Integer.parseInt(prefs.getString("send_broker_port","1884"));
+            int MQTT_PORT;
+            String MQTT_PASSWORD;
+            String MQTT_USER;
+            String MQTT_BROKER;
+
+            if(prefs.getBoolean("same_broker",false)) {
+                MQTT_BROKER = prefs.getString("send_broker_url", "192.168.1.20");
+                MQTT_PORT = Integer.parseInt(prefs.getString("send_broker_port", "1884"));
+                MQTT_USER =prefs.getString("broker_user", "");
+                MQTT_PASSWORD =prefs.getString("broker_password", "");
+            }
+            else {
+                MQTT_BROKER = prefs.getString("broker_url", "192.168.1.20");
+                MQTT_PORT = Integer.parseInt(prefs.getString("broker_port", "1884"));
+                MQTT_USER =prefs.getString("send_broker_user", "");
+                MQTT_PASSWORD =prefs.getString("send_broker_password", "");
+            }
+
             String clientId=prefs.getString("device_id","");
 
             assert clientId != null;
-            MqttClient sampleClient = new MqttClient("tcp://"+MQTT_BROKER+":"+MQTT_PORT, clientId, persistence);
+            MqttClient sampleClient = new MqttClient("tcp://"+ MQTT_BROKER +":"+ MQTT_PORT, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
-            Log.i(DEBUG_TAG,"Connecting to broker: " + MQTT_BROKER);
+            assert MQTT_USER != null;
+            if(!MQTT_USER.isEmpty()) {
+                connOpts.setUserName(MQTT_USER);
+                assert MQTT_PASSWORD != null;
+                connOpts.setPassword(MQTT_PASSWORD.toCharArray());
+            }
+            Log.i(DEBUG_TAG,"Connecting to broker: " + MQTT_BROKER +" as user: "+ MQTT_USER);
             sampleClient.connect(connOpts);
             Log.i(DEBUG_TAG,"Connected");
             MqttMessage message = new MqttMessage(XML.getBytes());
