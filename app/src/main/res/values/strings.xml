@@ -72,4 +72,8 @@
     <string name="status_connect_NOK">Can\'t connect to MQTT broker</string>
     <string name="menu_title_charts">Temperature Charts</string>
     <string name="menu_temppager">Temperature</string>
+    <string name="mqtt_settings_title">MQTT Settings</string>
+    <string name="prefs_same_broker">Use a different broker for publishing</string>
+    <string name="prefs_mqtt_send_user">Username</string>
+    <string name="prefs_mqtt_send_password">Password</string>
 </resources>
