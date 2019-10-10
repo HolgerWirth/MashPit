@@ -1,12 +1,10 @@
 package com.holger.mashpit.prefs;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -46,26 +44,21 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
 
                 Log.i(DEBUG_TAG, "Found MQTT Server IP: "+IP+" Port: "+port);
 
-                MashPit.broker_url=IP;
-                MashPit.broker_port=port;
-                MashPit.send_broker_url=IP;
-                MashPit.send_broker_port=port;
-
                 SettingsEdit editIP = (SettingsEdit) findPreference("broker_url");
-                editIP.setSummary(MashPit.broker_url);
-                editIP.setText(MashPit.broker_url);
+                editIP.setSummary(IP);
+                editIP.setText(IP);
 
                 SettingsEdit editPort = (SettingsEdit) findPreference("broker_port");
-                editPort.setSummary(MashPit.broker_port);
-                editPort.setText(MashPit.broker_port);
+                editPort.setSummary(port);
+                editPort.setText(port);
 
                 SettingsEdit seditIP = (SettingsEdit) findPreference("send_broker_url");
-                seditIP.setSummary(MashPit.send_broker_url);
-                seditIP.setText(MashPit.send_broker_url);
+                seditIP.setSummary(IP);
+                seditIP.setText(IP);
 
                 SettingsEdit seditPort = (SettingsEdit) findPreference("send_broker_port");
-                seditPort.setSummary(MashPit.send_broker_port);
-                seditPort.setText(MashPit.send_broker_port);
+                seditPort.setSummary(port);
+                seditPort.setText(port);
 
                 Toast.makeText(getActivity(),"Found MQTT Server!",Toast.LENGTH_LONG).show();
             }
