@@ -35,6 +35,7 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.holger.mashpit.events.ConfEvent;
+import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.events.TemperatureEvent;
@@ -81,6 +82,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private NotificationCompat.Builder builder;
     private StatusEvent statusEvent = new StatusEvent();
+
+    private String MQTT_DOMAIN="";
 
     private volatile boolean backgroundDataEnabled;
     {
@@ -237,8 +240,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         }
                     }
 
-                    String[] topic = new String[result.size()+2];
-                    int[] qos = new int[result.size()+2];
+                    String[] topic = new String[result.size()+1];
+                    int[] qos = new int[result.size()+1];
                     for(int i=0;i<result.size();i++)
                     {
                         Subscriber sub = result.get(i);
@@ -252,11 +255,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             qos[i]=0;
                         }
                     }
-                    topic[result.size()]="/process";
-                    qos[result.size()]=0;
+//                    topic[result.size()]=MQTT_DOMAIN+"/MP/process";
+//                    qos[result.size()]=0;
 
-                    topic[result.size()+1]="/conf/#";
-                    qos[result.size()+1]=0;
+                    topic[result.size()]=MQTT_DOMAIN+"/MP/#";
+                    qos[result.size()]=0;
 
                     for(int i=0;i<topic.length;i++)
                     {
@@ -339,6 +342,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        MQTT_DOMAIN=prefs.getString("mashpit_domain","");
         MQTT_BROKER=prefs.getString("broker_url","192.168.1.50");
         MQTT_PORT= Integer.parseInt(prefs.getString("broker_port","1884"));
         MQTT_USER = prefs.getString("broker_user","");
@@ -573,6 +577,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         TemperatureEvent tempEvent = new TemperatureEvent();
         ProcessEvent processEvent = new ProcessEvent();
         ConfEvent confEvent = new ConfEvent();
+        MPStatusEvent mpstatusEvent = new MPStatusEvent();
         JSONObject obj;
 
         String mess= new String(message.getPayload());
@@ -581,7 +586,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         tempEvent.setTopic(parts[1]);
         processEvent.setTopic(parts[1]);
 
-        Log.i(DEBUG_TAG, "'"+parts[1]+"' messageArrived with QoS: "+message.getQos());
+        Log.i(DEBUG_TAG, "'"+parts[1]+"/"+parts[2]+"' messageArrived with QoS: "+message.getQos());
 
         if(parts[1].equals("temp")) {
             obj = new JSONObject(mess);
@@ -607,31 +612,38 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             e.printStackTrace();
         }
     }
-        if(parts[1].equals("process"))
-        {
+    if(parts[1].equals("MP")) {
+        if (parts[2].equals("process")) {
             Log.i(DEBUG_TAG, "Process: ");
-            Process proc = Process.load(Process.class,1);
-            if(proc==null) {
+            Process proc = Process.load(Process.class, 1);
+            if (proc == null) {
                 Process nproc = new Process(mess);
                 nproc.save();
                 Log.i(DEBUG_TAG, "Process inserted");
-            }
-            else
-            {
-                proc.myJSONString=mess;
+            } else {
+                proc.myJSONString = mess;
                 proc.save();
                 Log.i(DEBUG_TAG, "Process updated");
             }
             EventBus.getDefault().postSticky(processEvent);
         }
 
-        if(parts[1].equals("conf"))
-        {
+        if (parts[3].equals("conf")) {
             Log.i(DEBUG_TAG, "Configuration: ");
-            confEvent.setConfTopic(parts[2]);
+            confEvent.setMPServer(parts[2]);
+            confEvent.setConfTopic(parts[4]);
             confEvent.setXMLString(mess);
             EventBus.getDefault().postSticky(confEvent);
         }
+
+        if (parts[3].equals("status")) {
+            Log.i(DEBUG_TAG, "Status: ");
+            mpstatusEvent.setMPServer(parts[2]);
+            mpstatusEvent.setStatusTopic(parts[4]);
+            mpstatusEvent.setStatus(mess);
+            EventBus.getDefault().postSticky(mpstatusEvent);
+        }
+    }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)

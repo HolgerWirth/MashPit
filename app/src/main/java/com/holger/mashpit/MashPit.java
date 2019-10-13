@@ -11,6 +11,7 @@ import android.view.SubMenu;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.holger.mashpit.events.ConfEvent;
+import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.model.Temperature;
 
 import java.util.ArrayList;
@@ -23,8 +24,12 @@ public class MashPit extends com.activeandroid.app.Application {
     public static List<Temperature> TempModes;
     public static boolean modedeleted;
     public static String mDeviceId;
+    public static String MPDomain;
+    public static String MPDomain_send;
 
     public static ArrayList<ConfEvent> confXMLList = new ArrayList<>();
+    public static ArrayList<MPStatusEvent> MPServerList = new ArrayList<>();
+    public static ArrayList<MPStatusEvent> MPStatusList = new ArrayList<>();
 
     @Override
     public void onCreate() {
@@ -149,5 +154,4 @@ public class MashPit extends com.activeandroid.app.Application {
         }
         return def;
     }
-
 }
