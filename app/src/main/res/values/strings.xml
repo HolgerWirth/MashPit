@@ -76,4 +76,7 @@
     <string name="prefs_same_broker">Use a different broker for publishing</string>
     <string name="prefs_mqtt_send_user">Username</string>
     <string name="prefs_mqtt_send_password">Password</string>
+    <string name="mpstatServer">Server ID:</string>
+    <string name="mpstatProcesses">Processes:</string>
+    <string name="mpstatProcActive">Active:</string>
 </resources>

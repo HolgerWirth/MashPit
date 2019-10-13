@@ -12,6 +12,10 @@
                 android:defaultValue="false"/>
             <com.holger.mashpit.prefs.SettingsEdit
                 android:dependency="broker_same"
+                android:key="send_mashpit_domain"
+                android:title="MashPit Domain" />
+            <com.holger.mashpit.prefs.SettingsEdit
+                android:dependency="broker_same"
                 android:key="broker_url"
                 android:title="@string/prefs_mqtt_broker"
                 android:summary="@string/prefs_mqtt_broker_sum"

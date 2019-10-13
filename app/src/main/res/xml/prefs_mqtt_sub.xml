@@ -6,7 +6,10 @@
     android:title="Subscreen">
 
         <PreferenceCategory android:title="@string/prefs_mqtt_title">
-             <com.holger.mashpit.prefs.SettingsEdit
+            <com.holger.mashpit.prefs.SettingsEdit
+                android:key="mashpit_domain"
+                android:title="MashPit Domain" />
+            <com.holger.mashpit.prefs.SettingsEdit
                 android:key="broker_url"
                 android:title="@string/prefs_mqtt_broker"
                 android:summary="@string/prefs_mqtt_broker_sum"
