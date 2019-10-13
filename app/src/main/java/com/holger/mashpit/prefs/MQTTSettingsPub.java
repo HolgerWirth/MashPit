@@ -37,6 +37,8 @@ public class MQTTSettingsPub extends PreferenceFragment implements SharedPrefere
             @Override
             public void onSharedPreferenceChanged (SharedPreferences prefs, String key){
                 Log.i(DEBUG_TAG, "Key: " + key);
-
-            }
-        }
+                if (key.equals("send_mashpit_domain")) {
+                    MashPit.MPDomain_send=prefs.getString("send_mashpit_domain","");
+                }
+    }
+}

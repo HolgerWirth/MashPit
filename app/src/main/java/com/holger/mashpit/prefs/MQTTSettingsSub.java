@@ -53,6 +53,9 @@ public class MQTTSettingsSub extends PreferenceFragment implements SharedPrefere
                 if (key.equals("broker_password")) {
                     changed=true;
                 }
+                if (key.equals("mashpit_domain")) {
+                    MashPit.MPDomain=prefs.getString("mashpit_domain","");
+                }
 
                 if(changed) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getPreferenceScreen().getContext());
