@@ -17,7 +17,7 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/mpstatServer"
+            android:id="@+id/mpstatServerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -27,8 +27,19 @@
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcesses"
-            android:layout_below="@id/mpstatServer"
+            android:id="@+id/mpstatServer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="150dp"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold"
+            android:text="@string/mpstatServer"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/mpstatProcessesTitle"
+            android:layout_below="@id/mpstatServerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -38,15 +49,41 @@
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcActive"
+            android:id="@+id/mpstatProcesses"
+            android:layout_below="@id/mpstatServerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/mpstatProcesses"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="150dp"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold"
+            android:text="@string/mpstatProcesses"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/mpstatProcActiveTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mpstatProcessesTitle"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:text="@string/mpstatProcActive"
             android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/mpstatProcActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mpstatProcessesTitle"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="150dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:textStyle="bold"
+            android:text="@string/mpstatProcActive"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
     </RelativeLayout>
     </androidx.cardview.widget.CardView>
