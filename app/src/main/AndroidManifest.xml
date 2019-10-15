@@ -75,8 +75,8 @@
 
         <activity android:name=".ConfEdit" />
         <activity android:name=".TempPagerActivity" />
-        <activity android:name=".MPStatusListActivity" />
-
+        <activity android:name=".MPStatusListActivity"
+            android:label="MashPit Server" />
     </application>
 
 </manifest>
