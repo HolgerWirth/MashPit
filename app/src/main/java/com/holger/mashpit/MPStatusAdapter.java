@@ -56,7 +56,6 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
         TextView mpstatServer;
         TextView mpstatProcesses;
         TextView mpstatProcActive;
-
         CardView mCardView;
 
         MPStatusViewHolder(final View v) {
@@ -76,9 +75,5 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
             });
 
         }
-    }
-
-    MPStatus getItem(int index) {
-        return statusList.get(index);
     }
 }

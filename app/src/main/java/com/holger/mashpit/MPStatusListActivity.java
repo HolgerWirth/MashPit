@@ -21,8 +21,6 @@ public class MPStatusListActivity extends AppCompatActivity {
     private static final String DEBUG_TAG = "MPStatusListActivity";
     SnackBar snb;
     MPStatusAdapter sa;
-    View.OnClickListener mOnClickListener;
-    MPStatus mpstatus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,24 +53,27 @@ public class MPStatusListActivity extends AppCompatActivity {
         for (int i = 0; i < MashPit.MPServerList.size(); i++) {
             String server = MashPit.MPServerList.get(i).getMPServer();
             MPStatus mpStatus = new MPStatus();
+            int procs=0;
             if(result.size()==0)
             {
                 mpStatus.MPServer=server;
-                mpStatus.active=1;
-                mpStatus.processes=1;
+                mpStatus.active=Integer.toString(1);
+                mpStatus.processes=Integer.toString(1);
+                procs=1;
                 result.add(mpStatus);
             }
             for(int t=0; t < result.size();t++)
             {
                 if(result.get(t).MPServer.equals(server))
                 {
-                    result.get(t).processes++;
+                    procs++;
+                    result.get(t).processes=Integer.toString(procs);
                 }
                 else
                 {
-                    mpstatus.MPServer=server;
-                    mpStatus.active=1;
-                    mpStatus.processes=1;
+                    mpStatus.MPServer=server;
+                    mpStatus.active="1";
+                    mpStatus.processes="1";
                     result.add(mpStatus);
                     break;
                 }
