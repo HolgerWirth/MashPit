@@ -44,8 +44,7 @@ public class MPStatusListActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                overridePendingTransition(0, 0);
-                finish();
+                onBackPressed();
             }
         });
 
