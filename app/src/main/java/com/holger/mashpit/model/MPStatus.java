@@ -4,6 +4,6 @@ public class MPStatus {
     public String status;
     public String topic;
     public String MPServer;
-    public int processes;
-    public int active;
+    public String processes;
+    public String active;
 }
