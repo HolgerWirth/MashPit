@@ -1,5 +1,6 @@
 package com.holger.mashpit;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.holger.mashpit.model.MPStatus;
+import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class MPStatusListActivity extends AppCompatActivity {
     private static final String DEBUG_TAG = "MPStatusListActivity";
     SnackBar snb;
     MPStatusAdapter sa;
+    Intent sintent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +51,7 @@ public class MPStatusListActivity extends AppCompatActivity {
             }
         });
 
-        List<MPStatus> result = new ArrayList<>();
+        final List<MPStatus> result = new ArrayList<>();
         for (int i = 0; i < MashPit.MPServerList.size(); i++) {
             String server = MashPit.MPServerList.get(i).getMPServer();
             MPStatus mpStatus = new MPStatus();
@@ -78,7 +81,31 @@ public class MPStatusListActivity extends AppCompatActivity {
                 }
             }
         }
+
         sa = new MPStatusAdapter(result);
+
+        ItemClickSupport.addTo(mpstatusList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                Log.i(DEBUG_TAG, "Clicked!");
+
+                sintent = new Intent(getApplicationContext(), MPProcListActivity.class);
+                sintent.putExtra("ACTION", "list");
+                sintent.putExtra("server", result.get(position).MPServer);
+
+                startActivityForResult(sintent, 0);
+            }
+        });
+
+        ItemClickSupport.addTo(mpstatusList).setOnItemLongClickListener(new ItemClickSupport.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClicked(RecyclerView view, int position, View v) {
+                Log.i(DEBUG_TAG, "Long Clicked!");
+
+                return true;
+            }
+        });
+
         mpstatusList.setAdapter(sa);
     }
 }

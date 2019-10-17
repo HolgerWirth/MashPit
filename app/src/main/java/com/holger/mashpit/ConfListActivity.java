@@ -3,6 +3,8 @@ package com.holger.mashpit;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.ActionBar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -47,6 +49,8 @@ public class ConfListActivity extends AppCompatActivity {
     int del_pos;
     String del_xml;
     String del_name;
+    String action;
+    String topic;
 
     @Override
     protected void onStart() {
@@ -68,6 +72,12 @@ public class ConfListActivity extends AppCompatActivity {
         final CoordinatorLayout coordinatorLayout = findViewById(R.id.conflist_content);
         snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "OnCreate");
+
+        action = getIntent().getStringExtra("ACTION");
+        Log.i(DEBUG_TAG, "Started with action: " + action);
+        if (action.equals("list")) {
+            topic = getIntent().getStringExtra("topic");
+        }
 
         final Context context = this;
 
@@ -96,6 +106,9 @@ public class ConfListActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.conf_toolbar);
         setSupportActionBar(toolbar);
+        final ActionBar ab = getSupportActionBar();
+        assert ab != null;
+        ab.setTitle(topic);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,8 +162,10 @@ public class ConfListActivity extends AppCompatActivity {
 
         List<Config> result = new ArrayList<>();
         for (int i = 0; i < MashPit.confXMLList.size(); i++) {
-            Config conf = confReadXML(i);
-            result.add(conf);
+            if(MashPit.confXMLList.get(i).getConfTopic().equals(topic)) {
+                Config conf = confReadXML(i);
+                result.add(conf);
+            }
         }
         sa = new ConfAdapter(result);
 

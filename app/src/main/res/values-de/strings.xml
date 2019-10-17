@@ -70,4 +70,13 @@
     <string name="prefs_mqtt_send_user">Benutzer</string>
     <string name="mpstatServer">Server ID:</string>
     <string name="mpstatProcesses">Processes:</string>
+    <string name="mpstatProcNameTitle">Process:</string>
+    <string name="mpstatProcStatusTitle">Active:</string>
+    <string name="mpstatProcStatus">Process ID:</string>
+    <string name="mpstatProcPIDTitle">PID:</string>
+    <string name="mpstatProcTypeTitle">Adapter Type:</string>
+    <string name="mpstatProcActive">Active:</string>
+    <string name="MPProcActiveYes">YES</string>
+    <string name="MPProcActiveNo">NO</string>
+    <string name="prefs_mqtt_title_pub">MQTT Settings Publish</string>
 </resources>

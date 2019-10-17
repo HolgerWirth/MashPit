@@ -52,6 +52,10 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
         return new MPStatusViewHolder(itemView);
     }
 
+    public MPStatus getItem(int position) {
+        return statusList.get(position);
+    }
+
     class MPStatusViewHolder extends RecyclerView.ViewHolder {
         TextView mpstatServer;
         TextView mpstatProcesses;

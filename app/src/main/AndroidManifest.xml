@@ -77,6 +77,7 @@
         <activity android:name=".TempPagerActivity" />
         <activity android:name=".MPStatusListActivity"
             android:label="MashPit Server" />
+        <activity android:name=".MPProcListActivity" />
     </application>
 
 </manifest>

@@ -3,7 +3,7 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mpstatuscard_view"
+    android:id="@+id/mpproccard_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp"
@@ -17,73 +17,97 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/mpstatServerTitle"
+            android:id="@+id/mpstatProcNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
-            android:text="@string/mpstatServer"
+            android:text="@string/mpstatProcNameTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatServer"
+            android:id="@+id/mpstatProcName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginLeft="150dp"
+            android:layout_marginLeft="130dp"
             android:layout_marginTop="10dp"
             android:textStyle="bold"
-            android:text="@string/mpstatServer"
+            android:text="@string/mpstatProcNameTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcessesTitle"
-            android:layout_below="@id/mpstatServerTitle"
+            android:id="@+id/mpstatProcStatusTitle"
+            android:layout_below="@id/mpstatProcNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
-            android:text="@string/mpstatProcesses"
+            android:text="@string/mpstatProcStatusTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcesses"
-            android:layout_below="@id/mpstatServerTitle"
+            android:id="@+id/mpstatProcStatus"
+            android:layout_below="@id/mpstatProcNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginLeft="150dp"
+            android:layout_marginLeft="130dp"
             android:layout_marginTop="10dp"
             android:textStyle="bold"
-            android:text="@string/mpstatProcesses"
+            android:text="@string/mpstatProcStatusTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcActiveTitle"
+            android:id="@+id/mpstatProcPIDTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/mpstatProcessesTitle"
+            android:layout_below="@id/mpstatProcNameTitle"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="210dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/mpstatProcPIDTitle"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/mpstatProcPID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mpstatProcNameTitle"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="250dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:textStyle="bold"
+            android:text="@string/mpstatProcPIDTitle"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/mpstatProcTypeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mpstatProcStatusTitle"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
-            android:text="@string/mpstatProcActive"
+            android:text="@string/mpstatProcTypeTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/mpstatProcActive"
+            android:id="@+id/mpstatProcType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/mpstatProcessesTitle"
+            android:layout_below="@id/mpstatProcStatusTitle"
             android:layout_marginStart="5dp"
-            android:layout_marginLeft="150dp"
+            android:layout_marginLeft="130dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
             android:textStyle="bold"
-            android:text="@string/mpstatProcActive"
+            android:text="@string/mpstatProcTypeTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
-
     </RelativeLayout>
     </androidx.cardview.widget.CardView>
