@@ -20,7 +20,6 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
     private static final String DEBUG_TAG = "MQTTSettings";
     String IP;
     String port;
-    String domain;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +46,6 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
             if (resultCode == 1) {
                 IP = data.getStringExtra("IP");
                 port = data.getStringExtra("port");
-                domain = data.getStringExtra("domain");
 
                 Log.i(DEBUG_TAG, "Found MQTT Server IP: " + IP + " Port: " + port);
 
@@ -59,10 +57,6 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i(DEBUG_TAG, "Use broker with IP: " + IP);
 
-                        SettingsEdit MPdomain = (SettingsEdit) findPreference("mashpit_domain");
-                        MPdomain.setSummary(domain);
-                        MPdomain.setText(domain);
-
                         SettingsEdit editIP = (SettingsEdit) findPreference("broker_url");
                         editIP.setSummary(IP);
                         editIP.setText(IP);
@@ -70,10 +64,6 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                         SettingsEdit editPort = (SettingsEdit) findPreference("broker_port");
                         editPort.setSummary(port);
                         editPort.setText(port);
-
-                        SettingsEdit sMPdomain = (SettingsEdit) findPreference("send_mashpit_domain");
-                        sMPdomain.setSummary(domain);
-                        sMPdomain.setText(domain);
 
                         SettingsEdit seditIP = (SettingsEdit) findPreference("send_broker_url");
                         seditIP.setSummary(IP);
