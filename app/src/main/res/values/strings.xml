@@ -36,7 +36,7 @@
     <string name="no">No</string>
     <string name="temperature">Temperature</string>
     <string name="save_events1">Save events</string>
-    <string-array name="pref_topic_list_default"></string-array>
+    <string-array name="pref_topic_list_default" />
     <string name="pref_topic_list_title">Topic Selection</string>
     <string name="pref_topic_list_summary">Select topics to display</string>
     <string name="title_activity_find_server">Find MQTT Server</string>
