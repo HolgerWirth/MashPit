@@ -17,7 +17,6 @@ public class MQTTSettingsPub extends PreferenceFragment implements SharedPrefere
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs_mqtt_pub);
 
-
         MashPit.reconnect_action=false;
 
     }

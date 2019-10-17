@@ -55,6 +55,18 @@ public class MQTTSettingsSub extends PreferenceFragment implements SharedPrefere
                 }
                 if (key.equals("mashpit_domain")) {
                     MashPit.MPDomain=prefs.getString("mashpit_domain","");
+                    changed=true;
+                }
+
+                if(!prefs.getBoolean("broker_same",false))
+                {
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("send_mashpit_domain",prefs.getString("mashpit_domain",""));
+                    editor.putString("send_broker_url",prefs.getString("broker_url",""));
+                    editor.putString("send_broker_port",prefs.getString("broker_port",""));
+                    editor.putString("send_broker_user",prefs.getString("broker_user",""));
+                    editor.putString("send_broker_password",prefs.getString("broker_password",""));
+                    editor.apply();
                 }
 
                 if(changed) {
