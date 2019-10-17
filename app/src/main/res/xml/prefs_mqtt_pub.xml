@@ -5,7 +5,7 @@
     android:persistent="false"
     android:title="Subscreen">
 
-        <PreferenceCategory android:title="@string/prefs_mqtt_title">
+        <PreferenceCategory android:title="@string/prefs_mqtt_title_pub">
             <CheckBoxPreference
                 android:key="broker_same"
                 android:title="@string/prefs_same_broker"

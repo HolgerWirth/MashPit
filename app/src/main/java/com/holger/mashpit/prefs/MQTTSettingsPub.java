@@ -17,27 +17,26 @@ public class MQTTSettingsPub extends PreferenceFragment implements SharedPrefere
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs_mqtt_pub);
 
-        MashPit.reconnect_action=false;
-
+        MashPit.reconnect_action = false;
     }
 
-            @Override
-            public void onStop () {
-                super.onStop();
-                getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-            }
+    @Override
+    public void onStop() {
+        super.onStop();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
 
-            @Override
-            public void onStart () {
-                super.onStart();
-                getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-            }
+    @Override
+    public void onStart() {
+        super.onStart();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
 
-            @Override
-            public void onSharedPreferenceChanged (SharedPreferences prefs, String key){
-                Log.i(DEBUG_TAG, "Key: " + key);
-                if (key.equals("send_mashpit_domain")) {
-                    MashPit.MPDomain_send=prefs.getString("send_mashpit_domain","");
-                }
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        Log.i(DEBUG_TAG, "Key: " + key);
+        if (key.equals("send_mashpit_domain")) {
+            MashPit.MPDomain_send = prefs.getString("send_mashpit_domain", "");
+        }
     }
 }

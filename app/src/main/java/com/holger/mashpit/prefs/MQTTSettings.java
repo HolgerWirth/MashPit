@@ -27,7 +27,7 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs_mqtt);
 
-        MashPit.reconnect_action=false;
+        MashPit.reconnect_action = false;
 
         SettingsEdit editText = (SettingsEdit) findPreference("device_id");
         editText.setSummary(MashPit.mDeviceId);
@@ -36,7 +36,7 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
         pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                startActivityForResult(new Intent(getActivity(),FindServerActivity.class), 0);
+                startActivityForResult(new Intent(getActivity(), FindServerActivity.class), 0);
                 return true;
             }
         });
@@ -46,18 +46,18 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
         if (requestCode == 0) {
             if (resultCode == 1) {
                 IP = data.getStringExtra("IP");
-                port= data.getStringExtra("port");
-                domain=data.getStringExtra("domain");
+                port = data.getStringExtra("port");
+                domain = data.getStringExtra("domain");
 
-                Log.i(DEBUG_TAG, "Found MQTT Server IP: "+IP+" Port: "+port);
+                Log.i(DEBUG_TAG, "Found MQTT Server IP: " + IP + " Port: " + port);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getPreferenceScreen().getContext());
                 builder.setTitle("MQTT Server found!");
-                builder.setMessage("Do you want to use the broker with IP: "+IP);
+                builder.setMessage("Do you want to use the broker with IP: " + IP);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Use broker with IP: "+IP);
+                        Log.i(DEBUG_TAG, "Use broker with IP: " + IP);
 
                         SettingsEdit MPdomain = (SettingsEdit) findPreference("mashpit_domain");
                         MPdomain.setSummary(domain);
@@ -87,25 +87,23 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                 builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
                 builder.show();
 
-            }
-            else
-            {
-                Toast.makeText(getActivity(),"MQTT Server not found!",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getActivity(), "MQTT Server not found!", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-            @Override
-            public void onStop () {
-                super.onStop();
-                getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-            }
+    @Override
+    public void onStop() {
+        super.onStop();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
 
-            @Override
-            public void onStart () {
-                super.onStart();
-                getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-            }
+    @Override
+    public void onStart() {
+        super.onStart();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
