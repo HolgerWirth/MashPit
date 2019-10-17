@@ -76,7 +76,7 @@
     <string name="mpstatProcPIDTitle">PID:</string>
     <string name="mpstatProcTypeTitle">Adapter Type:</string>
     <string name="mpstatProcActive">Active:</string>
-    <string name="MPProcActiveYes">YES</string>
-    <string name="MPProcActiveNo">NO</string>
+    <string name="MPProcActiveYes">&#160;&#160;&#160;JA&#160;&#160;&#160;</string>
+    <string name="MPProcActiveNo">&#160;&#160;NEIN&#160;&#160;</string>
     <string name="prefs_mqtt_title_pub">MQTT Settings Publish</string>
 </resources>
