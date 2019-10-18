@@ -66,6 +66,15 @@ public class SettingsActivity extends PreferenceActivity
         {
             return ServiceSettings.class.getName().equals(fragmentName);
         }
+        if(fragmentName.equals("com.holger.mashpit.prefs.MQTTSettingsPub"))
+        {
+            return MQTTSettingsPub.class.getName().equals(fragmentName);
+        }
+        if(fragmentName.equals("com.holger.mashpit.prefs.MQTTSettingsSub"))
+        {
+            return MQTTSettingsSub.class.getName().equals(fragmentName);
+        }
+
         return false;
     }
 }
