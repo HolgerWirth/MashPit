@@ -259,7 +259,7 @@ public class TempChartActivity extends AppCompatActivity {
                                 break;
 
                             case R.id.nav_config:
-                                Intent n = new Intent(getApplicationContext(), ConfListActivity.class);
+                                Intent n = new Intent(getApplicationContext(), MPStatusListActivity.class);
                                 startActivity(n);
                                 break;
 

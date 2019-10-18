@@ -118,7 +118,7 @@ public class TempPagerActivity extends AppCompatActivity {
                                 break;
 
                             case R.id.nav_config:
-                                Intent m = new Intent(getApplicationContext(), ConfListActivity.class);
+                                Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
                                 startActivity(m);
                                 break;
 
