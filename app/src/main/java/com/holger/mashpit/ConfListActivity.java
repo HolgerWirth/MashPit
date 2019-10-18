@@ -51,11 +51,12 @@ public class ConfListActivity extends AppCompatActivity {
     String del_name;
     String action;
     String topic;
+    String type;
 
     @Override
     protected void onStart() {
-        super.onStart();
         EventBus.getDefault().register(this);
+        super.onStart();
     }
 
     @Override
@@ -77,6 +78,7 @@ public class ConfListActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "Started with action: " + action);
         if (action.equals("list")) {
             topic = getIntent().getStringExtra("topic");
+            type = getIntent().getStringExtra("type");
         }
 
         final Context context = this;
