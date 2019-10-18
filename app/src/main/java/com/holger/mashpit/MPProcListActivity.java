@@ -13,10 +13,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,10 +31,11 @@ public class MPProcListActivity extends AppCompatActivity {
     private static final String DEBUG_TAG = "MPProcListActivity";
     SnackBar snb;
     MPProcAdapter sa;
-//    Intent sintent;
     String action="";
     String server;
     Intent sintent;
+    RecyclerView mpprocList;
+    List<MPStatus> result;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,7 +46,7 @@ public class MPProcListActivity extends AppCompatActivity {
         snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "OnCreate");
 
-        final RecyclerView mpprocList = findViewById(R.id.mpprocList);
+        mpprocList = findViewById(R.id.mpprocList);
 
         mpprocList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
@@ -67,26 +72,8 @@ public class MPProcListActivity extends AppCompatActivity {
         assert ab != null;
         ab.setTitle(server);
 
-        final List<MPStatus> result = new ArrayList<>();
-        for (int i = 0; i < MashPit.MPStatusList.size(); i++) {
-            String server = MashPit.MPStatusList.get(i).getMPServer();
-            MPStatus mpStatus = new MPStatus();
-            if(MashPit.MPStatusList.get(i).getMPServer().equals(server))
-            {
-                mpStatus.MPServer=server;
-                mpStatus.topic=MashPit.MPStatusList.get(i).getStatusTopic();
-                try {
-                    JSONObject obj = new JSONObject(MashPit.MPStatusList.get(i).getStatus());
-                    mpStatus.active=obj.getString("status");
-                    mpStatus.PID=obj.getString("PID");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                result.add(mpStatus);
-            }
-        }
-
+        result = new ArrayList<>();
+        result = getProcList();
         sa = new MPProcAdapter(result);
 
         ItemClickSupport.addTo(mpprocList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -97,6 +84,7 @@ public class MPProcListActivity extends AppCompatActivity {
                 sintent = new Intent(getApplicationContext(), ConfListActivity.class);
                 sintent.putExtra("ACTION", "list");
                 sintent.putExtra("topic", result.get(position).topic);
+                sintent.putExtra("type",result.get(position).Type);
 
                 startActivityForResult(sintent, 0);
             }
@@ -112,5 +100,61 @@ public class MPProcListActivity extends AppCompatActivity {
         });
 
         mpprocList.setAdapter(sa);
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void getMPStatusEvent(MPStatusEvent mpstatusEvent)
+    {
+        Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer()+"/"+mpstatusEvent.getStatusTopic());
+
+        boolean foundProcess = false;
+        for(int i=0;i<MashPit.MPStatusList.size();i++)
+        {
+            if(MashPit.MPStatusList.get(i).getStatusTopic().equals((mpstatusEvent.getStatusTopic())))
+            {
+                foundProcess=true;
+                MashPit.MPStatusList.set(i,mpstatusEvent);
+            }
+        }
+        if(!foundProcess)
+        {
+            MashPit.MPStatusList.add(mpstatusEvent);
+        }
+        EventBus.getDefault().removeStickyEvent(mpstatusEvent);
+
+        result.clear();
+        result.addAll(getProcList());
+        sa.notifyDataSetChanged();
+    }
+
+    private List<MPStatus> getProcList()
+    {
+        List<MPStatus> proclist = new ArrayList<>();
+        for (int i = 0; i < MashPit.MPStatusList.size(); i++) {
+            String server = MashPit.MPStatusList.get(i).getMPServer();
+            MPStatus mpStatus = new MPStatus();
+            if(MashPit.MPStatusList.get(i).getMPServer().equals(server))
+            {
+                mpStatus.MPServer=server;
+                mpStatus.topic=MashPit.MPStatusList.get(i).getStatusTopic();
+                try {
+                    JSONObject obj = new JSONObject(MashPit.MPStatusList.get(i).getStatus());
+                    mpStatus.active=obj.getString("status");
+                    mpStatus.PID=obj.getString("PID");
+                    mpStatus.Type=obj.getString("type");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                proclist.add(mpStatus);
+            }
+        }
+        return proclist;
     }
 }

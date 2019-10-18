@@ -43,6 +43,8 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
         {
             mpProcViewHolder.mpprocStatus.setText(context.getString(R.string.MPProcActiveYes));
             mpProcViewHolder.mpprocStatus.setBackgroundResource(android.R.color.holo_green_light);
+            mpProcViewHolder.mpprocPIDTitle.setVisibility(View.VISIBLE);
+            mpProcViewHolder.mpprocPID.setVisibility(View.VISIBLE);
         }
         else
         {
@@ -50,9 +52,23 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
             mpProcViewHolder.mpprocStatus.setBackgroundResource(android.R.color.holo_red_light);
             mpProcViewHolder.mpprocPIDTitle.setVisibility(View.GONE);
             mpProcViewHolder.mpprocPID.setVisibility(View.GONE);
-
         }
-        mpProcViewHolder.mpprocType.setText("Power Socket");
+
+        switch(mpStatus.Type)
+        {
+            case("PWR"):
+                mpProcViewHolder.mpprocType.setText(context.getString(R.string.MPProcTypePWR));
+                break;
+            case("SSR"):
+                mpProcViewHolder.mpprocType.setText(context.getString(R.string.MPProcTypeSSR));
+                break;
+            case("SVR"):
+                mpProcViewHolder.mpprocType.setText(context.getString(R.string.MPProcTypeSVR));
+                break;
+            default:
+                mpProcViewHolder.mpprocType.setText("");
+                break;
+        }
         mpProcViewHolder.mpprocPID.setText(mpStatus.PID);
     }
 
@@ -64,10 +80,6 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
                 inflate(R.layout.mpproccard, viewGroup, false);
         context=viewGroup.getContext();
         return new MPProcViewHolder(itemView);
-    }
-
-    public MPStatus getItem(int position) {
-        return procList.get(position);
     }
 
     class MPProcViewHolder extends RecyclerView.ViewHolder {
