@@ -23,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
+import com.activeandroid.query.Select;
+import com.activeandroid.query.Update;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -39,6 +41,7 @@ import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.events.TemperatureEvent;
+import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
 import com.holger.mashpit.model.Subscriber;
 import com.holger.mashpit.model.Temperature;
@@ -82,6 +85,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private NotificationCompat.Builder builder;
     private StatusEvent statusEvent = new StatusEvent();
+
+    private static ArrayList<MPStatusEvent> MPServerList = new ArrayList<>();
+    private static ArrayList<MPStatusEvent> MPStatusList = new ArrayList<>();
 
     private String MQTT_DOMAIN="";
 
@@ -578,6 +584,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         ProcessEvent processEvent = new ProcessEvent();
         ConfEvent confEvent = new ConfEvent();
         MPStatusEvent mpstatusEvent = new MPStatusEvent();
+        Set<MPStatusEvent> serverset = new HashSet<MPStatusEvent>();
+        Set<MPStatusEvent> procset = new HashSet<MPStatusEvent>();
+
         JSONObject obj;
 
         String mess= new String(message.getPayload());
@@ -637,13 +646,61 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
 
         if (parts[3].equals("status")) {
-            Log.i(DEBUG_TAG, "Status: ");
+            Log.i(DEBUG_TAG, "Status: "+parts[2]+"/"+parts[4]);
+            boolean foundServer=false;
+            JSONObject mpstatus = new JSONObject(mess);
+
+//            http://tackmobile.com/blog/The-Ultimate-Guide-to-ORM-in-Android-Using-ActiveAndroid-Part-4.html
+
+            boolean exists =
+                    new Select()
+                            .from(MPStatus.class)
+                            .where("topic = ?", parts[4])
+                            .and("MPServer = ?",parts[2])
+                            .exists();
+
+            if(exists) {
+                // TODO: Implement Update
+
+            }
+        }
+
+            boolean foundServer=false;
             mpstatusEvent.setMPServer(parts[2]);
             mpstatusEvent.setStatusTopic(parts[4]);
             mpstatusEvent.setStatus(mess);
+            for(int i=0;i<MPServerList.size();i++)
+            {
+                if(MPServerList.get(i).getMPServer().equals(mpstatusEvent.getMPServer()))
+                {
+                    MPServerList.set(i,mpstatusEvent);
+                    foundServer=true;
+                    break;
+                }
+            }
+            if(!foundServer)
+            {
+                MPServerList.add(mpstatusEvent);
+            }
+
+            boolean foundProcess = false;
+            for(int i=0;i<MPStatusList.size();i++)
+            {
+                if(MPStatusList.get(i).getStatusTopic().equals((mpstatusEvent.getStatusTopic())))
+                {
+                    MPStatusList.set(i,mpstatusEvent);
+                    foundProcess=true;
+                }
+            }
+            if(!foundProcess)
+            {
+                MashPit.MPStatusList.add(mpstatusEvent);
+            }
+            serverset.addAll(MPServerList);
+            procset.addAll(MPStatusList);
+
             EventBus.getDefault().postSticky(mpstatusEvent);
         }
-    }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)

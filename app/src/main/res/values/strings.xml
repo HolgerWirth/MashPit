@@ -87,4 +87,7 @@
     <string name="MPProcActiveYes">&#160;&#160;YES&#160;&#160;&#160;</string>
     <string name="MPProcActiveNo">&#160;&#160;&#160;NO&#160;&#160;&#160;</string>
     <string name="prefs_mqtt_title_pub">MQTT Settings Publish</string>
+    <string name="MPProcTypePWR">Power Socket</string>
+    <string name="MPProcTypeSSR">Solid State Relais</string>
+    <string name="MPProcTypeSVR">Server</string>
 </resources>

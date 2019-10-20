@@ -1,6 +1,7 @@
 package com.holger.mashpit.prefs;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.holger.mashpit.MashPit;
 import com.holger.mashpit.R;
+import com.holger.mashpit.TemperatureService;
 
 public class MQTTSettingsSub extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -77,6 +79,8 @@ public class MQTTSettingsSub extends PreferenceFragment implements SharedPrefere
                 public void onClick(DialogInterface dialog, int which) {
                     Log.i(DEBUG_TAG, "Reconnect pressed!");
                     MashPit.reconnect_action = true;
+//                    getActivity().stopService(new Intent(getActivity(), TemperatureService.class));
+//                    getActivity().startService(new Intent(getActivity(), TemperatureService.class));
                 }
             });
             builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
