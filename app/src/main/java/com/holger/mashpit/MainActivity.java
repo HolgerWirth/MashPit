@@ -41,7 +41,6 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.holger.mashpit.events.ConfEvent;
-import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Process;
@@ -376,40 +375,6 @@ public class MainActivity extends AppCompatActivity {
         }
         updatePieData(currTemp);
         mChart.invalidate();
-    }
-
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getMPStatusEvent(MPStatusEvent mpstatusEvent)
-    {
-        Log.i(DEBUG_TAG, "getMPStatusEvent: ");
-        Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer()+"/"+mpstatusEvent.getStatusTopic());
-
-        boolean foundServer = false;
-        for(int i=0;i<MashPit.MPServerList.size();i++)
-        {
-            if(MashPit.MPServerList.get(i).getMPServer().equals(mpstatusEvent.getMPServer()))
-            {
-                foundServer=true;
-                break;
-            }
-        }
-        if(!foundServer)
-        {
-            MashPit.MPServerList.add(mpstatusEvent);
-        }
-
-        boolean foundProcess = false;
-        for(int i=0;i<MashPit.MPStatusList.size();i++)
-        {
-            if(MashPit.MPStatusList.get(i).getStatusTopic().equals((mpstatusEvent.getStatusTopic())))
-            {
-                foundProcess=true;
-            }
-        }
-        if(!foundProcess)
-        {
-            MashPit.MPStatusList.add(mpstatusEvent);
-        }
     }
 
     protected void setCenterHeater(String temp, String toTemp) {

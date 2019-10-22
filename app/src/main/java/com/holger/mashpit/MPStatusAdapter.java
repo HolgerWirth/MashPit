@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.holger.mashpit.model.MPStatus;
+import com.holger.mashpit.events.MPStatusEvent;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
 
     private static final String DEBUG_TAG = "MPStatusAdapter";
 
-    private List<MPStatus> statusList;
+    private List<MPStatusEvent> statusList;
 
-    MPStatusAdapter(List<MPStatus> statusList) {
+    MPStatusAdapter(List<MPStatusEvent> statusList) {
         this.statusList = statusList;
         if(statusList != null) Log.i(DEBUG_TAG, "MPServer: "+this.statusList.size());
     }
@@ -36,10 +36,10 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
 
     @Override
     public void onBindViewHolder(@NonNull MPStatusViewHolder mpStatusViewHolder, int i) {
-        MPStatus mpStatus = this.statusList.get(i);
-        mpStatusViewHolder.mpstatServer.setText(mpStatus.MPServer);
-        mpStatusViewHolder.mpstatProcesses.setText(mpStatus.processes);
-        mpStatusViewHolder.mpstatProcActive.setText(mpStatus.active);
+        MPStatusEvent mpStatusEvent = this.getItem(i);
+        mpStatusViewHolder.mpstatServer.setText(mpStatusEvent.getMPServer());
+        mpStatusViewHolder.mpstatProcesses.setText(String.valueOf(mpStatusEvent.getProcesses()));
+        mpStatusViewHolder.mpstatProcActive.setText(String.valueOf(mpStatusEvent.getActprocesses()));
     }
 
     @NonNull
@@ -52,7 +52,7 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
         return new MPStatusViewHolder(itemView);
     }
 
-    public MPStatus getItem(int position) {
+    private MPStatusEvent getItem(int position) {
         return statusList.get(position);
     }
 

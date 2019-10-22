@@ -10,10 +10,8 @@ public class MPStatus extends Model implements Serializable {
     public String topic;
     @Column(name = "MPServer",index=true)
     public String MPServer;
-    @Column(name = "processes")
-    public String processes;
     @Column(name = "active")
-    public String active;
+    public boolean active;
     @Column(name = "PID")
     public String PID;
     @Column(name = "Type")
@@ -25,11 +23,10 @@ public class MPStatus extends Model implements Serializable {
         super();
     }
 
-    public MPStatus(String topic, String MPServer, String processes,String active, String PID, String Type) {
+    public MPStatus(String topic, String MPServer,boolean active, String PID, String Type) {
         super();
         this.topic=topic;
         this.MPServer=MPServer;
-        this.processes=processes;
         this.active=active;
         this.PID=PID;
         this.Type=Type;
@@ -41,8 +38,6 @@ public class MPStatus extends Model implements Serializable {
                 + topic
                 + " MPServer: "
                 + MPServer
-                + " processes: "
-                + processes
                 + "active: "
                 + active
                 + " PID: "

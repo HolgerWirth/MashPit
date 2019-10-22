@@ -86,9 +86,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private NotificationCompat.Builder builder;
     private StatusEvent statusEvent = new StatusEvent();
 
-    private static ArrayList<MPStatusEvent> MPServerList = new ArrayList<>();
-    private static ArrayList<MPStatusEvent> MPStatusList = new ArrayList<>();
-
     private String MQTT_DOMAIN="";
 
     private volatile boolean backgroundDataEnabled;
@@ -584,20 +581,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         ProcessEvent processEvent = new ProcessEvent();
         ConfEvent confEvent = new ConfEvent();
         MPStatusEvent mpstatusEvent = new MPStatusEvent();
-        Set<MPStatusEvent> serverset = new HashSet<MPStatusEvent>();
-        Set<MPStatusEvent> procset = new HashSet<MPStatusEvent>();
-
         JSONObject obj;
 
-        String mess= new String(message.getPayload());
+        String mess = new String(message.getPayload());
 
         String[] parts = topic.split("/");
         tempEvent.setTopic(parts[1]);
         processEvent.setTopic(parts[1]);
 
-        Log.i(DEBUG_TAG, "'"+parts[1]+"/"+parts[2]+"' messageArrived with QoS: "+message.getQos());
+        Log.i(DEBUG_TAG, "'" + parts[1] + "/" + parts[2] + "' messageArrived with QoS: " + message.getQos());
 
-        if(parts[1].equals("temp")) {
+        if (parts[1].equals("temp")) {
             obj = new JSONObject(mess);
             try {
                 tempEvent.setEvent(obj.getString("Temp") + "°");
@@ -615,91 +609,73 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 }
                 EventBus.getDefault().postSticky(tempEvent);
 
-                sendData(tempEvent.getMode(),tempEvent.getSensor(),tempEvent.getEvent());
+                sendData(tempEvent.getMode(), tempEvent.getSensor(), tempEvent.getEvent());
 
             } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-    if(parts[1].equals("MP")) {
-        if (parts[2].equals("process")) {
-            Log.i(DEBUG_TAG, "Process: ");
-            Process proc = Process.load(Process.class, 1);
-            if (proc == null) {
-                Process nproc = new Process(mess);
-                nproc.save();
-                Log.i(DEBUG_TAG, "Process inserted");
-            } else {
-                proc.myJSONString = mess;
-                proc.save();
-                Log.i(DEBUG_TAG, "Process updated");
-            }
-            EventBus.getDefault().postSticky(processEvent);
-        }
-
-        if (parts[3].equals("conf")) {
-            Log.i(DEBUG_TAG, "Configuration: ");
-            confEvent.setMPServer(parts[2]);
-            confEvent.setConfTopic(parts[4]);
-            confEvent.setXMLString(mess);
-            EventBus.getDefault().postSticky(confEvent);
-        }
-
-        if (parts[3].equals("status")) {
-            Log.i(DEBUG_TAG, "Status: "+parts[2]+"/"+parts[4]);
-            boolean foundServer=false;
-            JSONObject mpstatus = new JSONObject(mess);
-
-//            http://tackmobile.com/blog/The-Ultimate-Guide-to-ORM-in-Android-Using-ActiveAndroid-Part-4.html
-
-            boolean exists =
-                    new Select()
-                            .from(MPStatus.class)
-                            .where("topic = ?", parts[4])
-                            .and("MPServer = ?",parts[2])
-                            .exists();
-
-            if(exists) {
-                // TODO: Implement Update
-
+                e.printStackTrace();
             }
         }
+        if (parts[1].equals("MP")) {
+            if (parts[2].equals("process")) {
+                Log.i(DEBUG_TAG, "Process: ");
+                Process proc = Process.load(Process.class, 1);
+                if (proc == null) {
+                    Process nproc = new Process(mess);
+                    nproc.save();
+                    Log.i(DEBUG_TAG, "Process inserted");
+                } else {
+                    proc.myJSONString = mess;
+                    proc.save();
+                    Log.i(DEBUG_TAG, "Process updated");
+                }
+                EventBus.getDefault().postSticky(processEvent);
+            }
 
-            boolean foundServer=false;
-            mpstatusEvent.setMPServer(parts[2]);
-            mpstatusEvent.setStatusTopic(parts[4]);
-            mpstatusEvent.setStatus(mess);
-            for(int i=0;i<MPServerList.size();i++)
-            {
-                if(MPServerList.get(i).getMPServer().equals(mpstatusEvent.getMPServer()))
-                {
-                    MPServerList.set(i,mpstatusEvent);
-                    foundServer=true;
-                    break;
+            if (parts[3].equals("conf")) {
+                Log.i(DEBUG_TAG, "Configuration: ");
+                confEvent.setMPServer(parts[2]);
+                confEvent.setConfTopic(parts[4]);
+                confEvent.setXMLString(mess);
+                EventBus.getDefault().postSticky(confEvent);
+            }
+
+            if (parts[3].equals("status")) {
+                Log.i(DEBUG_TAG, "Status: " + parts[2] + "/" + parts[4]);
+                mpstatusEvent.setMPServer(parts[2]);
+                mpstatusEvent.setStatusTopic(parts[4]);
+
+                obj = new JSONObject(mess);
+
+                try {
+                    if (obj.getString("status").equals("0")) {
+                        mpstatusEvent.setActive(false);
+                    } else {
+                        mpstatusEvent.setActive(true);
+                    }
+                    mpstatusEvent.setPID(obj.getString("PID"));
+                    mpstatusEvent.setType(obj.getString("Type"));
+
+                    boolean exists =
+                            new Select()
+                                    .from(MPStatus.class)
+                                    .where("topic = ?", mpstatusEvent.getStatusTopic())
+                                    .and("MPServer = ?", mpstatusEvent.getMPServer())
+                                    .exists();
+
+                    if (exists) {
+                        new Update(MPStatus.class)
+                                .set("active = ?," + "PID = ?," + "Type = ?", obj.getString("status"), mpstatusEvent.getPID(), mpstatusEvent.getType())
+                                .where("topic = ? and " + "MPServer = ?", mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer())
+                                .execute();
+                    } else {
+                        MPStatus mpstatus = new MPStatus(mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer(), mpstatusEvent.isActive(), mpstatusEvent.getPID(), mpstatusEvent.getType());
+                        mpstatus.save();
+                    }
+                    EventBus.getDefault().postSticky(mpstatusEvent);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
-            if(!foundServer)
-            {
-                MPServerList.add(mpstatusEvent);
-            }
-
-            boolean foundProcess = false;
-            for(int i=0;i<MPStatusList.size();i++)
-            {
-                if(MPStatusList.get(i).getStatusTopic().equals((mpstatusEvent.getStatusTopic())))
-                {
-                    MPStatusList.set(i,mpstatusEvent);
-                    foundProcess=true;
-                }
-            }
-            if(!foundProcess)
-            {
-                MashPit.MPStatusList.add(mpstatusEvent);
-            }
-            serverset.addAll(MPServerList);
-            procset.addAll(MPStatusList);
-
-            EventBus.getDefault().postSticky(mpstatusEvent);
         }
     }
 

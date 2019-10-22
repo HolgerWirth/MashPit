@@ -39,7 +39,7 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
     public void onBindViewHolder(@NonNull MPProcViewHolder mpProcViewHolder, int i) {
         MPStatus mpStatus = this.procList.get(i);
         mpProcViewHolder.mpprocName.setText(mpStatus.topic);
-        if(mpStatus.active.equals("1"))
+        if(mpStatus.active)
         {
             mpProcViewHolder.mpprocStatus.setText(context.getString(R.string.MPProcActiveYes));
             mpProcViewHolder.mpprocStatus.setBackgroundResource(android.R.color.holo_green_light);

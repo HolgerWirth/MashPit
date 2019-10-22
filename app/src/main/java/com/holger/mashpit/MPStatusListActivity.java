@@ -12,9 +12,15 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.activeandroid.query.Select;
+import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +30,7 @@ public class MPStatusListActivity extends AppCompatActivity {
     SnackBar snb;
     MPStatusAdapter sa;
     Intent sintent;
+    List<MPStatusEvent> result = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,37 +58,7 @@ public class MPStatusListActivity extends AppCompatActivity {
             }
         });
 
-        final List<MPStatus> result = new ArrayList<>();
-        for (int i = 0; i < MashPit.MPServerList.size(); i++) {
-            String server = MashPit.MPServerList.get(i).getMPServer();
-            MPStatus mpStatus = new MPStatus();
-            int procs=0;
-            if(result.size()==0)
-            {
-                mpStatus.MPServer=server;
-                mpStatus.active=Integer.toString(1);
-                mpStatus.processes=Integer.toString(1);
-                procs=1;
-                result.add(mpStatus);
-            }
-            for(int t=0; t < result.size();t++)
-            {
-                if(result.get(t).MPServer.equals(server))
-                {
-                    procs++;
-                    result.get(t).processes=Integer.toString(procs);
-                }
-                else
-                {
-                    mpStatus.MPServer=server;
-                    mpStatus.active="1";
-                    mpStatus.processes="1";
-                    result.add(mpStatus);
-                    break;
-                }
-            }
-        }
-
+        result.addAll(updateServerList());
         sa = new MPStatusAdapter(result);
 
         ItemClickSupport.addTo(mpstatusList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -91,7 +68,7 @@ public class MPStatusListActivity extends AppCompatActivity {
 
                 sintent = new Intent(getApplicationContext(), MPProcListActivity.class);
                 sintent.putExtra("ACTION", "list");
-                sintent.putExtra("server", result.get(position).MPServer);
+                sintent.putExtra("server", result.get(position).getMPServer());
 
                 startActivityForResult(sintent, 0);
             }
@@ -107,5 +84,80 @@ public class MPStatusListActivity extends AppCompatActivity {
         });
 
         mpstatusList.setAdapter(sa);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getMPStatusEvent(MPStatusEvent mpstatusEvent) {
+        Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer() + "/" + mpstatusEvent.getStatusTopic());
+        List<MPStatusEvent> updateresult = updateServerList();
+        result.clear();
+        result.addAll(updateresult);
+        sa.notifyDataSetChanged();
+    }
+
+    private List<MPStatusEvent> updateServerList()
+    {
+        final List<MPStatusEvent> upresult = new ArrayList<>();
+        List<MPStatus> mpstatus = new Select().all().from(MPStatus.class).orderBy("MPServer ASC").execute();
+        int procs=0;
+        int active=0;
+
+        for (int i = 0; i < mpstatus.size(); i++) {
+           String server = mpstatus.get(i).MPServer;
+            MPStatusEvent mpevent = new MPStatusEvent();
+            if(upresult.size()==0)
+            {
+                mpevent.setMPServer(server);
+                mpevent.setActive(mpstatus.get(i).active);
+                mpevent.setProcesses(0);
+                mpevent.setActprocesses(0);
+                upresult.add(mpevent);
+            }
+            for(int t=0; t < upresult.size();t++)
+            {
+                if(upresult.get(t).getMPServer().equals(server))
+                {
+                    mpevent=upresult.get(t);
+                    procs++;
+                    mpevent.setProcesses(procs);
+                    if(mpstatus.get(i).active)
+                    {
+                        active++;
+                        mpevent.setActprocesses(active);
+                    }
+
+                    upresult.set(t,mpevent);
+                }
+                else
+                {
+                    mpevent.setMPServer(server);
+                    mpevent.setProcesses(1);
+                    mpevent.setActive(mpstatus.get(i).active);
+                    if(upresult.get(t).isActive())
+                    {
+                        mpevent.setActprocesses(1);
+                    }
+                    else
+                    {
+                        mpevent.setActprocesses(0);
+                    }
+                    upresult.add(mpevent);
+                    break;
+                }
+            }
+        }
+        return upresult;
     }
 }
