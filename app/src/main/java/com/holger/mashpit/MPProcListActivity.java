@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.activeandroid.query.Select;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.tools.ItemClickSupport;
@@ -69,6 +70,15 @@ public class MPProcListActivity extends AppCompatActivity {
         assert ab != null;
         ab.setTitle(server);
 
+        FloatingActionButton fabadd = findViewById(R.id.procfabadd);
+        fabadd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(DEBUG_TAG, "Clicked the add button");
+                //TODO: Implement add adapter https://medium.com/@lcdsmao/material-design-transition-for-floating-action-button-in-android-dc8304343cfe
+            }
+        });
+
         result = new Select().from(MPStatus.class).where("MPServer = ?", server).orderBy("topic ASC").execute();
         sa = new MPProcAdapter(result);
 
@@ -83,15 +93,6 @@ public class MPProcListActivity extends AppCompatActivity {
                 sintent.putExtra("type", result.get(position).Type);
 
                 startActivityForResult(sintent, 0);
-            }
-        });
-
-        ItemClickSupport.addTo(mpprocList).setOnItemLongClickListener(new ItemClickSupport.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(RecyclerView view, int position, View v) {
-                Log.i(DEBUG_TAG, "Long Clicked!");
-
-                return true;
             }
         });
 

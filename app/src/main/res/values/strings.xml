@@ -90,4 +90,6 @@
     <string name="MPProcTypePWR">Power Socket</string>
     <string name="MPProcTypeSSR">Solid State Relais</string>
     <string name="MPProcTypeSVR">Server</string>
+    <string name="procfabadddesc">Add a new adapter</string>
+    <string name="procfabdelesc">Delete Adapter</string>
 </resources>
