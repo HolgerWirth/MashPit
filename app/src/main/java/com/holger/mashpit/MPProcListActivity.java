@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -34,6 +35,7 @@ public class MPProcListActivity extends AppCompatActivity {
     Intent sintent;
     RecyclerView mpprocList;
     List<MPStatus> result;
+    boolean iscollapsed=false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,14 +72,55 @@ public class MPProcListActivity extends AppCompatActivity {
         assert ab != null;
         ab.setTitle(server);
 
-        FloatingActionButton fabadd = findViewById(R.id.procfabadd);
+        final FloatingActionButton fabadd = findViewById(R.id.procfabadd);
+        final FloatingActionButton fabpower = findViewById(R.id.procfabpower);
+        final FloatingActionButton fabssr = findViewById(R.id.procfabssr);
+        final LinearLayout speeddial= this.findViewById(R.id.procspeeddial);
+
+
         fabadd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the add button");
-                //TODO: Implement add adapter https://medium.com/@lcdsmao/material-design-transition-for-floating-action-button-in-android-dc8304343cfe
+                Log.i(DEBUG_TAG, "Clicked the FAB button");
+                if(iscollapsed)
+                {
+                    speeddial.setVisibility(LinearLayout.GONE);
+                    iscollapsed=false;
+                }
+                else
+                {
+                    speeddial.setVisibility(LinearLayout.VISIBLE);
+                    iscollapsed=true;
+                }
             }
         });
+
+        fabpower.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(DEBUG_TAG, "Clicked the POWER button");
+                speeddial.setVisibility(LinearLayout.GONE);
+                iscollapsed=false;
+                Intent l = new Intent(getApplicationContext(), ConfEdit.class);
+                l.putExtra("ACTION", "insert");
+                l.putExtra("adapter", "PWR");
+                startActivityForResult(l, 0);
+            }
+        });
+
+        fabssr.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(DEBUG_TAG, "Clicked the SSR button");
+                speeddial.setVisibility(LinearLayout.GONE);
+                iscollapsed=false;
+                Intent l = new Intent(getApplicationContext(), ConfEdit.class);
+                l.putExtra("ACTION", "insert");
+                l.putExtra("adapter", "SSR");
+                startActivityForResult(l, 0);
+            }
+        });
+
 
         result = new Select().from(MPStatus.class).where("MPServer = ?", server).orderBy("topic ASC").execute();
         sa = new MPProcAdapter(result);

@@ -7,7 +7,7 @@
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     tools:context="com.holger.mashpit.ConfEdit">
 
-    <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.appcompat.widget.Toolbar
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/confedit_toolbar"
         android:layout_width="match_parent"
@@ -128,53 +128,41 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom"
-        android:orientation="vertical">
+        android:id="@+id/canceldelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        fab:layout_anchor="@id/editButton"
+        fab:layout_anchorGravity="top|center_horizontal">
 
-        <com.melnykov.fab.FloatingActionButton
-            android:id="@+id/deleteButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="top|end"
-            android:layout_marginRight="11dp"
-            android:layout_marginBottom="24dp"
-            android:clickable="true"
-            android:src="@drawable/ic_delete_white_24dp"
-            android:visibility="gone"
-            fab:fabSize="normal"
-            fab:fab_colorNormal="#F44336"
-            fab:fab_colorPressed="#C62828"
-            fab:fab_colorRipple="#ff3b7095" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                fab:srcCompat="@drawable/ic_delete_white_24dp" />
 
-        <com.melnykov.fab.FloatingActionButton
-            android:id="@+id/cancelButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="top|end"
-            android:layout_marginRight="11dp"
-            android:layout_marginBottom="24dp"
-            android:clickable="true"
-            android:src="@drawable/ic_cancel_white_24dp"
-            android:visibility="gone"
-            fab:fabSize="normal"
-            fab:fab_colorNormal="#F44336"
-            fab:fab_colorPressed="#C62828"
-            fab:fab_colorRipple="#ff3b7095" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_cancel_white_24dp"/>
+        </LinearLayout>
 
-        <com.melnykov.fab.FloatingActionButton
-            android:id="@+id/editButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="bottom|end"
-            android:layout_marginRight="11dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:src="@drawable/ic_done_white_24dp"
-            fab:fabSize="normal"
-            fab:fab_colorNormal="#144266"
-            fab:fab_colorPressed="#ff15304c"
-            fab:fab_colorRipple="#ff3b7095" />
-    </LinearLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/editButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/procfabadddesc"
+        android:src="@drawable/ic_done_white_24dp"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

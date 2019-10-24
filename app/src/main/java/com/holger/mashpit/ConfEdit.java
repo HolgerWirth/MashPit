@@ -12,8 +12,8 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.tools.TextValidator;
-import com.melnykov.fab.FloatingActionButton;
 
 public class ConfEdit extends AppCompatActivity {
 
@@ -23,6 +23,7 @@ public class ConfEdit extends AppCompatActivity {
     FloatingActionButton cancelButton;
     int position;
     String action="";
+    String type = "";
     boolean text1=true;
     boolean text2=true;
     String name;
@@ -42,7 +43,6 @@ public class ConfEdit extends AppCompatActivity {
         EditText hysterese = findViewById(R.id.confHyst);
         final EditText confName =  findViewById(R.id.confName);
 
-
         deleteButton = findViewById(R.id.deleteButton);
         cancelButton = findViewById(R.id.cancelButton);
         actionButton = findViewById(R.id.editButton);
@@ -54,9 +54,11 @@ public class ConfEdit extends AppCompatActivity {
         final AlertDialog.Builder deleteDialog;
 
         action = getIntent().getStringExtra("ACTION");
-        Log.i(DEBUG_TAG, "Started with action: " + action);
+        type = getIntent().getStringExtra("adapter");
+
+        Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
         if (action.equals("edit")) {
-            actionButton.setVisibility(View.VISIBLE);
+            actionButton.show();
             buttonCheck(1, false);
             buttonCheck(2, false);
             position = getIntent().getIntExtra("pos", 0);
@@ -79,14 +81,14 @@ public class ConfEdit extends AppCompatActivity {
             confName.setEnabled(false);
             name = getIntent().getStringExtra("confName");
 
-            deleteButton.setVisibility(View.VISIBLE);
+            deleteButton.show();
         }
         if (action.equals("insert")) {
             confName.setEnabled(true);
-            actionButton.setVisibility(View.VISIBLE);
+            actionButton.show();
         }
 
-        cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.show();
 
         Toolbar toolbar = findViewById(R.id.confedit_toolbar);
         setSupportActionBar(toolbar);
@@ -197,11 +199,11 @@ public class ConfEdit extends AppCompatActivity {
 
         if(text1 || text2)
         {
-            actionButton.setVisibility(View.GONE);
+            actionButton.hide();
         }
         else
         {
-            actionButton.setVisibility(View.VISIBLE);
+            actionButton.show();
         }
     }
 

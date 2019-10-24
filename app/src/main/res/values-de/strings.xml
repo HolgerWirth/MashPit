@@ -84,4 +84,6 @@
     <string name="MPProcTypeSVR">Server</string>
     <string name="procfabadddesc">Add a new adapter</string>
     <string name="procfabdelesc">Delete Adapter</string>
+    <string name="procfabpowerdesc">Power Socket</string>
+    <string name="procfabssrdesc">SSR</string>
 </resources>
