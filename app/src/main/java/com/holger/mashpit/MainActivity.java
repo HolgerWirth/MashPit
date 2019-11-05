@@ -40,7 +40,6 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.holger.mashpit.events.ConfEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Process;
@@ -280,7 +279,6 @@ public class MainActivity extends AppCompatActivity {
                                 break;
 
                             case R.id.nav_config:
-//                                Intent m = new Intent(getApplicationContext(), ConfListActivity.class);
                                 Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
                                 startActivity(m);
                                 break;
@@ -344,23 +342,6 @@ public class MainActivity extends AppCompatActivity {
 
             mChart.invalidate();
         }
-    }
-
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getConfEvent(ConfEvent confEvent) {
-        Log.i(DEBUG_TAG, "getConfEvent: " + confEvent.getConfTopic());
-
-        boolean foundconf = false;
-        for (int i = 0; i < MashPit.confXMLList.size(); i++)
-            if (MashPit.confXMLList.get(i).getConfTopic().equals(confEvent.getConfTopic())) {
-                MashPit.confXMLList.get(i).setXMLString(confEvent.getXMLString());
-                foundconf = true;
-            }
-        if (foundconf) {
-            Log.i(DEBUG_TAG, "getConfEvent: " + confEvent.getConfTopic() + " conf found");
-            return;
-        }
-        MashPit.confXMLList.add(confEvent);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
