@@ -12,7 +12,9 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.activeandroid.query.Select;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.holger.mashpit.model.Config;
 import com.holger.mashpit.tools.TextValidator;
 
 public class ConfEdit extends AppCompatActivity {
@@ -27,13 +29,33 @@ public class ConfEdit extends AppCompatActivity {
     boolean text1=true;
     boolean text2=true;
     String name;
-
+    String server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_conf_edit);
+        action = getIntent().getStringExtra("ACTION");
+        type = getIntent().getStringExtra("adapter");
+        server = getIntent().getStringExtra("server");
+
+        EditText GPIO = null;
+        EditText IRid = null;
+        EditText IRcode = null;
+
+        switch(type)
+        {
+            case "SSR":
+                setContentView(R.layout.activity_confeditssr);
+                GPIO=findViewById(R.id.confGPIO);
+                break;
+
+            case "PWR":
+                setContentView(R.layout.activity_confeditpwr);
+                IRid=findViewById(R.id.confIRid);
+                IRcode=findViewById(R.id.confIRcode);
+                break;
+        }
 
         final Switch active = findViewById(R.id.confActive);
         EditText topic = findViewById(R.id.confTopic);
@@ -53,38 +75,61 @@ public class ConfEdit extends AppCompatActivity {
         final AlertDialog.Builder alertDialog;
         final AlertDialog.Builder deleteDialog;
 
-        action = getIntent().getStringExtra("ACTION");
-        type = getIntent().getStringExtra("adapter");
-
         Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
         if (action.equals("edit")) {
             actionButton.show();
             buttonCheck(1, false);
             buttonCheck(2, false);
             position = getIntent().getIntExtra("pos", 0);
+            name = getIntent().getStringExtra("name");
+
+            Config conf = new Select().from(Config.class).where("name = ?", name).and("MPServer = ?",server).orderBy("topic ASC").executeSingle();
+            if(conf==null)
+            {
+                return;
+            }
+
             active.setChecked(false);
-            if(getIntent().getStringExtra("confActive").equals("1"))
+            if(conf.active)
             {
                 active.setChecked(true);
             }
 
             minmax.setChecked(false);
-            if(getIntent().getStringExtra("confMinMax").equals("1"))
+            if(conf.minmax)
             {
                 minmax.setChecked(true);
             }
-            topic.setText(getIntent().getStringExtra("confTopic"));
-            temp.setText(getIntent().getStringExtra("confTemp"));
-            time.setText(getIntent().getStringExtra("confTime"));
-            hysterese.setText(getIntent().getStringExtra("confHyst"));
-            confName.setText(getIntent().getStringExtra("confName"));
+            topic.setText(conf.topic);
+            temp.setText(conf.temp);
+            time.setText(conf.time);
+            hysterese.setText(conf.hysterese);
+            confName.setText(conf.name);
             confName.setEnabled(false);
-            name = getIntent().getStringExtra("confName");
 
-            deleteButton.show();
+            if(type.equals("SSR"))
+            {
+                assert GPIO != null;
+                GPIO.setText(conf.GPIO);
+            }
+            if(type.equals("PWR"))
+            {
+                assert IRid != null;
+                IRid.setText(conf.IRid);
+                assert IRcode != null;
+                IRcode.setText(conf.IRcode);
+            }
+
+            if((getIntent().getBooleanExtra("active",false)))
+            {
+                deleteButton.hide();
+            }
         }
+
         if (action.equals("insert")) {
             confName.setEnabled(true);
+            active.setChecked(true);
+            minmax.setChecked(true);
             actionButton.show();
         }
 
@@ -169,8 +214,7 @@ public class ConfEdit extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
-                Intent intent = createConfIntent();
-                setResult(0, intent);
+                setResult(0, null);
                 finish();
             }
         });
@@ -212,29 +256,42 @@ public class ConfEdit extends AppCompatActivity {
         Intent intent = new Intent();
         intent.putExtra("ACTION",action);
         intent.putExtra("pos",position);
-
+        intent.putExtra("type",type);
         intent.putExtra("confName",((EditText) findViewById(R.id.confName)).getText().toString());
+        intent.putExtra("server",server);
         Switch active = findViewById(R.id.confActive);
         Switch minmax = findViewById(R.id.confMaxTemp);
         if(active.isChecked())
         {
-            intent.putExtra("confActive", "1");
+            intent.putExtra("confActive",true);
         }
         else {
-            intent.putExtra("confActive", "0");
+            intent.putExtra("confActive",false);
         }
         if(minmax.isChecked())
         {
-            intent.putExtra("confMinMax", "1");
+            intent.putExtra("confMinMax", true);
         }
         else {
-            intent.putExtra("confMinMax", "0");
+            intent.putExtra("confMinMax", false);
         }
         intent.putExtra("confTopic", ((EditText) findViewById(R.id.confTopic)).getText().toString());
         intent.putExtra("confTemp", ((EditText) findViewById(R.id.confTemp)).getText().toString());
         intent.putExtra("confTime", ((EditText) findViewById(R.id.confTime)).getText().toString());
         intent.putExtra("confHyst", ((EditText) findViewById(R.id.confHyst)).getText().toString());
 
+        intent.putExtra("confGPIO","");
+        intent.putExtra("confIRid","");
+        intent.putExtra("confIRcode","");
+        if(type.equals("SSR"))
+        {
+            intent.putExtra("confGPIO",((EditText) findViewById(R.id.confGPIO)).getText().toString());
+        }
+        if(type.equals("PWR"))
+        {
+            intent.putExtra("confIRid",((EditText) findViewById(R.id.confIRid)).getText().toString());
+            intent.putExtra("confIRcode",((EditText) findViewById(R.id.confIRcode)).getText().toString());
+        }
         return intent;
     }
 }

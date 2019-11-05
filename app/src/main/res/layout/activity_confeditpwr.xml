@@ -27,18 +27,6 @@
         android:layout_below="@+id/confedit_toolbar"
         android:layout_alignParentBottom="true">
 
-        <Switch
-            android:id="@+id/confActive"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="150dp"
-            android:gravity="left"
-            android:text="Active"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            tools:checked="true" />
-
         <TextView
             android:layout_marginTop="20dp"
             android:layout_width="match_parent"
@@ -53,13 +41,48 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="@string/confIRidTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+
+            <EditText
+                android:id="@+id/confIRid"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:layout_marginRight="100dp"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="@string/confIRcodeTitle"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+
+            <EditText
+                android:id="@+id/confIRcode"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+        </LinearLayout>
+
         <TextView
-            android:layout_below="@id/confActive"
-            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:text="@string/confTopicTitle" />
+            android:layout_below="@id/confIRid"
+            android:layout_marginTop="10dp"
+            android:text="@string/confTopicTitle"
+            android:textSize="@dimen/abc_text_size_medium_material" />
 
         <EditText
             android:id="@+id/confTopic"
@@ -75,30 +98,32 @@
             android:layout_height="wrap_content"
             android:text="@string/confTempTitle" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" >
-        <EditText
-            android:id="@+id/confTemp"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:inputType="number"
-            android:digits="-.0123456789"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content" />
-        <Switch
-            android:id="@+id/confMaxTemp"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="150dp"
-            android:showText="true"
-            android:textOff="Min"
-            android:textOn="Max"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:theme="@style/TempMinMax" />
-    </LinearLayout>
+            android:gravity="center"
+            android:orientation="horizontal" >
+            <EditText
+                android:id="@+id/confTemp"
+                android:textSize="@dimen/abc_text_size_medium_material"
+                android:inputType="number"
+                android:digits="-.0123456789"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content" />
+            <Switch
+                android:id="@+id/confMaxTemp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginEnd="150dp"
+                android:showText="true"
+                android:textOff="Min"
+                android:textOn="Max"
+                android:textSize="@dimen/abc_text_size_medium_material"
+                android:theme="@style/TempMinMax"
+                android:layout_marginRight="150dp" />
+        </LinearLayout>
 
         <TextView
             android:textSize="@dimen/abc_text_size_medium_material"
@@ -125,6 +150,19 @@
             android:digits="0123456789"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+        <Switch
+            android:id="@+id/confActive"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="150dp"
+            android:gravity="left"
+            android:text="@string/confAutostartTitle"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            tools:checked="true" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -137,24 +175,24 @@
         fab:layout_anchor="@id/editButton"
         fab:layout_anchorGravity="top|center_horizontal">
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/deleteButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                fab:srcCompat="@drawable/ic_delete_white_24dp" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            fab:srcCompat="@drawable/ic_delete_white_24dp" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/cancelButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_cancel_white_24dp"/>
-        </LinearLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_cancel_white_24dp"/>
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/editButton"

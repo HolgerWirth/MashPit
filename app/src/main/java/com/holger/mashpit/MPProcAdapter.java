@@ -26,13 +26,8 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
         if(procList != null) Log.i(DEBUG_TAG, "MPProcesses: "+this.procList.size());
     }
 
-    @Override
-    public int getItemCount() {
-        if(procList == null)
-        {
-            return 0;
-        }
-        return procList.size();
+    MPStatus getItem(int index) {
+        return procList.get(index);
     }
 
     @Override
@@ -62,7 +57,7 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
             case("SSR"):
                 mpProcViewHolder.mpprocType.setText(context.getString(R.string.MPProcTypeSSR));
                 break;
-            case("SVR"):
+            case("SRV"):
                 mpProcViewHolder.mpprocType.setText(context.getString(R.string.MPProcTypeSVR));
                 break;
             default:
@@ -80,6 +75,15 @@ class MPProcAdapter extends RecyclerView.Adapter<MPProcAdapter.MPProcViewHolder>
                 inflate(R.layout.mpproccard, viewGroup, false);
         context=viewGroup.getContext();
         return new MPProcViewHolder(itemView);
+    }
+
+    @Override
+    public int getItemCount() {
+        if(procList == null)
+        {
+            return 0;
+        }
+        return procList.size();
     }
 
     class MPProcViewHolder extends RecyclerView.ViewHolder {

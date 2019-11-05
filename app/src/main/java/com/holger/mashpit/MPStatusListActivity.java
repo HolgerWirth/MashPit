@@ -98,12 +98,13 @@ public class MPStatusListActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
     public void getMPStatusEvent(MPStatusEvent mpstatusEvent) {
         Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer() + "/" + mpstatusEvent.getStatusTopic());
         List<MPStatusEvent> updateresult = updateServerList();
         result.clear();
         result.addAll(updateresult);
+        EventBus.getDefault().removeStickyEvent(MPStatusEvent.class);
         sa.notifyDataSetChanged();
     }
 

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.holger.mashpit.MPProcListActivity">
 
-    <androidx.appcompat.widget.Toolbar xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/mpproc_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -42,10 +42,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="right"
-            android:layout_marginRight="8dp"
-            android:gravity="right"
-            android:orientation="horizontal">
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:layout_marginRight="8dp">
 
             <TextView
                 android:layout_width="wrap_content"

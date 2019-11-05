@@ -37,7 +37,8 @@
             android:name="AA_MODELS"
             android:value="com.holger.mashpit.model.Temperature,
             com.holger.mashpit.model.Process,
-            com.holger.mashpit.model.MPStatus" />
+            com.holger.mashpit.model.MPStatus,
+            com.holger.mashpit.model.Config"/>
 
         <activity
             android:name="com.holger.mashpit.MainActivity"
@@ -73,7 +74,6 @@
             android:name="com.holger.mashpit.FindServerActivity"
             android:label="@string/title_activity_find_server"
             android:theme="@style/Theme.AppCompat.Translucent"/>
-        <activity android:name=".ConfListActivity" />
 
         <activity android:name=".ConfEdit" />
         <activity android:name=".TempPagerActivity" />

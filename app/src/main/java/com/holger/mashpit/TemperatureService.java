@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
+import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.query.Update;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,11 +37,11 @@ import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
-import com.holger.mashpit.events.ConfEvent;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.events.TemperatureEvent;
+import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
 import com.holger.mashpit.model.Subscriber;
@@ -260,6 +261,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     }
 //                    topic[result.size()]=MQTT_DOMAIN+"/MP/process";
 //                    qos[result.size()]=0;
+
+                    // Delete all status messages from the database
+                    new Delete()
+                            .from(MPStatus.class)
+                            .execute();
 
                     topic[result.size()]=MQTT_DOMAIN+"/MP/#";
                     qos[result.size()]=0;
@@ -579,8 +585,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         TemperatureEvent tempEvent = new TemperatureEvent();
         ProcessEvent processEvent = new ProcessEvent();
-        ConfEvent confEvent = new ConfEvent();
         MPStatusEvent mpstatusEvent = new MPStatusEvent();
+        boolean exists;
         JSONObject obj;
 
         String mess = new String(message.getPayload());
@@ -632,11 +638,40 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             }
 
             if (parts[3].equals("conf")) {
-                Log.i(DEBUG_TAG, "Configuration: ");
-                confEvent.setMPServer(parts[2]);
-                confEvent.setConfTopic(parts[4]);
-                confEvent.setXMLString(mess);
-                EventBus.getDefault().postSticky(confEvent);
+                Log.i(DEBUG_TAG, "Configuration: " + parts[2] + "/" + parts[4]);
+
+                if(mess.isEmpty())
+                {
+                    new Delete()
+                            .from(Config.class)
+                            .where("name = ?", parts[4])
+                            .and("MPServer = ?", parts[2])
+                            .execute();
+                    Log.i(DEBUG_TAG, "Configuration deleted!");
+                }
+                else {
+                    obj = new JSONObject(mess);
+
+                    exists = new Select()
+                            .from(Config.class)
+                            .where("name = ?", parts[4])
+                            .and("MPServer = ?", parts[2])
+                            .exists();
+                    if (exists) {
+                        new Update(Config.class)
+                                .set("type = ?,topic = ?,active = ?,temp = ?,minmax = ?,time = ?,hysterese = ?,GPIO = ?,IRid = ?,IRcode = ?",
+                                        obj.getString("type"), obj.getString("topic"), obj.getBoolean("active") ? 1:0, obj.getString("temp"),
+                                        obj.getBoolean("minmax") ? 1:0, obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
+                                        obj.getString("IRcode"))
+                                .where("name = ? and " + "MPServer = ?", parts[4], parts[2])
+                                .execute();
+                    } else {
+                        Config config = new Config(parts[4], parts[2], obj.getString("type"), obj.getString("topic"), obj.getBoolean("active"), obj.getString("temp"),
+                                obj.getBoolean("minmax"), obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
+                                obj.getString("IRcode"));
+                        config.save();
+                    }
+                }
             }
 
             if (parts[3].equals("status")) {
@@ -644,36 +679,48 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 mpstatusEvent.setMPServer(parts[2]);
                 mpstatusEvent.setStatusTopic(parts[4]);
 
-                obj = new JSONObject(mess);
-
-                try {
-                    if (obj.getString("status").equals("0")) {
-                        mpstatusEvent.setActive(false);
-                    } else {
-                        mpstatusEvent.setActive(true);
-                    }
-                    mpstatusEvent.setPID(obj.getString("PID"));
-                    mpstatusEvent.setType(obj.getString("Type"));
-
-                    boolean exists =
-                            new Select()
-                                    .from(MPStatus.class)
-                                    .where("topic = ?", mpstatusEvent.getStatusTopic())
-                                    .and("MPServer = ?", mpstatusEvent.getMPServer())
-                                    .exists();
-
-                    if (exists) {
-                        new Update(MPStatus.class)
-                                .set("active = ?," + "PID = ?," + "Type = ?", obj.getString("status"), mpstatusEvent.getPID(), mpstatusEvent.getType())
-                                .where("topic = ? and " + "MPServer = ?", mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer())
-                                .execute();
-                    } else {
-                        MPStatus mpstatus = new MPStatus(mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer(), mpstatusEvent.isActive(), mpstatusEvent.getPID(), mpstatusEvent.getType());
-                        mpstatus.save();
-                    }
+                if(mess.isEmpty())
+                {
+                    new Delete()
+                            .from(MPStatus.class)
+                            .where("topic = ?", parts[4])
+                            .and("MPServer = ?", parts[2])
+                            .execute();
+                    mpstatusEvent.setPID("DEL");
                     EventBus.getDefault().postSticky(mpstatusEvent);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.i(DEBUG_TAG, "Status deleted!");
+                }
+                else {
+                    obj = new JSONObject(mess);
+
+                    try {
+                        if (obj.getString("status").equals("0")) {
+                            mpstatusEvent.setActive(false);
+                        } else {
+                            mpstatusEvent.setActive(true);
+                        }
+                        mpstatusEvent.setPID(obj.getString("PID"));
+                        mpstatusEvent.setType(obj.getString("Type"));
+
+                        exists = new Select()
+                                .from(MPStatus.class)
+                                .where("topic = ?", mpstatusEvent.getStatusTopic())
+                                .and("MPServer = ?", mpstatusEvent.getMPServer())
+                                .exists();
+
+                        if (exists) {
+                            new Update(MPStatus.class)
+                                    .set("active = ?," + "PID = ?," + "Type = ?", obj.getString("status"), mpstatusEvent.getPID(), mpstatusEvent.getType())
+                                    .where("topic = ? and " + "MPServer = ?", mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer())
+                                    .execute();
+                        } else {
+                            MPStatus mpstatus = new MPStatus(mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer(), mpstatusEvent.isActive(), mpstatusEvent.getPID(), mpstatusEvent.getType());
+                            mpstatus.save();
+                        }
+                        EventBus.getDefault().postSticky(mpstatusEvent);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

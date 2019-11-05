@@ -19,11 +19,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.tools.ItemClickSupport;
+import com.holger.mashpit.tools.PublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.List;
 
 public class MPProcListActivity extends AppCompatActivity {
@@ -32,7 +35,6 @@ public class MPProcListActivity extends AppCompatActivity {
     MPProcAdapter sa;
     String action = "";
     String server;
-    Intent sintent;
     RecyclerView mpprocList;
     List<MPStatus> result;
     boolean iscollapsed=false;
@@ -77,20 +79,16 @@ public class MPProcListActivity extends AppCompatActivity {
         final FloatingActionButton fabssr = findViewById(R.id.procfabssr);
         final LinearLayout speeddial= this.findViewById(R.id.procspeeddial);
 
-
         fabadd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(DEBUG_TAG, "Clicked the FAB button");
-                if(iscollapsed)
-                {
+                if (iscollapsed) {
                     speeddial.setVisibility(LinearLayout.GONE);
-                    iscollapsed=false;
-                }
-                else
-                {
+                    iscollapsed = false;
+                } else {
                     speeddial.setVisibility(LinearLayout.VISIBLE);
-                    iscollapsed=true;
+                    iscollapsed = true;
                 }
             }
         });
@@ -98,12 +96,13 @@ public class MPProcListActivity extends AppCompatActivity {
         fabpower.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the POWER button");
+                Log.i(DEBUG_TAG, "Clicked the PWR button");
                 speeddial.setVisibility(LinearLayout.GONE);
                 iscollapsed=false;
                 Intent l = new Intent(getApplicationContext(), ConfEdit.class);
                 l.putExtra("ACTION", "insert");
                 l.putExtra("adapter", "PWR");
+                l.putExtra("server",server);
                 startActivityForResult(l, 0);
             }
         });
@@ -117,10 +116,11 @@ public class MPProcListActivity extends AppCompatActivity {
                 Intent l = new Intent(getApplicationContext(), ConfEdit.class);
                 l.putExtra("ACTION", "insert");
                 l.putExtra("adapter", "SSR");
+                l.putExtra("server",server);
+
                 startActivityForResult(l, 0);
             }
         });
-
 
         result = new Select().from(MPStatus.class).where("MPServer = ?", server).orderBy("topic ASC").execute();
         sa = new MPProcAdapter(result);
@@ -130,12 +130,18 @@ public class MPProcListActivity extends AppCompatActivity {
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                 Log.i(DEBUG_TAG, "Clicked!");
 
-                sintent = new Intent(getApplicationContext(), ConfListActivity.class);
-                sintent.putExtra("ACTION", "list");
-                sintent.putExtra("topic", result.get(position).topic);
-                sintent.putExtra("type", result.get(position).Type);
+                Intent l;
+                MPStatus status = sa.getItem(position);
 
-                startActivityForResult(sintent, 0);
+                l = new Intent(getApplicationContext(), ConfEdit.class);
+                l.putExtra("ACTION", "edit");
+                l.putExtra("pos", position);
+                l.putExtra("active",status.active);
+                l.putExtra("adapter",status.Type);
+                l.putExtra("name",status.topic);
+                l.putExtra("server",server);
+
+                startActivityForResult(l, 0);
             }
         });
 
@@ -146,20 +152,91 @@ public class MPProcListActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        Log.i(DEBUG_TAG, "onStart()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+        Log.i(DEBUG_TAG, "onStop()");
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public void getMPStatusEvent(MPStatusEvent mpstatusEvent) {
         Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer() + "/" + mpstatusEvent.getStatusTopic());
         List<MPStatus> updateresult = new Select().from(MPStatus.class).where("MPServer = ?", server).orderBy("topic ASC").execute();
         result.clear();
         result.addAll(updateresult);
         sa.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == 0 )
+        {
+            return;
+        }
+
+        String type = data.getStringExtra("type");
+        String name = data.getStringExtra("confName");
+        String action = data.getStringExtra("ACTION");
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("type", type);
+            obj.put("topic", data.getStringExtra("confTopic"));
+            obj.put("temp", data.getStringExtra("confTemp"));
+            obj.put("time", data.getStringExtra("confTime"));
+            obj.put("hysterese", data.getStringExtra("confHyst"));
+            obj.put("active",data.getBooleanExtra("confActive",false));
+            obj.put("minmax",data.getBooleanExtra("confMinMax",true));
+            obj.put("GPIO","");
+            obj.put("IRid","");
+            obj.put("IRcode","");
+            if(type.equals("SSR"))
+            {
+                obj.put("GPIO",data.getStringExtra("confGPIO"));
+            }
+            if(type.equals("PWR"))
+            {
+                obj.put("IRid",data.getStringExtra("confIRid"));
+                obj.put("IRcode",data.getStringExtra("confIRcode"));
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.i(DEBUG_TAG, "Config: " + obj.toString());
+
+        PublishMQTT pubMQTT = new PublishMQTT();
+        if (resultCode == 1) {
+            if (pubMQTT.PublishConf(this,server,name, obj.toString())) {
+                if(action.equals("insert")) {
+                    JSONObject stat = new JSONObject();
+                    try {
+                        stat.put("status", 0);
+                        stat.put("PID", 0);
+                        stat.put("Type", type);
+                        pubMQTT.PublishStatus(this, server, name, stat.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                snb.displayInfo(R.string.pubConfOK);
+            } else {
+                snb.displayInfo(R.string.pubConfNOK);
+            }
+        }
+        if (resultCode == 2) {
+            if (pubMQTT.PublishConf(this,server,name, "")) {
+                pubMQTT.PublishStatus(this,server,name, "");
+                snb.displayUndo(getString(R.string.conf_deleted) + name + "'");
+            } else {
+                snb.displayInfo(R.string.pubConfNOK);
+            }
+        }
     }
 }

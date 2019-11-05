@@ -59,8 +59,8 @@
     <string name="pubConfOK">Configuration published!</string>
     <string name="pubConfNOK">Publish failed!</string>
     <string name="confNameTitle">Name:</string>
-    <string name="confdelAlert">Do you really want to delete and publish the config \'%1$s\'?</string>
-    <string name="confPublishAlert">Do you really want to publish the config to the \'%1$s\' process?</string>
+    <string name="confdelAlert">Do you really want to delete and publish the config "%1$s"?</string>
+    <string name="confPublishAlert">Do you really want to publish the config to the "%1$s" process?</string>
     <string name="menu_configuration">Server configuration</string>
     <string name="menu_settings">App preferences</string>
     <string name="meun_process">Mashing</string>
@@ -92,6 +92,10 @@
     <string name="MPProcTypeSVR">Server</string>
     <string name="procfabadddesc">Add a new adapter</string>
     <string name="procfabdelesc">Delete Adapter</string>
-    <string name="procfabpowerdesc">Add a power socke adapter</string>
-    <string name="procfabssrdesc">Add a SSR apater</string>
+    <string name="procfabpowerdesc">New Power Socket</string>
+    <string name="procfabssrdesc">New SSR</string>
+    <string name="confGPIOTitle">GPIO Port:</string>
+    <string name="confIRidTitle">IR ID:</string>
+    <string name="confIRcodeTitle">IR Code:</string>
+    <string name="confAutostartTitle">Autostart</string>
 </resources>
