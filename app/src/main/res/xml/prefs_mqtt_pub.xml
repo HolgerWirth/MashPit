@@ -16,13 +16,13 @@
                 android:title="MashPit Domain" />
             <com.holger.mashpit.prefs.SettingsEdit
                 android:dependency="broker_same"
-                android:key="broker_url"
+                android:key="send_broker_url"
                 android:title="@string/prefs_mqtt_broker"
                 android:summary="@string/prefs_mqtt_broker_sum"
                 android:defaultValue="192.168.1.20"/>
             <com.holger.mashpit.prefs.SettingsEdit
                 android:dependency="broker_same"
-                android:key="broker_port"
+                android:key="send_broker_port"
                 android:title="@string/prefs_mqtt_port"
                 android:summary="1883"
                 android:inputType="number"
