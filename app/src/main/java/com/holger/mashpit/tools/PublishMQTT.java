@@ -13,11 +13,18 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class PublishMQTT {
     private MemoryPersistence persistence = new MemoryPersistence();
-
-
     private static final String DEBUG_TAG = "PublishMQTT";
 
-    public boolean PublishConf(Context context, String topic, String XML) {
+    public boolean PublishStatus(Context context, String server, String topic, String send) {
+        return Publish(context, server, topic, send, "status");
+    }
+
+    public boolean PublishConf(Context context, String server, String topic, String send)
+    {
+        return Publish(context,server,topic,send,"conf");
+    }
+
+    private boolean Publish(Context context, String server, String topic, String send, String status) {
         try {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -25,18 +32,21 @@ public class PublishMQTT {
             String MQTT_PASSWORD;
             String MQTT_USER;
             String MQTT_BROKER;
+            String MQTT_DOMAIN;
 
             if(prefs.getBoolean("same_broker",false)) {
                 MQTT_BROKER = prefs.getString("send_broker_url", "192.168.1.20");
                 MQTT_PORT = Integer.parseInt(prefs.getString("send_broker_port", "1884"));
-                MQTT_USER =prefs.getString("broker_user", "");
-                MQTT_PASSWORD =prefs.getString("broker_password", "");
+                MQTT_USER =prefs.getString("send_broker_user", "");
+                MQTT_PASSWORD =prefs.getString("send_broker_password", "");
+                MQTT_DOMAIN = prefs.getString("send_mashpit_domain","");
             }
             else {
                 MQTT_BROKER = prefs.getString("broker_url", "192.168.1.20");
                 MQTT_PORT = Integer.parseInt(prefs.getString("broker_port", "1884"));
-                MQTT_USER =prefs.getString("send_broker_user", "");
-                MQTT_PASSWORD =prefs.getString("send_broker_password", "");
+                MQTT_USER =prefs.getString("broker_user", "");
+                MQTT_PASSWORD =prefs.getString("broker_password", "");
+                MQTT_DOMAIN= prefs.getString("mashpit_domain","");
             }
 
             String clientId=prefs.getString("device_id","");
@@ -54,11 +64,11 @@ public class PublishMQTT {
             Log.i(DEBUG_TAG,"Connecting to broker: " + MQTT_BROKER +" as user: "+ MQTT_USER);
             sampleClient.connect(connOpts);
             Log.i(DEBUG_TAG,"Connected");
-            MqttMessage message = new MqttMessage(XML.getBytes());
+            MqttMessage message = new MqttMessage(send.getBytes());
             int qos = 2;
             message.setQos(qos);
             message.setRetained(true);
-            sampleClient.publish("/conf/"+topic, message);
+            sampleClient.publish(MQTT_DOMAIN+"/MP/"+server+"/"+status+"/"+topic, message);
             Log.i(DEBUG_TAG,"Message published");
             sampleClient.disconnect();
             Log.i(DEBUG_TAG,"Disconnected");
