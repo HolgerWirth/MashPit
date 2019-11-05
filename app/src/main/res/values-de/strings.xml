@@ -84,6 +84,10 @@
     <string name="MPProcTypeSVR">Server</string>
     <string name="procfabadddesc">Add a new adapter</string>
     <string name="procfabdelesc">Delete Adapter</string>
-    <string name="procfabpowerdesc">Power Socket</string>
-    <string name="procfabssrdesc">SSR</string>
+    <string name="procfabpowerdesc">Neue IR Steckdose</string>
+    <string name="procfabssrdesc">Neues SSR</string>
+    <string name="confGPIOTitle">GPIO Port:</string>
+    <string name="confIRidTitle">IR ID:</string>
+    <string name="confIRcodeTitle">IR Code:</string>
+    <string name="confAutostartTitle">Autostart</string>
 </resources>
