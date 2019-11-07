@@ -19,9 +19,6 @@ import com.holger.mashpit.model.Config;
 public class ConfEdit extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "ConfEditActivity";
-    FloatingActionButton actionButton = findViewById(R.id.editButton);
-    FloatingActionButton deleteButton = findViewById(R.id.deleteButton);
-    FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
     String name;
 
     @Override
@@ -48,7 +45,14 @@ public class ConfEdit extends AppCompatActivity {
                 IRid=findViewById(R.id.confIRid);
                 IRcode=findViewById(R.id.confIRcode);
                 break;
+
+            default:
+                return;
         }
+
+        FloatingActionButton actionButton = findViewById(R.id.editButton);
+        FloatingActionButton deleteButton = findViewById(R.id.deleteButton);
+        FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
 
         final Switch active = findViewById(R.id.confActive);
         final EditText topic = findViewById(R.id.confTopic);
@@ -64,7 +68,7 @@ public class ConfEdit extends AppCompatActivity {
         Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
         if (action.equals("edit")) {
             actionButton.show();
-            name = getIntent().getStringExtra("name");
+            final String name = getIntent().getStringExtra("name");
 
             Config conf = new Select().from(Config.class).where("name = ?", name).and("MPServer = ?",server).orderBy("topic ASC").executeSingle();
             if(conf==null)
