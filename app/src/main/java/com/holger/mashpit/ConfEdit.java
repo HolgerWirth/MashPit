@@ -10,34 +10,27 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.activeandroid.query.Select;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputLayout;
 import com.holger.mashpit.model.Config;
-import com.holger.mashpit.tools.TextValidator;
 
 public class ConfEdit extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "ConfEditActivity";
-    FloatingActionButton actionButton;
-    FloatingActionButton deleteButton;
-    FloatingActionButton cancelButton;
-    int position;
-    String action="";
-    String type = "";
-    boolean text1=true;
-    boolean text2=true;
+    FloatingActionButton actionButton = findViewById(R.id.editButton);
+    FloatingActionButton deleteButton = findViewById(R.id.deleteButton);
+    FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
     String name;
-    String server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        action = getIntent().getStringExtra("ACTION");
-        type = getIntent().getStringExtra("adapter");
-        server = getIntent().getStringExtra("server");
+        final String action = getIntent().getStringExtra("ACTION");
+        final String type = getIntent().getStringExtra("adapter");
+        final String server = getIntent().getStringExtra("server");
 
         EditText GPIO = null;
         EditText IRid = null;
@@ -58,19 +51,12 @@ public class ConfEdit extends AppCompatActivity {
         }
 
         final Switch active = findViewById(R.id.confActive);
-        EditText topic = findViewById(R.id.confTopic);
+        final EditText topic = findViewById(R.id.confTopic);
         EditText temp = findViewById(R.id.confTemp);
         final Switch minmax = findViewById(R.id.confMaxTemp);
         EditText time = findViewById(R.id.confTime);
         EditText hysterese = findViewById(R.id.confHyst);
         final EditText confName =  findViewById(R.id.confName);
-
-        deleteButton = findViewById(R.id.deleteButton);
-        cancelButton = findViewById(R.id.cancelButton);
-        actionButton = findViewById(R.id.editButton);
-
-        buttonCheck(1, text1);
-        buttonCheck(2, text2);
 
         final AlertDialog.Builder alertDialog;
         final AlertDialog.Builder deleteDialog;
@@ -78,9 +64,6 @@ public class ConfEdit extends AppCompatActivity {
         Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
         if (action.equals("edit")) {
             actionButton.show();
-            buttonCheck(1, false);
-            buttonCheck(2, false);
-            position = getIntent().getIntExtra("pos", 0);
             name = getIntent().getStringExtra("name");
 
             Config conf = new Select().from(Config.class).where("name = ?", name).and("MPServer = ?",server).orderBy("topic ASC").executeSingle();
@@ -131,6 +114,7 @@ public class ConfEdit extends AppCompatActivity {
             active.setChecked(true);
             minmax.setChecked(true);
             actionButton.show();
+            deleteButton.hide();
         }
 
         cancelButton.show();
@@ -147,25 +131,6 @@ public class ConfEdit extends AppCompatActivity {
             }
         });
 
-        topic.addTextChangedListener(new TextValidator(topic) {
-            @Override
-            public void validate(TextView textView, String text) {
-                buttonCheck(1, text.isEmpty());
-            }
-        });
-
-        time.addTextChangedListener(new TextValidator(time) {
-            @Override
-            public void validate(TextView textView, String text) {
-                buttonCheck(2, text.isEmpty());
-                if (!text.isEmpty()) {
-                    if (Integer.parseInt(text) == 0) {
-                        buttonCheck(2, true);
-                    }
-                }
-            }
-        });
-
         alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle(getString(R.string.pubConfig));
         alertDialog.setMessage(getString(R.string.confPublishAlert,name));
@@ -177,7 +142,7 @@ public class ConfEdit extends AppCompatActivity {
         });
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = createConfIntent();
+                Intent intent = createConfIntent(action, type, server);
                 setResult(1, intent);
                 finish();
             }
@@ -194,7 +159,7 @@ public class ConfEdit extends AppCompatActivity {
         });
         deleteDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = createConfIntent();
+                Intent intent = createConfIntent(action, type, server);
                 setResult(2, intent);
                 finish();
             }
@@ -204,9 +169,11 @@ public class ConfEdit extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Done");
-                name = ((EditText) findViewById(R.id.confName)).getText().toString();
-                alertDialog.setMessage(getString(R.string.confPublishAlert,name));
-                alertDialog.show();
+                if(checkConfig(action,type, server)) {
+                    name = ((EditText) findViewById(R.id.confName)).getText().toString();
+                    alertDialog.setMessage(getString(R.string.confPublishAlert, name));
+                    alertDialog.show();
+                }
             }
         });
 
@@ -230,32 +197,95 @@ public class ConfEdit extends AppCompatActivity {
         });
     }
 
-    private void buttonCheck(int button,boolean check)
-    {
-        if(button==1)
+    private boolean checkConfig(String action,String type, String server) {
+
+        boolean flag=true;
+        TextInputLayout confField;
+
+        confField = findViewById(R.id.confTopicField);
+        confField.setErrorEnabled(false);
+        if(((EditText) findViewById(R.id.confTopic)).getText().toString().isEmpty())
         {
-            text1=check;
-        }
-        if(button==2)
-        {
-            text2=check;
+            confField.setError(getString(R.string.confTopicError));
+            flag=false;
         }
 
-        if(text1 || text2)
+        confField = findViewById(R.id.confNameField);
+        confField.setErrorEnabled(false);
+        if(((EditText) findViewById(R.id.confName)).getText().toString().isEmpty())
         {
-            actionButton.hide();
+            confField.setError(getString(R.string.confNameError));
+            flag=false;
         }
-        else
+
+        confField = findViewById(R.id.confTempField);
+        confField.setErrorEnabled(false);
+        if(((EditText) findViewById(R.id.confTemp)).getText().toString().isEmpty())
         {
-            actionButton.show();
+            confField.setError(getString(R.string.confTempError));
+            flag=false;
         }
+        confField = findViewById(R.id.confTimeField);
+        confField.setErrorEnabled(false);
+        if(((EditText) findViewById(R.id.confTime)).getText().toString().isEmpty())
+        {
+            confField.setError(getString(R.string.confTimeError));
+            flag=false;
+        }
+        confField = findViewById(R.id.confHystField);
+        confField.setErrorEnabled(false);
+        if(((EditText) findViewById(R.id.confHyst)).getText().toString().isEmpty())
+        {
+            confField.setError(getString(R.string.confHystError));
+            flag=false;
+        }
+
+        if(action.equals("insert"))
+        {
+            confField = findViewById(R.id.confNameField);
+            confField.setErrorEnabled(false);
+            boolean exists = new Select()
+                    .from(Config.class)
+                    .where("name = ?", ((EditText) findViewById(R.id.confName)).getText().toString())
+                    .and("MPServer = ?", server)
+                    .exists();
+            if(exists)
+            {
+                confField.setError(getString(R.string.confNameExistsError));
+                flag=false;
+            }
+        }
+        if(type.equals("SSR"))
+        {
+            confField = findViewById(R.id.confGPIOField);
+            confField.setErrorEnabled(false);
+            if (((EditText) findViewById(R.id.confGPIO)).getText().toString().isEmpty()) {
+                confField.setError("Please enter a GPIO port");
+                flag = false;
+            }
+        }
+        if(type.equals("PWR"))
+        {
+            confField = findViewById(R.id.confIRidField);
+            confField.setErrorEnabled(false);
+            if (((EditText) findViewById(R.id.confIRid)).getText().toString().isEmpty()) {
+                confField.setError(getString(R.string.confIRidError));
+                flag = false;
+            }
+            confField = findViewById(R.id.confIRcodeField);
+            confField.setErrorEnabled(false);
+            if (((EditText) findViewById(R.id.confIRcode)).getText().toString().isEmpty()) {
+                confField.setError(getString(R.string.confIRcodeError));
+                flag = false;
+            }
+        }
+        return flag;
     }
 
-    private Intent createConfIntent()
+    private Intent createConfIntent(String action, String type, String server)
     {
         Intent intent = new Intent();
         intent.putExtra("ACTION",action);
-        intent.putExtra("pos",position);
         intent.putExtra("type",type);
         intent.putExtra("confName",((EditText) findViewById(R.id.confName)).getText().toString());
         intent.putExtra("server",server);

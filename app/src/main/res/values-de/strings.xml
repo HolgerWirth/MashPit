@@ -90,4 +90,14 @@
     <string name="confIRidTitle">IR ID:</string>
     <string name="confIRcodeTitle">IR Code:</string>
     <string name="confAutostartTitle">Autostart</string>
+    <string name="confTopicError">Please enter a topic</string>
+    <string name="confNameError">Please enter a name</string>
+    <string name="confTempError">Please enter a temperature</string>
+    <string name="confTimeError">Please enter a time period</string>
+    <string name="confHystError">Please enter a hysterese</string>
+    <string name="confNameExistsError">Use a different name. Configuration already exists!</string>
+    <string name="confIRidError">Please enter the ID of your power socket</string>
+    <string name="confIRcodeError">Please enter the remote code of your power socket</string>
+    <string name="confMaxTempMax">Max</string>
+    <string name="confMaxTempMin">Min</string>
 </resources>
