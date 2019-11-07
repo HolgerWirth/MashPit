@@ -135,7 +135,6 @@ public class MPProcListActivity extends AppCompatActivity {
 
                 l = new Intent(getApplicationContext(), ConfEdit.class);
                 l.putExtra("ACTION", "edit");
-                l.putExtra("pos", position);
                 l.putExtra("active",status.active);
                 l.putExtra("adapter",status.Type);
                 l.putExtra("name",status.topic);
