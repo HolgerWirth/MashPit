@@ -38,7 +38,8 @@
             android:value="com.holger.mashpit.model.Temperature,
             com.holger.mashpit.model.Process,
             com.holger.mashpit.model.MPStatus,
-            com.holger.mashpit.model.Config"/>
+            com.holger.mashpit.model.Config,
+            com.holger.mashpit.model.MPServer"/>
 
         <activity
             android:name="com.holger.mashpit.MainActivity"

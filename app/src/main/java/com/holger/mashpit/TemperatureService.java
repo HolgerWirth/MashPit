@@ -42,6 +42,7 @@ import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Config;
+import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
 import com.holger.mashpit.model.Subscriber;
@@ -265,6 +266,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     // Delete all status messages from the database
                     new Delete()
                             .from(MPStatus.class)
+                            .execute();
+                    new Delete()
+                            .from(MPServer.class)
                             .execute();
 
                     topic[result.size()]=MQTT_DOMAIN+"/MP/#";
@@ -640,40 +644,54 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             if (parts[3].equals("conf")) {
                 Log.i(DEBUG_TAG, "Configuration: " + parts[2] + "/" + parts[4]);
 
-                if(mess.isEmpty())
-                {
+                if (mess.isEmpty()) {
                     new Delete()
                             .from(Config.class)
                             .where("name = ?", parts[4])
                             .and("MPServer = ?", parts[2])
                             .execute();
                     Log.i(DEBUG_TAG, "Configuration deleted!");
-                }
-                else {
+                } else {
                     obj = new JSONObject(mess);
 
-                    exists = new Select()
-                            .from(Config.class)
-                            .where("name = ?", parts[4])
-                            .and("MPServer = ?", parts[2])
-                            .exists();
-                    if (exists) {
-                        new Update(Config.class)
-                                .set("type = ?,topic = ?,active = ?,temp = ?,minmax = ?,time = ?,hysterese = ?,GPIO = ?,IRid = ?,IRcode = ?",
-                                        obj.getString("type"), obj.getString("topic"), obj.getBoolean("active") ? 1:0, obj.getString("temp"),
-                                        obj.getBoolean("minmax") ? 1:0, obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
-                                        obj.getString("IRcode"))
-                                .where("name = ? and " + "MPServer = ?", parts[4], parts[2])
-                                .execute();
+                    if (parts[4].equals("MashPit")) {
+                        exists = new Select()
+                                .from(MPServer.class)
+                                .where("name = 'MashPit'")
+                                .and("MPServer = ?", parts[2])
+                                .exists();
+                        if (exists) {
+                            new Update(MPServer.class)
+                                    .set("alias = ?,TS = ?", obj.getString("alias"), obj.getLong("TS"))
+                                    .where("name = ? and " + "MPServer = ?", parts[4], parts[2])
+                                    .execute();
+                        } else {
+                            MPServer mpServer = new MPServer(parts[4], parts[2], obj.getString("alias"), obj.getLong("TS"));
+                            mpServer.save();
+                        }
                     } else {
-                        Config config = new Config(parts[4], parts[2], obj.getString("type"), obj.getString("topic"), obj.getBoolean("active"), obj.getString("temp"),
-                                obj.getBoolean("minmax"), obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
-                                obj.getString("IRcode"));
-                        config.save();
+                        exists = new Select()
+                                .from(Config.class)
+                                .where("name = ?", parts[4])
+                                .and("MPServer = ?", parts[2])
+                                .exists();
+                        if (exists) {
+                            new Update(Config.class)
+                                    .set("type = ?,topic = ?,active = ?,temp = ?,minmax = ?,time = ?,hysterese = ?,GPIO = ?,IRid = ?,IRcode = ?",
+                                            obj.getString("type"), obj.getString("topic"), obj.getBoolean("active") ? 1 : 0, obj.getString("temp"),
+                                            obj.getBoolean("minmax") ? 1 : 0, obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
+                                            obj.getString("IRcode"))
+                                    .where("name = ? and " + "MPServer = ?", parts[4], parts[2])
+                                    .execute();
+                        } else {
+                            Config config = new Config(parts[4], parts[2], obj.getString("type"), obj.getString("topic"), obj.getBoolean("active"), obj.getString("temp"),
+                                    obj.getBoolean("minmax"), obj.getString("time"), obj.getString("hysterese"), obj.getString("GPIO"), obj.getString("IRid"),
+                                    obj.getString("IRcode"));
+                            config.save();
+                        }
                     }
                 }
             }
-
             if (parts[3].equals("status")) {
                 Log.i(DEBUG_TAG, "Status: " + parts[2] + "/" + parts[4]);
                 mpstatusEvent.setMPServer(parts[2]);
