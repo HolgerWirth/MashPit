@@ -100,4 +100,6 @@
     <string name="confIRcodeError">Please enter the remote code of your power socket</string>
     <string name="confMaxTempMax">Max</string>
     <string name="confMaxTempMin">Min</string>
+    <string name="confAliasTitle">Alias Name</string>
+    <string name="confUptimeTitle">Uptime</string>
 </resources>

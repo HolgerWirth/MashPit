@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.activeandroid.query.Select;
 import com.holger.mashpit.events.MPStatusEvent;
+import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
@@ -117,10 +118,17 @@ public class MPStatusListActivity extends AppCompatActivity {
 
         for (int i = 0; i < mpstatus.size(); i++) {
            String server = mpstatus.get(i).MPServer;
+           String alias="";
+           List<MPServer> server_alias = new Select().from(MPServer.class).where("name = 'MashPit'").and("MPServer = ?",server).execute();
+            if(server_alias.size() > 0) {
+                alias=server_alias.get(0).alias;
+            }
+
             MPStatusEvent mpevent = new MPStatusEvent();
             if(upresult.size()==0)
             {
                 mpevent.setMPServer(server);
+                mpevent.setAlias(alias);
                 mpevent.setActive(mpstatus.get(i).active);
                 mpevent.setProcesses(0);
                 mpevent.setActprocesses(0);
@@ -131,6 +139,7 @@ public class MPStatusListActivity extends AppCompatActivity {
                 if(upresult.get(t).getMPServer().equals(server))
                 {
                     mpevent=upresult.get(t);
+                    mpevent.setAlias(alias);
                     procs++;
                     mpevent.setProcesses(procs);
                     if(mpstatus.get(i).active)
@@ -144,6 +153,7 @@ public class MPStatusListActivity extends AppCompatActivity {
                 else
                 {
                     mpevent.setMPServer(server);
+                    mpevent.setAlias(alias);
                     mpevent.setProcesses(1);
                     mpevent.setActive(mpstatus.get(i).active);
                     if(upresult.get(t).isActive())

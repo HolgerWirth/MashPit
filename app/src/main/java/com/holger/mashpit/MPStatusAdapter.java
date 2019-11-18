@@ -37,7 +37,13 @@ class MPStatusAdapter extends RecyclerView.Adapter<MPStatusAdapter.MPStatusViewH
     @Override
     public void onBindViewHolder(@NonNull MPStatusViewHolder mpStatusViewHolder, int i) {
         MPStatusEvent mpStatusEvent = this.getItem(i);
-        mpStatusViewHolder.mpstatServer.setText(mpStatusEvent.getMPServer());
+        if(mpStatusEvent.getAlias().isEmpty()) {
+            mpStatusViewHolder.mpstatServer.setText(mpStatusEvent.getMPServer());
+        }
+        else
+        {
+            mpStatusViewHolder.mpstatServer.setText(mpStatusEvent.getAlias());
+        }
         mpStatusViewHolder.mpstatProcesses.setText(String.valueOf(mpStatusEvent.getProcesses()));
         mpStatusViewHolder.mpstatProcActive.setText(String.valueOf(mpStatusEvent.getActprocesses()));
     }

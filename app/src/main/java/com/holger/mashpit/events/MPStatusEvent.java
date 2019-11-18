@@ -3,6 +3,7 @@ package com.holger.mashpit.events;
 public class MPStatusEvent {
         private String topic;
         private String MPServer;
+        private String alias;
         private boolean active;
         private String PID;
         private int processes;
@@ -45,13 +46,15 @@ public class MPStatusEvent {
         }
 
         public void setType(String type) {
-                Type = type;
+                this.Type = type;
         }
 
+        public void setAlias(String alias) {this.alias = alias;}
         private String Type;
 
         public String getStatusTopic() {return topic;}
         public void setStatusTopic(String topic) {this.topic = topic;}
         public void setMPServer(String MPServer) {this.MPServer=MPServer;}
         public String getMPServer() {return MPServer;}
+        public String getAlias() {return alias;}
 }

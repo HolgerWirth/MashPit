@@ -81,6 +81,7 @@
         <activity android:name=".MPStatusListActivity"
             android:label="MashPit Server" />
         <activity android:name=".MPProcListActivity" />
+        <activity android:name=".ServerEdit" />
     </application>
 
 </manifest>

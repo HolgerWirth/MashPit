@@ -133,7 +133,13 @@ public class MPProcListActivity extends AppCompatActivity {
                 Intent l;
                 MPStatus status = sa.getItem(position);
 
-                l = new Intent(getApplicationContext(), ConfEdit.class);
+                if(status.Type.equals("SRV"))
+                {
+                    l = new Intent(getApplicationContext(), ServerEdit.class);
+                }
+                else {
+                    l = new Intent(getApplicationContext(), ConfEdit.class);
+                }
                 l.putExtra("ACTION", "edit");
                 l.putExtra("active",status.active);
                 l.putExtra("adapter",status.Type);
@@ -184,24 +190,29 @@ public class MPProcListActivity extends AppCompatActivity {
 
         JSONObject obj = new JSONObject();
         try {
-            obj.put("type", type);
-            obj.put("topic", data.getStringExtra("confTopic"));
-            obj.put("temp", data.getStringExtra("confTemp"));
-            obj.put("time", data.getStringExtra("confTime"));
-            obj.put("hysterese", data.getStringExtra("confHyst"));
-            obj.put("active",data.getBooleanExtra("confActive",false));
-            obj.put("minmax",data.getBooleanExtra("confMinMax",true));
-            obj.put("GPIO","");
-            obj.put("IRid","");
-            obj.put("IRcode","");
-            if(type.equals("SSR"))
+            if(type.equals("SRV"))
             {
-                obj.put("GPIO",data.getStringExtra("confGPIO"));
+                obj.put("alias",data.getStringExtra("confAlias"));
+                obj.put("TS",data.getLongExtra("confTS",0));
             }
-            if(type.equals("PWR"))
-            {
-                obj.put("IRid",data.getStringExtra("confIRid"));
-                obj.put("IRcode",data.getStringExtra("confIRcode"));
+            else {
+                obj.put("type", type);
+                obj.put("topic", data.getStringExtra("confTopic"));
+                obj.put("temp", data.getStringExtra("confTemp"));
+                obj.put("time", data.getStringExtra("confTime"));
+                obj.put("hysterese", data.getStringExtra("confHyst"));
+                obj.put("active", data.getBooleanExtra("confActive", false));
+                obj.put("minmax", data.getBooleanExtra("confMinMax", true));
+                obj.put("GPIO", "");
+                obj.put("IRid", "");
+                obj.put("IRcode", "");
+                if (type.equals("SSR")) {
+                    obj.put("GPIO", data.getStringExtra("confGPIO"));
+                }
+                if (type.equals("PWR")) {
+                    obj.put("IRid", data.getStringExtra("confIRid"));
+                    obj.put("IRcode", data.getStringExtra("confIRcode"));
+                }
             }
 
         } catch (JSONException e) {
