@@ -31,6 +31,8 @@ public class ServerEdit extends AppCompatActivity {
         final String action = getIntent().getStringExtra("ACTION");
         final String type = getIntent().getStringExtra("adapter");
         final String server = getIntent().getStringExtra("server");
+        final boolean active = getIntent().getBooleanExtra("active",false);
+
         Log.i(DEBUG_TAG, "Started with action: " + action + " and type: " + type);
 
         setContentView(R.layout.activity_confeditsrv);
@@ -52,9 +54,15 @@ public class ServerEdit extends AppCompatActivity {
         alias_field.setText(alias);
         serverid.setText(server);
         serverid.setEnabled(false);
-        startTimer(TS);
-        TS_field.setEnabled(false);
 
+        if(active) {
+            startTimer(TS);
+            TS_field.setEnabled(false);
+        }
+        else
+        {
+            TS_field.setText("");
+        }
         Toolbar toolbar = findViewById(R.id.confedit_toolbar);
         setSupportActionBar(toolbar);
 
@@ -90,9 +98,10 @@ public class ServerEdit extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Done");
-                if(!(alias_field.getText().toString().equals(finalAlias)))
+                String new_alias=alias_field.getText().toString();
+                if(!(new_alias.equals(finalAlias)))
                 {
-                    alertDialog.setMessage(getString(R.string.confPublishAlert, server));
+                    alertDialog.setMessage(getString(R.string.confPublishAlert,new_alias));
                     alertDialog.show();
                 }
                 else
