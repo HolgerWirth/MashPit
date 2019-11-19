@@ -45,6 +45,7 @@ import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
+import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.model.Subscriber;
 import com.holger.mashpit.model.Temperature;
 
@@ -245,8 +246,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         }
                     }
 
-                    String[] topic = new String[result.size()+1];
-                    int[] qos = new int[result.size()+1];
+                    String[] topic = new String[result.size()+2];
+                    int[] qos = new int[result.size()+2];
                     for(int i=0;i<result.size();i++)
                     {
                         Subscriber sub = result.get(i);
@@ -264,15 +265,16 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 //                    qos[result.size()]=0;
 
                     // Delete all status messages from the database
-                    new Delete()
-                            .from(MPStatus.class)
-                            .execute();
+                    topic[result.size()]=MQTT_DOMAIN+"/MP/#";
+
                     new Delete()
                             .from(MPServer.class)
                             .execute();
 
                     topic[result.size()]=MQTT_DOMAIN+"/MP/#";
-                    qos[result.size()]=0;
+                    topic[result.size()+1]=MQTT_DOMAIN+"/SE/#";
+
+                    qos[result.size()+1]=0;
 
                     for(int i=0;i<topic.length;i++)
                     {
@@ -601,6 +603,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         Log.i(DEBUG_TAG, "'" + parts[1] + "/" + parts[2] + "' messageArrived with QoS: " + message.getQos());
 
+        if(parts[1].equals("SE")){
+            handleSensorData(parts,mess);
+            return;
+        }
         if (parts[1].equals("temp")) {
             obj = new JSONObject(mess);
             try {
@@ -749,6 +755,90 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
+    private void handleSensorData(String[] topic,String mess)
+    {
+        switch(topic[3])
+        {
+            case "conf":
+                handleSensorConf(topic,mess);
+                break;
+
+            case "status":
+                handleSensorStatus(topic,mess);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void handleSensorConf(String[] topic,String mess)
+    {
+        JSONObject obj;
+
+        if(mess.isEmpty())
+        {
+            new Delete().from(Sensors.class)
+                    .where("server=?", topic[2])
+                    .and("sensor=?", topic[5])
+                    .and("interval=?", topic[6])
+                    .execute();
+            return;
+        }
+
+        if(topic[4].equals("ds18b20")) {
+            try {
+                obj = new JSONObject(mess);
+                boolean exists = new Select()
+                        .from(Sensors.class)
+                        .where("server=?", topic[2])
+                        .and("sensor=?", topic[5])
+                        .and("interval=?", topic[6])
+                        .exists();
+                if (exists) {
+                    new Update(Sensors.class)
+                            .set("active=?,name=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"))
+                            .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
+                            .execute();
+                } else {
+                    Sensors sensors = new Sensors(topic[2], topic[5], false, obj.getBoolean("active"), "", obj.getString("type"), obj.getString("name"), Integer.parseInt(topic[6]), 0, "");
+                    sensors.save();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void handleSensorStatus(String[] topic,String mess) {
+        JSONObject obj;
+        try {
+            obj = new JSONObject(mess);
+
+            JSONArray sensors = obj.getJSONArray("sensors");
+            for (int i = 0; i < sensors.length(); i++) {
+                String sensor = sensors.get(i).toString();
+                boolean exists = new Select()
+                        .from(Sensors.class)
+                        .where("server=?", topic[2])
+                        .and("sensor=?", sensor)
+                        .exists();
+                if (exists) {
+                    new Update(Sensors.class)
+                            .set("online=?,alias=?",obj.getInt("status"),obj.getString("alias"))
+                            .where("server=? and sensor=?",topic[2],sensor)
+                            .execute();
+                }
+                else
+                {
+                    Sensors newSensor = new Sensors(topic[2],sensor,obj.getBoolean("status"),false,obj.getString("alias"),obj.getString("type"),"",0,0,"");
+                    newSensor.save();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onEventMainThread(TemperatureEvent myEvent) {
         Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
