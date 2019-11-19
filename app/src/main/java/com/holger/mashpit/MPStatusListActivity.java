@@ -70,6 +70,7 @@ public class MPStatusListActivity extends AppCompatActivity {
                 sintent = new Intent(getApplicationContext(), MPProcListActivity.class);
                 sintent.putExtra("ACTION", "list");
                 sintent.putExtra("server", result.get(position).getMPServer());
+                sintent.putExtra("alias", result.get(position).getAlias());
 
                 startActivityForResult(sintent, 0);
             }
