@@ -669,6 +669,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             MPServer mpServer = new MPServer(parts[4], parts[2], obj.getString("alias"), obj.getLong("TS"));
                             mpServer.save();
                         }
+                        mpstatusEvent.setAlias(obj.getString("alias"));
+                        mpstatusEvent.setMPServer(parts[2]);
+                        mpstatusEvent.setType("SRV");
+                        mpstatusEvent.setStatusTopic("MashPit");
+                        EventBus.getDefault().postSticky(mpstatusEvent);
                     } else {
                         exists = new Select()
                                 .from(Config.class)
