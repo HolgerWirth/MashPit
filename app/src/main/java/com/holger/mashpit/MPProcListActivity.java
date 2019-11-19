@@ -35,6 +35,7 @@ public class MPProcListActivity extends AppCompatActivity {
     MPProcAdapter sa;
     String action = "";
     String server;
+    String alias;
     RecyclerView mpprocList;
     List<MPStatus> result;
     boolean iscollapsed=false;
@@ -68,11 +69,18 @@ public class MPProcListActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "Started with action: " + action);
         if (action.equals("list")) {
             server = getIntent().getStringExtra("server");
+            alias = getIntent().getStringExtra("alias");
         }
 
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
-        ab.setTitle(server);
+        if(!alias.isEmpty())
+        {
+            ab.setTitle(alias);
+        }
+        else {
+            ab.setTitle(server);
+        }
 
         final FloatingActionButton fabadd = findViewById(R.id.procfabadd);
         final FloatingActionButton fabpower = findViewById(R.id.procfabpower);
