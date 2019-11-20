@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -18,20 +17,22 @@ import com.activeandroid.query.Select;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.MPServer;
 
-import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class ServerEdit extends AppCompatActivity {
     private static final String DEBUG_TAG = "ServerEditActivity";
+    private static String translation;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        translation=getApplicationContext().getResources().getString(R.string.uptimeformat);
 
         final String action = getIntent().getStringExtra("ACTION");
         final String type = getIntent().getStringExtra("adapter");
         final String server = getIntent().getStringExtra("server");
-        final boolean active = getIntent().getBooleanExtra("active",false);
+        final boolean active = getIntent().getBooleanExtra("active", false);
 
         Log.i(DEBUG_TAG, "Started with action: " + action + " and type: " + type);
 
@@ -55,12 +56,10 @@ public class ServerEdit extends AppCompatActivity {
         serverid.setText(server);
         serverid.setEnabled(false);
 
-        if(active) {
+        if (active) {
             startTimer(TS);
             TS_field.setEnabled(false);
-        }
-        else
-        {
+        } else {
             TS_field.setText("");
         }
         Toolbar toolbar = findViewById(R.id.confedit_toolbar);
@@ -98,14 +97,11 @@ public class ServerEdit extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Done");
-                String new_alias=alias_field.getText().toString();
-                if(!(new_alias.equals(finalAlias)))
-                {
-                    alertDialog.setMessage(getString(R.string.confPublishAlert,new_alias));
+                String new_alias = alias_field.getText().toString();
+                if (!(new_alias.equals(finalAlias))) {
+                    alertDialog.setMessage(getString(R.string.confPublishAlert, new_alias));
                     alertDialog.show();
-                }
-                else
-                {
+                } else {
                     finish();
                 }
             }
@@ -133,19 +129,26 @@ public class ServerEdit extends AppCompatActivity {
                 long tsnow = System.currentTimeMillis() / 1000;
                 uptime = tsnow - TS;
 
-                TS_field.setText(getDate(uptime));
+                TS_field.setText(getFormattedTimeSpan(uptime));
             }
 
             public void onFinish() {
-                TS_field.setText(getDate(uptime));
+                TS_field.setText(getFormattedTimeSpan(uptime));
 
             }
         }.start();
     }
 
-    public static String getDate(long time) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(time * 1000);
-        return (DateFormat.format("HH:mm:ss", cal).toString());
+    public static String getFormattedTimeSpan(final long span) {
+        long x = span;
+        long seconds = x % 60;
+        x /= 60;
+        long minutes = x % 60;
+        x /= 60;
+        long hours = x % 24;
+        x /= 24;
+        long days = x;
+
+        return String.format(Locale.getDefault(),"%d %s %02d:%02d:%02d", days, translation,hours, minutes, seconds);
     }
 }
