@@ -45,6 +45,7 @@ import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
+import com.holger.mashpit.model.SensorStatus;
 import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.model.Subscriber;
 import com.holger.mashpit.model.Temperature;
@@ -819,20 +820,21 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             for (int i = 0; i < sensors.length(); i++) {
                 String sensor = sensors.get(i).toString();
                 boolean exists = new Select()
-                        .from(Sensors.class)
+                        .from(SensorStatus.class)
                         .where("server=?", topic[2])
                         .and("sensor=?", sensor)
                         .exists();
                 if (exists) {
                     new Update(Sensors.class)
-                            .set("online=?,alias=?",obj.getInt("status"),obj.getString("alias"))
+                            .set("active=?,alias=?",obj.getInt("status"),obj.getString("alias"))
                             .where("server=? and sensor=?",topic[2],sensor)
                             .execute();
                 }
-                else
-                {
-                    Sensors newSensor = new Sensors(topic[2],sensor,obj.getBoolean("status"),false,obj.getString("alias"),obj.getString("type"),"",0,0,"");
-                    newSensor.save();
+                else {
+                    boolean status;
+                    status= obj.getInt("status") == 1;
+                    SensorStatus newSensorStat = new SensorStatus(topic[2],sensor,status,obj.getString("alias"),topic[4]);
+                    newSensorStat.save();
                 }
             }
         } catch (JSONException e) {
