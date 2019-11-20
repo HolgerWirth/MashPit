@@ -6,7 +6,7 @@ import com.activeandroid.annotation.Table;
 
 import java.io.Serializable;
 
-@Table(name = "Sesnsors")
+@Table(name = "Sensors")
 public class Sensors extends Model implements Serializable {
     @Column(name = "server",index=true)
     public String server;
