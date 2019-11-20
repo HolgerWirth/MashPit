@@ -3,6 +3,8 @@ package com.holger.mashpit;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -17,9 +19,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.holger.mashpit.model.Config;
 
 public class ConfEdit extends AppCompatActivity {
-
     private static final String DEBUG_TAG = "ConfEditActivity";
-    String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +28,7 @@ public class ConfEdit extends AppCompatActivity {
         final String action = getIntent().getStringExtra("ACTION");
         final String type = getIntent().getStringExtra("adapter");
         final String server = getIntent().getStringExtra("server");
+        final String name = getIntent().getStringExtra("name");
 
         EditText GPIO = null;
         EditText IRid = null;
@@ -65,11 +66,21 @@ public class ConfEdit extends AppCompatActivity {
         final AlertDialog.Builder alertDialog;
         final AlertDialog.Builder deleteDialog;
 
+        Toolbar toolbar = findViewById(R.id.confedit_toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+        final ActionBar ab = getSupportActionBar();
+        assert ab != null;
+        ab.setTitle(name);
+
         Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
         if (action.equals("edit")) {
             actionButton.show();
-            final String name = getIntent().getStringExtra("name");
-
             Config conf = new Select().from(Config.class).where("name = ?", name).and("MPServer = ?",server).orderBy("topic ASC").executeSingle();
             if(conf==null)
             {
@@ -123,9 +134,6 @@ public class ConfEdit extends AppCompatActivity {
 
         cancelButton.show();
 
-        Toolbar toolbar = findViewById(R.id.confedit_toolbar);
-        setSupportActionBar(toolbar);
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -174,8 +182,8 @@ public class ConfEdit extends AppCompatActivity {
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Done");
                 if(checkConfig(action,type, server)) {
-                    name = ((EditText) findViewById(R.id.confName)).getText().toString();
-                    alertDialog.setMessage(getString(R.string.confPublishAlert, name));
+                    String confname = ((EditText) findViewById(R.id.confName)).getText().toString();
+                    alertDialog.setMessage(getString(R.string.confPublishAlert, confname));
                     alertDialog.show();
                 }
             }
@@ -194,8 +202,8 @@ public class ConfEdit extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Delete");
-                name = ((EditText) findViewById(R.id.confName)).getText().toString();
-                alertDialog.setMessage(getString(R.string.confPublishAlert,name));
+                String confname = ((EditText) findViewById(R.id.confName)).getText().toString();
+                alertDialog.setMessage(getString(R.string.confPublishAlert,confname));
                 deleteDialog.show();
             }
         });

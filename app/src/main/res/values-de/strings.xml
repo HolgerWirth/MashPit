@@ -102,4 +102,5 @@
     <string name="confMaxTempMin">Min</string>
     <string name="confAliasTitle">Alias Name</string>
     <string name="confUptimeTitle">Uptime</string>
+    <string name="uptimeformat">Tage</string>
 </resources>

@@ -111,6 +111,7 @@ public class MPProcListActivity extends AppCompatActivity {
                 l.putExtra("ACTION", "insert");
                 l.putExtra("adapter", "PWR");
                 l.putExtra("server",server);
+                l.putExtra("name",getString(R.string.procfabpowerdesc));
                 startActivityForResult(l, 0);
             }
         });
@@ -125,7 +126,7 @@ public class MPProcListActivity extends AppCompatActivity {
                 l.putExtra("ACTION", "insert");
                 l.putExtra("adapter", "SSR");
                 l.putExtra("server",server);
-
+                l.putExtra("name",getString(R.string.procfabssrdesc));
                 startActivityForResult(l, 0);
             }
         });
