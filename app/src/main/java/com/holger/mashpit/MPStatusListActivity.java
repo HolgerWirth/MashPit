@@ -135,29 +135,30 @@ public class MPStatusListActivity extends AppCompatActivity {
                 mpevent.setActprocesses(0);
                 upresult.add(mpevent);
             }
-            for(int t=0; t < upresult.size();t++)
-            {
-                if(upresult.get(t).getMPServer().equals(server))
-                {
-                    mpevent=upresult.get(t);
+            boolean found=false;
+            for(int t=0; t < upresult.size();t++) {
+                if (upresult.get(t).getMPServer().equals(server)) {
+                    found = true;
+                    mpevent = upresult.get(t);
                     mpevent.setAlias(alias);
                     procs++;
                     mpevent.setProcesses(procs);
-                    if(mpstatus.get(i).active)
-                    {
+                    if (mpstatus.get(i).active) {
                         active++;
                         mpevent.setActprocesses(active);
                     }
 
-                    upresult.set(t,mpevent);
+                    upresult.set(t, mpevent);
+                    break;
                 }
-                else
+            }
+                if(!found)
                 {
                     mpevent.setMPServer(server);
                     mpevent.setAlias(alias);
                     mpevent.setProcesses(1);
                     mpevent.setActive(mpstatus.get(i).active);
-                    if(upresult.get(t).isActive())
+                    if(mpstatus.get(i).active)
                     {
                         mpevent.setActprocesses(1);
                     }
@@ -166,9 +167,7 @@ public class MPStatusListActivity extends AppCompatActivity {
                         mpevent.setActprocesses(0);
                     }
                     upresult.add(mpevent);
-                    break;
                 }
-            }
         }
         return upresult;
     }
