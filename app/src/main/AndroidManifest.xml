@@ -84,6 +84,7 @@
             android:label="MashPit Server" />
         <activity android:name=".MPProcListActivity" />
         <activity android:name=".ServerEdit" />
+        <activity android:name=".SensorStatusListActivity" />
     </application>
 
 </manifest>
