@@ -263,6 +263,11 @@ public class TempChartActivity extends AppCompatActivity {
                                 startActivity(n);
                                 break;
 
+                            case R.id.nav_sensorconfig:
+                                Intent p = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                                startActivity(p);
+                                break;
+
                             case R.id.nav_temppager:
                                 Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
                                 startActivity(o);

@@ -111,4 +111,9 @@
     <string name="confAliasTitle">Alias Name</string>
     <string name="confUptimeTitle">Uptime</string>
     <string name="uptimeformat">days</string>
+    <string name="sensorTypeTitle">Sensor Type:</string>
+    <string name="sensorType">Sensor Type</string>
+    <string name="sensorSensorsTitle">Sensors:</string>
+    <string name="sensorSensors">Sensors</string>
+    <string name="sensor_configuration">Sensor Settings</string>
 </resources>

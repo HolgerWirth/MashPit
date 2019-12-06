@@ -122,10 +122,15 @@ public class TempPagerActivity extends AppCompatActivity {
                                 startActivity(m);
                                 break;
 
+                            case R.id.nav_sensorconfig:
+                                Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                                startActivity(n);
+                                break;
+
                             case R.id.nav_process:
                                 Log.i(DEBUG_TAG, "Process selected!");
-                                Intent n = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(n);
+                                Intent o = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(o);
                                 finish();
                                 break;
                         }

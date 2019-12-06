@@ -18,5 +18,9 @@
         android:id="@+id/nav_config"
         android:icon="@drawable/ic_server_bw"
         android:title="@string/menu_configuration" />
+    <item
+        android:id="@+id/nav_sensorconfig"
+        android:icon="@drawable/ic_server_bw"
+        android:title="@string/sensor_configuration" />
 </group>
 </menu>

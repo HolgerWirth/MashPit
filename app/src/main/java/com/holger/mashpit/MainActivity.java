@@ -283,9 +283,14 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(m);
                                 break;
 
-                            case R.id.nav_temppager:
-                                Intent n = new Intent(getApplicationContext(), TempPagerActivity.class);
+                            case R.id.nav_sensorconfig:
+                                Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
                                 startActivity(n);
+                                break;
+
+                            case R.id.nav_temppager:
+                                Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
+                                startActivity(o);
                                 finish();
                                 break;
 
