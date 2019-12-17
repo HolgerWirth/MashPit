@@ -830,7 +830,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             new Delete()
                     .from(SensorStatus.class)
                     .where("server = ?", topic[2])
-                    .and("type= ?", topic[4])
                     .execute();
             Log.i(DEBUG_TAG, "Sensor status deleted!");
             sensorEvent.setServer(topic[2]);
@@ -847,11 +846,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             {
                 new Update(SensorStatus.class)
                         .set("active=0")
-                        .where("server=? and type=?",topic[2],topic[4])
+                        .where("server=?",topic[2])
                         .execute();
 
                 sensorEvent.setServer(topic[2]);
-                sensorEvent.setType(topic[4]);
                 sensorEvent.setActive(false);
                 EventBus.getDefault().postSticky(sensorEvent);
                 return;
@@ -894,6 +892,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             e.printStackTrace();
         }
     }
+
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onEventMainThread(TemperatureEvent myEvent) {
         Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
