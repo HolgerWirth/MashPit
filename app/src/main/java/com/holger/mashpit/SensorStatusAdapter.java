@@ -1,5 +1,6 @@
 package com.holger.mashpit;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +18,12 @@ import java.util.List;
 class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.SensorStatusViewHolder> {
 
     private static final String DEBUG_TAG = "SensorStatusAdapter";
-
+    private Context context;
     private List<SensorEvent> statusList;
 
     SensorStatusAdapter(List<SensorEvent> statusList) {
         this.statusList = statusList;
-        if(statusList != null) Log.i(DEBUG_TAG, "MPServer: "+this.statusList.size());
+        if(statusList != null) Log.i(DEBUG_TAG, "Server: "+this.statusList.size());
     }
 
     @Override
@@ -44,8 +45,18 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
         {
             mpStatusViewHolder.sensorServer.setText(SensorStatusEvent.getName());
         }
-//        mpStatusViewHolder.mpstatProcesses.setText(String.valueOf(mpStatusEvent.getProcesses()));
-//        mpStatusViewHolder.mpstatProcActive.setText(String.valueOf(mpStatusEvent.getActprocesses()));
+
+
+        if(SensorStatusEvent.isActive())
+        {
+            mpStatusViewHolder.sensorStatus.setText(context.getString(R.string.SensorOnline));
+            mpStatusViewHolder.sensorStatus.setBackgroundResource(android.R.color.holo_green_light);
+        }
+        else
+        {
+            mpStatusViewHolder.sensorStatus.setText(context.getString(R.string.SensorOffline));
+            mpStatusViewHolder.sensorStatus.setBackgroundResource(android.R.color.holo_red_light);
+        }
     }
 
     @NonNull
@@ -54,6 +65,8 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
                 inflate(R.layout.sensorstatuscard, viewGroup, false);
+
+        context=viewGroup.getContext();
 
         return new SensorStatusViewHolder(itemView);
     }

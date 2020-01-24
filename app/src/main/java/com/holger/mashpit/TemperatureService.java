@@ -276,6 +276,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     topic[result.size()]=MQTT_DOMAIN+"/MP/#";
                     topic[result.size()+1]=MQTT_DOMAIN+"/SE/#";
 
+/*                    new Delete().from(Sensors.class)
+                            .execute();
+*/
                     qos[result.size()+1]=0;
 
                     for(int i=0;i<topic.length;i++)
@@ -778,6 +781,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     {
         JSONObject obj;
         SensorEvent sensorEvent = new SensorEvent();
+        Integer port=0;
+        Integer address=0;
 
         if(mess.isEmpty())
         {
@@ -789,44 +794,47 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             return;
         }
 
-        if(topic[4].equals("ds18b20")) {
-            try {
-                obj = new JSONObject(mess);
-                boolean exists = new Select()
-                        .from(Sensors.class)
-                        .where("server=?", topic[2])
-                        .and("sensor=?", topic[5])
-                        .and("interval=?", topic[6])
-                        .exists();
-                if (exists) {
-                    new Update(Sensors.class)
-                            .set("active=?,name=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"))
-                            .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
-                            .execute();
-                } else {
-                    Sensors sensors = new Sensors(topic[2], topic[5], false, obj.getBoolean("active"), "", obj.getString("type"), obj.getString("name"), Integer.parseInt(topic[6]), 0, "");
-                    sensors.save();
-                }
-                sensorEvent.setServer(topic[2]);
-                sensorEvent.setSensor(topic[5]);
-                sensorEvent.setInterval(Integer.parseInt(topic[6]));
-                sensorEvent.setType(topic[4]);
-                sensorEvent.setActive(obj.getBoolean("active"));
-                sensorEvent.setName(obj.getString("name"));
-                EventBus.getDefault().postSticky(sensorEvent);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
+        try {
+            obj = new JSONObject(mess);
+            if(obj.has("PIN"))
+            {
+                port=obj.getInt("PIN");
             }
+
+            boolean exists = new Select()
+                    .from(Sensors.class)
+                    .where("server=?", topic[2])
+                    .and("sensor=?", topic[5])
+                    .and("interval=?", topic[6])
+                    .exists();
+            if (exists) {
+                new Update(Sensors.class)
+                        .set("active=?, name=?, port=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"),port)
+                        .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
+                        .execute();
+            } else {
+                Sensors sensors = new Sensors(topic[2], topic[5], false, obj.getBoolean("active"), "", obj.getString("type"), obj.getString("name"),
+                        Integer.parseInt(topic[6]), port, "");
+                sensors.save();
+            }
+            sensorEvent.setServer(topic[2]);
+            sensorEvent.setSensor(topic[5]);
+            sensorEvent.setInterval(Integer.parseInt(topic[6]));
+            sensorEvent.setType(topic[4]);
+            sensorEvent.setActive(obj.getBoolean("active"));
+            sensorEvent.setName(obj.getString("name"));
+            EventBus.getDefault().postSticky(sensorEvent);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
-    private void handleSensorStatus(String[] topic,String mess) {
+    private void handleSensorStatus(String[] topic, String mess) {
         JSONObject obj;
         SensorEvent sensorEvent = new SensorEvent();
 
-        if(mess.isEmpty())
-        {
+        if (mess.isEmpty()) {
             new Delete()
                     .from(SensorStatus.class)
                     .where("server = ?", topic[2])
@@ -841,50 +849,47 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         try {
             obj = new JSONObject(mess);
+            boolean status = obj.getInt("status") == 1;
 
-            if(obj.getInt("status")==0)
-            {
+            boolean exists = new Select()
+                    .from(SensorStatus.class)
+                    .where("server=?", topic[2])
+                    .exists();
+            if (exists) {
                 new Update(SensorStatus.class)
-                        .set("active=0")
-                        .where("server=?",topic[2])
+                        .set("active=?", obj.getInt("status"))
+                        .where("server=?", topic[2])
                         .execute();
+                Log.i(DEBUG_TAG, "Sensor server status updated!");
 
-                sensorEvent.setServer(topic[2]);
-                sensorEvent.setActive(false);
-                EventBus.getDefault().postSticky(sensorEvent);
-                return;
+            } else {
+                Log.i(DEBUG_TAG, "New sensor server created!");
+                SensorStatus newSensorStat = new SensorStatus(topic[2], "", status, "", "");
+                newSensorStat.save();
             }
 
-            JSONArray sensors = obj.getJSONArray("sensors");
-            for (int i = 0; i < sensors.length(); i++) {
-                String sensor = sensors.get(i).toString();
-                boolean exists = new Select()
-                        .from(SensorStatus.class)
-                        .where("server=?", topic[2])
-                        .exists();
-                if (exists) {
-                    new Update(SensorStatus.class)
-                            .set("active=?, alias=?",obj.getInt("status"),obj.getString("alias"))
-                            .where("server=? and sensor=?",topic[2],sensor)
-                            .execute();
-                }
-                else {
-                    boolean status;
-                    status= obj.getInt("status") == 1;
-                    SensorStatus newSensorStat = new SensorStatus(topic[2],sensor,status,obj.getString("alias"),topic[4]);
-                    newSensorStat.save();
-                }
+            sensorEvent.setServer(topic[2]);
+            sensorEvent.setActive(status);
 
-                sensorEvent.setServer(topic[2]);
-                sensorEvent.setSensor(sensor);
-                sensorEvent.setType(topic[4]);
-                if(obj.getInt("status")==0) {
-                    sensorEvent.setActive(false);
+            if (!status) {
+                EventBus.getDefault().postSticky(sensorEvent);
+            } else {
+                JSONArray sensors_json = obj.getJSONArray("sensors");
+                StringBuilder sensors = new StringBuilder();
+                for (int i = 0; i < sensors_json.length(); i++) {
+                    sensors.append(sensors_json.get(i).toString());
+                    if (i < sensors_json.length() - 1) {
+                        sensors.append("/");
+                    }
                 }
-                else
-                {
-                    sensorEvent.setActive(true);
-                }
+                Log.i(DEBUG_TAG, "Sensors connected: "+sensors);
+
+                new Update(SensorStatus.class)
+                        .set("active=?, alias=?, sensor=?", obj.getInt("status"), obj.getString("alias"),sensors.toString())
+                        .where("server=?", topic[2])
+                        .execute();
+
+                sensorEvent.setSensor(sensors.toString());
                 sensorEvent.setName(obj.getString("alias"));
                 EventBus.getDefault().postSticky(sensorEvent);
             }

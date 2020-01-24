@@ -86,6 +86,8 @@
     <string name="mpstatProcTypeTitle">Adapter Type:</string>
     <string name="MPProcActiveYes">&#160;&#160;YES&#160;&#160;&#160;</string>
     <string name="MPProcActiveNo">&#160;&#160;&#160;NO&#160;&#160;&#160;</string>
+    <string name="SensorOnline">&#160;&#160;ONLINE&#160;&#160;&#160;</string>
+    <string name="SensorOffline">&#160;&#160;&#160;OFFLINE&#160;&#160;&#160;</string>
     <string name="prefs_mqtt_title_pub">MQTT Settings Publish</string>
     <string name="MPProcTypePWR">Power Socket</string>
     <string name="MPProcTypeSSR">Solid State Relais</string>
@@ -116,4 +118,12 @@
     <string name="sensorSensorsTitle">Sensors:</string>
     <string name="sensorSensors">Sensors</string>
     <string name="sensor_configuration">Sensor Settings</string>
+    <string name="devNameTitle">Name:</string>
+    <string name="devIntervalTitle">Interval:</string>
+    <string name="sensorIdTitle">Sensor ID</string>
+    <string name="sensorNameTitle">Name</string>
+    <string name="sensorIntervalTitle">Interval</string>
+    <string name="sensorActiveTitle">Active</string>
+    <string name="sensorIntervalError">Please enter an interval</string>
+    <string name="sensorGPIOTitle">GPIO</string>
 </resources>

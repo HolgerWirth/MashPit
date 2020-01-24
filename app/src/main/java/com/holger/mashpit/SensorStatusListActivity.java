@@ -66,10 +66,12 @@ public class SensorStatusListActivity extends AppCompatActivity {
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                 Log.i(DEBUG_TAG, "Clicked!");
 
-                sintent = new Intent(getApplicationContext(), MPProcListActivity.class);
+                sintent = new Intent(getApplicationContext(), SensorDevListActivity.class);
                 sintent.putExtra("ACTION", "list");
                 sintent.putExtra("server", result.get(position).getServer());
                 sintent.putExtra("alias", result.get(position).getName());
+                sintent.putExtra("sensors",result.get(position).getSensor());
+                sintent.putExtra("online",result.get(position).isActive());
 
                 startActivityForResult(sintent, 0);
             }
@@ -99,7 +101,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
-    @Subscribe(sticky=true, threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void getSensorEvent(SensorEvent sensorEvent) {
         Log.i(DEBUG_TAG, "SensorEvent arrived: " + sensorEvent.getServer() + "/" + sensorEvent.getSensor());
         List<SensorEvent> updateresult = updateServerList();
@@ -109,40 +111,17 @@ public class SensorStatusListActivity extends AppCompatActivity {
         sa.notifyDataSetChanged();
     }
 
-    private List<SensorEvent> updateServerList()
-    {
+    private List<SensorEvent> updateServerList() {
         final List<SensorEvent> upresult = new ArrayList<>();
         List<SensorStatus> sensorStatuses = new Select().all().from(SensorStatus.class).orderBy("server ASC").execute();
 
         for (int i = 0; i < sensorStatuses.size(); i++) {
-           String server = sensorStatuses.get(i).server;
-           String alias=sensorStatuses.get(i).alias;
-
             SensorEvent sensorevent = new SensorEvent();
-            if(upresult.size()==0)
-            {
-                sensorevent.setServer(server);
-                sensorevent.setName(alias);
-                sensorevent.setActive(sensorStatuses.get(i).active);
-                upresult.add(sensorevent);
-            }
-            boolean found = false;
-            for(int t=0; t < upresult.size();t++) {
-                if (upresult.get(t).getServer().equals(server)) {
-                    found = true;
-                    sensorevent = upresult.get(t);
-                    sensorevent.setName(alias);
-
-                    upresult.set(t, sensorevent);
-                    break;
-                }
-            }
-            if(!found)
-            {
-                sensorevent.setServer(server);
-                sensorevent.setName(alias);
-                upresult.add(sensorevent);
-            }
+            sensorevent.setServer(sensorStatuses.get(i).server);
+            sensorevent.setName(sensorStatuses.get(i).alias);
+            sensorevent.setActive(sensorStatuses.get(i).active);
+            sensorevent.setSensor(sensorStatuses.get(i).sensor);
+            upresult.add(sensorevent);
         }
         return upresult;
     }

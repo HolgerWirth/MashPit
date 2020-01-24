@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.holger.mashpit.SensorDevListActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/sensordev_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sensordevList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/abc_action_bar_default_height_material" />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/sensordev_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="top"
+        android:orientation="vertical"/>
+
+    <LinearLayout
+        android:id="@+id/devspeeddial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        android:visibility="invisible"
+        app:layout_anchor="@id/devfabadd"
+        app:layout_anchorGravity="top|center_horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:layout_marginRight="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:background="@android:color/holo_green_light"
+                android:elevation="6dp"
+                android:text="@string/procfabpowerdesc"
+                android:textColor="#fff"
+                android:textSize="18dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/devfabpower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:tooltipText="@string/procfabpowerdesc"
+                app:borderWidth="0dp"
+                app:fabSize="mini"
+                app:srcCompat="@drawable/ic_add_white_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:layout_marginRight="8dp"
+            android:gravity="right"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:background="@android:color/holo_green_light"
+                android:elevation="6dp"
+                android:text="@string/procfabssrdesc"
+                android:textColor="#fff"
+                android:textSize="18dp"
+                app:layout_anchor="@id/procfabssr"
+                app:layout_anchorGravity="right" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/procfabssr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:tooltipText="@string/procfabssrdesc"
+                app:fabSize="mini"
+                app:srcCompat="@drawable/ic_add_white_24dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/devfabadd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/procfabadddesc"
+        android:src="@drawable/ic_add_white_24dp"
+        android:tooltipText="@string/procfabadddesc" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

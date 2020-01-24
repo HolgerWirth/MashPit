@@ -85,6 +85,8 @@
         <activity android:name=".MPProcListActivity" />
         <activity android:name=".ServerEdit" />
         <activity android:name=".SensorStatusListActivity" />
+        <activity android:name=".SensorDevListActivity" />
+        <activity android:name=".SensorConfEdit" />
     </application>
 
 </manifest>
