@@ -786,6 +786,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     .and("sensor=?", topic[5])
                     .and("interval=?", topic[6])
                     .execute();
+
+            Log.i(DEBUG_TAG, "Configuration deleted!");
+            sensorEvent.setServer(topic[2]);
+            sensorEvent.setSensor(topic[5]);
+            sensorEvent.setInterval(Integer.parseInt(topic[6]));
+            sensorEvent.setType(topic[4]);
+            EventBus.getDefault().postSticky(sensorEvent);
             return;
         }
 
