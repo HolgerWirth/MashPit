@@ -193,7 +193,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     List<Subscriber> delresult = new ArrayList<>();
                     String delsubs=prefs.getString("delsublist","");
                     int subs_count;
-                    assert delsubs != null;
                     if(delsubs.length()>0) {
                         try {
                             JSONObject subscribers = new JSONObject(delsubs);
@@ -229,7 +228,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     List<Subscriber> result = new ArrayList<>();
                     String subs=prefs.getString("sublist","");
-                    assert subs != null;
                     if(subs.length()>0) {
                         try {
                             JSONObject subscribers = new JSONObject(subs);
@@ -383,10 +381,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 //        mOpts.setKeepAliveInterval(0);
         mOpts.setConnectionTimeout(2);
         mOpts.setCleanSession(false);
-        assert MQTT_USER != null;
         if(!MQTT_USER.isEmpty()) {
             mOpts.setUserName(MQTT_USER);
-            assert MQTT_PASSWORD != null;
             mOpts.setPassword(MQTT_PASSWORD.toCharArray());
         }
 
@@ -781,8 +777,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     {
         JSONObject obj;
         SensorEvent sensorEvent = new SensorEvent();
-        Integer port=0;
-        Integer address=0;
+        int port=0;
 
         if(mess.isEmpty())
         {
@@ -901,7 +896,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onEventMainThread(TemperatureEvent myEvent) {
         Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
-        assert prefdefaults != null;
         if(prefdefaults.contains(myEvent.getSensor()+"/"+myEvent.getInterval()))
         {
             Log.i(DEBUG_TAG, "Notification updated");
