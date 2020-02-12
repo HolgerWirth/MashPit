@@ -52,6 +52,7 @@
     <string name="pubConfNOK">Senden der Konfig. ist nicht möglich!</string>
     <string name="confNameTitle">Name:</string>
     <string name="confdelAlert">Willst du wirklich die Konfiguration \'%1$s\' löschen und zum Server senden?</string>
+    <string name="confdelIntervalAlert">Willst du wirklich den %1$s Sekunden Interval für Sensor \'%2$s\' löschen und zum Server senden?</string>
     <string name="confPublishAlert">Willst du wirklich die Konfiguration \'%1$s\' zum Server senden?</string>
     <string name="menu_configuration">Server Einstellungen</string>
     <string name="menu_settings">App Einstellungen</string>
@@ -118,4 +119,11 @@
     <string name="sensorActiveTitle">Active</string>
     <string name="sensorIntervalError">Please enter an interval</string>
     <string name="sensorGPIOTitle">GPIO</string>
+    <string name="intervaladddesc">Add a new interval</string>
+    <string name="devfabadddesc">Create a new sensor device</string>
+    <string name="devfabaddNMEdesc">New BME280</string>
+    <string name="devfabaddDHTdesc">Add a new DHT sensor device</string>
+    <string name="devGPIOWarning">Enter a valid GPIO-port!</string>
+    <string name="devIntervalWarning">Enter a valid interval</string>
+    <string name="devGPIOExists">GPIO-port is already used</string>
 </resources>

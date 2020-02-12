@@ -17,12 +17,34 @@
         android:layout_height="match_parent">
 
         <TextView
+            android:id="@+id/devTypeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/mpstatProcTypeTitle"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
+            android:id="@+id/devType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="130dp"
+            android:layout_marginTop="5dp"
+            android:textStyle="bold"
+            android:text="@string/mpstatProcTypeTitle"
+            android:textSize="@dimen/abc_text_size_medium_material" />
+
+        <TextView
             android:id="@+id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/devTypeTitle"
             android:text="@string/devNameTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
@@ -32,82 +54,35 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="130dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:textStyle="bold"
+            android:layout_below="@id/devTypeTitle"
             android:text="@string/devNameTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
-            android:id="@+id/devIntervalTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/devNameTitle"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp"
-            android:text="@string/devIntervalTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
-
-        <TextView
-            android:id="@+id/devInterval"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/devNameTitle"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="130dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp"
-            android:textStyle="bold"
-            android:text="@string/devIntervalTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
-
-        <TextView
             android:id="@+id/devStatusTitle"
-            android:layout_below="@id/devIntervalTitle"
+            android:layout_below="@id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:text="@string/mpstatProcStatusTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
             android:id="@+id/devStatus"
-            android:layout_below="@id/devIntervalTitle"
+            android:layout_below="@id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="130dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:textStyle="bold"
             android:text="@string/mpstatProcStatusTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
-
-        <TextView
-            android:id="@+id/devTypeTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/devStatusTitle"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp"
-            android:text="@string/mpstatProcTypeTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
-
-        <TextView
-            android:id="@+id/devType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/devStatusTitle"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="130dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp"
-            android:textStyle="bold"
-            android:text="@string/mpstatProcTypeTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
     </RelativeLayout>
     </androidx.cardview.widget.CardView>

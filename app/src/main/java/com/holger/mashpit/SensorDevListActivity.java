@@ -16,18 +16,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.activeandroid.query.Select;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.holger.mashpit.events.MPStatusEvent;
+import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.tools.ItemClickSupport;
-import com.holger.mashpit.tools.SensorPublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SensorDevListActivity extends AppCompatActivity {
@@ -88,8 +87,8 @@ public class SensorDevListActivity extends AppCompatActivity {
         }
 
         final FloatingActionButton fabadd = findViewById(R.id.devfabadd);
-//        final FloatingActionButton fabpower = findViewById(R.id.procfabpower);
-//        final FloatingActionButton fabssr = findViewById(R.id.procfabssr);
+        final FloatingActionButton fabBME = findViewById(R.id.devfabaddBME);
+        final FloatingActionButton fabDHT = findViewById(R.id.devfabaddDHT);
         final LinearLayout speeddial= this.findViewById(R.id.devspeeddial);
 
         fabadd.setOnClickListener(new View.OnClickListener() {
@@ -106,37 +105,42 @@ public class SensorDevListActivity extends AppCompatActivity {
             }
         });
 
-/*        fabpower.setOnClickListener(new View.OnClickListener() {
+        fabBME.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the PWR button");
+                Log.i(DEBUG_TAG, "Clicked the BME FAB");
                 speeddial.setVisibility(LinearLayout.GONE);
                 iscollapsed=false;
-                Intent l = new Intent(getApplicationContext(), ConfEdit.class);
+                Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
                 l.putExtra("ACTION", "insert");
-                l.putExtra("adapter", "PWR");
+                l.putExtra("sensor", "BME280");
+                l.putExtra("type", "bme280");
                 l.putExtra("server",server);
-                l.putExtra("name",getString(R.string.procfabpowerdesc));
+                l.putExtra("name","BME280");
+                l.putExtra("GPIO",0);
                 startActivityForResult(l, 0);
             }
         });
 
-        fabssr.setOnClickListener(new View.OnClickListener() {
+        fabDHT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the SSR button");
+                Log.i(DEBUG_TAG, "Clicked the DHT FAB");
                 speeddial.setVisibility(LinearLayout.GONE);
                 iscollapsed=false;
-                Intent l = new Intent(getApplicationContext(), ConfEdit.class);
+                Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
                 l.putExtra("ACTION", "insert");
-                l.putExtra("adapter", "SSR");
+                l.putExtra("sensor", "DHT11");
+                l.putExtra("type", "dht11");
                 l.putExtra("server",server);
-                l.putExtra("name",getString(R.string.procfabssrdesc));
+                l.putExtra("name","DHT11");
+                l.putExtra("GPIO",0);
+                l.putExtra("address","0");
                 startActivityForResult(l, 0);
             }
         });
-*/
-        result = new Select().from(Sensors.class).where("server = ?", server).orderBy("server ASC").execute();
+
+        result=refreshSensorList();
         sa = new SensorDevAdapter(result);
 
         ItemClickSupport.addTo(sensordevList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -150,11 +154,11 @@ public class SensorDevListActivity extends AppCompatActivity {
                 l = new Intent(getApplicationContext(), SensorConfEdit.class);
                 l.putExtra("ACTION", "edit");
                 l.putExtra("sensor", sensors.sensor);
-                l.putExtra("interval", sensors.interval);
                 l.putExtra("type",sensors.type);
                 l.putExtra("name",sensors.name);
                 l.putExtra("server",sensors.server);
                 l.putExtra("active",sensors.active);
+                l.putExtra("GPIO",sensors.port);
                 startActivityForResult(l, 0);
             }
         });
@@ -162,6 +166,55 @@ public class SensorDevListActivity extends AppCompatActivity {
         sa.setSensors(sensors);
         sa.setOnline(online);
         sensordevList.setAdapter(sa);
+    }
+
+    private List<Sensors> refreshSensorList() {
+        List<Sensors> dbresult;
+        dbresult = new Select().from(Sensors.class).where("server = ?", server).orderBy("sensor ASC").execute();
+        final List<Sensors> upresult = new ArrayList<>();
+        String mySensor = "";
+        int t = (-1);
+        for (int i = 0; i < dbresult.size(); i++) {
+            if (!(dbresult.get(i).sensor.equals(mySensor))) {
+                t++;
+                upresult.add(dbresult.get(i));
+                upresult.get(t).interval = 1;
+                mySensor = dbresult.get(i).sensor;
+            } else {
+                upresult.get(t).interval++;
+                if (dbresult.get(i).active) {
+                    upresult.get(t).active = true;
+                }
+            }
+        }
+        List<String> defaultsensor = setSensors(sensors);
+        boolean found;
+        for (int i = 0; i < defaultsensor.size(); i++) {
+            found=false;
+            for (int j = 0; j < upresult.size(); j++) {
+                if (defaultsensor.get(i).equals(upresult.get(j).sensor)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                t++;
+                Sensors xSensor = new Sensors();
+                xSensor.sensor = defaultsensor.get(i);
+                xSensor.active = false;
+                xSensor.interval = 0;
+                xSensor.name = defaultsensor.get(i);
+                xSensor.server = server;
+                xSensor.type = "ds18b20";
+                upresult.add(t, xSensor);
+            }
+        }
+        return(upresult);
+    }
+
+    private List<String> setSensors(String sensors)
+    {
+        return (Arrays.asList(sensors.split("/")));
     }
 
     @Override
@@ -178,60 +231,24 @@ public class SensorDevListActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "onStop()");
     }
 
-    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
-    public void getMPStatusEvent(MPStatusEvent mpstatusEvent) {
-        Log.i(DEBUG_TAG, "MPStatusEvent arrived: " + mpstatusEvent.getMPServer() + "/" + mpstatusEvent.getStatusTopic());
-        List<Sensors> updateresult = new Select().from(Sensors.class).where("server = ?", server).orderBy("alias ASC").execute();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getSensorStatusEvent(SensorEvent sensorEvent) {
+        Log.i(DEBUG_TAG, "SensorEvent arrived: " + sensorEvent.getSensor());
+        sensors=sensorEvent.getSensor();
         result.clear();
-        result.addAll(updateresult);
+        result.addAll(refreshSensorList());
         sa.notifyDataSetChanged();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == 0 )
+        Log.i(DEBUG_TAG, "ResultCode="+resultCode);
+        if(resultCode == 1 )
         {
-            return;
-        }
-
-        String action = data.getStringExtra("ACTION");
-        String type = data.getStringExtra("type");
-        String name = data.getStringExtra("name");
-        boolean active = data.getBooleanExtra("active",false);
-        int interval = data.getIntExtra(("interval"),0);
-        String sensor = data.getStringExtra("sensor");
-        int gpio = data.getIntExtra(("GPIO"),0);
-
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put("type",type);
-            obj.put("name",name);
-            if(type.equals("bme280"))
-            {
-                obj.put("PIN",gpio);
-            }
-            obj.put("active",active);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        Log.i(DEBUG_TAG, "Config: " + obj.toString());
-
-        SensorPublishMQTT pubMQTT = new SensorPublishMQTT();
-        if (resultCode == 1) {
-            if (pubMQTT.PublishSensorConf(this,server,sensor,type,interval, obj.toString())) {
-                snb.displayInfo(R.string.pubConfOK);
-            } else {
-                snb.displayInfo(R.string.pubConfNOK);
-            }
-        }
-        if (resultCode == 2) {
-            if (pubMQTT.PublishSensorConf(this,server,sensor, type, interval,"")) {
-                snb.displayUndo(getString(R.string.conf_deleted) + name + "'");
-            } else {
-                snb.displayInfo(R.string.pubConfNOK);
-            }
+            result.clear();
+            result.addAll(refreshSensorList());
+            sa.notifyDataSetChanged();
         }
     }
 }

@@ -32,39 +32,34 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
     @Override
     public void onBindViewHolder(@NonNull SensorDevViewHolder sensorDevViewHolder, int i) {
         Sensors devStatus = this.devList.get(i);
-        if(devStatus.name.isEmpty()) {
+        if (devStatus.name.isEmpty()) {
             sensorDevViewHolder.devName.setText(devStatus.sensor);
-        }
-        else
-        {
+        } else {
             sensorDevViewHolder.devName.setText(devStatus.name);
         }
 
-        sensorDevViewHolder.devInterval.setText(Integer.toString(devStatus.interval));
+        if (devStatus.active) {
+            sensorDevViewHolder.devStatus.setText(context.getString(R.string.MPProcActiveYes));
+            sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_green_light);
+        } else {
+            sensorDevViewHolder.devStatus.setText(context.getString(R.string.MPProcActiveNo));
+            sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_red_light);
+        }
 
-            if (devStatus.active) {
-                sensorDevViewHolder.devStatus.setText(context.getString(R.string.MPProcActiveYes));
-                sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_green_light);
-            } else {
-                sensorDevViewHolder.devStatus.setText(context.getString(R.string.MPProcActiveNo));
-                sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_red_light);
-            }
-
-            switch(devStatus.type)
-        {
-            case("ds18b20"):
+        switch (devStatus.type) {
+            case ("ds18b20"):
                 sensorDevViewHolder.devType.setText("DS18B20");
-                if(online) {
+                if (online) {
                     if (!sensor_list.contains(devStatus.sensor)) {
                         sensorDevViewHolder.devStatus.setText("NOT CONNECTED");
                         sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_red_light);
                     }
                 }
                 break;
-            case("bme280"):
+            case ("bme280"):
                 sensorDevViewHolder.devType.setText("BME280");
                 break;
-            case("dht11"):
+            case ("dht11"):
                 sensorDevViewHolder.devType.setText("DHT11");
                 break;
             default:
@@ -110,7 +105,6 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
         TextView devName;
         TextView devStatus;
         TextView devType;
-        TextView devInterval;
         CardView devCardView;
 
         SensorDevViewHolder(final View v) {
@@ -118,7 +112,6 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
             devName = v.findViewById(R.id.devName);
             devStatus = v.findViewById(R.id.devStatus);
             devType = v.findViewById(R.id.devType);
-            devInterval = v.findViewById(R.id.devInterval);
 
             devCardView = v.findViewById(R.id.devcard_view);
 

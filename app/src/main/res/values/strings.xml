@@ -60,6 +60,7 @@
     <string name="pubConfNOK">Publish failed!</string>
     <string name="confNameTitle">Name:</string>
     <string name="confdelAlert">Do you really want to delete and publish the config "%1$s"?</string>
+    <string name="confdelIntervalAlert">Do you really want to delete and publish the "%1$s" sec. Interval for "%2$s"?</string>
     <string name="confPublishAlert">Do you really want to publish the config to the "%1$s" process?</string>
     <string name="menu_configuration">Server configuration</string>
     <string name="menu_settings">App preferences</string>
@@ -126,4 +127,11 @@
     <string name="sensorActiveTitle">Active</string>
     <string name="sensorIntervalError">Please enter an interval</string>
     <string name="sensorGPIOTitle">GPIO</string>
+    <string name="intervaladddesc">Add a new interval</string>
+    <string name="devfabadddesc">Create a new sensor device</string>
+    <string name="devfabaddNMEdesc">New BME280</string>
+    <string name="devfabaddDHTdesc">Add a new DHT sensor device</string>
+    <string name="devGPIOWarning">Enter a valid GPIO-port!</string>
+    <string name="devIntervalWarning">Enter a valid interval</string>
+    <string name="devGPIOExists">GPIO-port is already used</string>
 </resources>

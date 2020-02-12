@@ -54,18 +54,18 @@
                 android:layout_gravity="right"
                 android:background="@android:color/holo_green_light"
                 android:elevation="6dp"
-                android:text="@string/procfabpowerdesc"
+                android:text="@string/devfabaddDHTdesc"
                 android:textColor="#fff"
                 android:textSize="18dp" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/devfabpower"
+                android:id="@+id/devfabaddDHT"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                android:tooltipText="@string/procfabpowerdesc"
+                android:tooltipText="@string/devfabaddDHTdesc"
                 app:borderWidth="0dp"
                 app:fabSize="mini"
                 app:srcCompat="@drawable/ic_add_white_24dp" />
@@ -85,20 +85,20 @@
                 android:layout_gravity="right"
                 android:background="@android:color/holo_green_light"
                 android:elevation="6dp"
-                android:text="@string/procfabssrdesc"
+                android:text="@string/devfabaddNMEdesc"
                 android:textColor="#fff"
                 android:textSize="18dp"
-                app:layout_anchor="@id/procfabssr"
+                app:layout_anchor="@id/devfabaddBME"
                 app:layout_anchorGravity="right" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/procfabssr"
+                android:id="@+id/devfabaddBME"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                android:tooltipText="@string/procfabssrdesc"
+                android:tooltipText="@string/devfabaddNMEdesc"
                 app:fabSize="mini"
                 app:srcCompat="@drawable/ic_add_white_24dp" />
         </LinearLayout>
@@ -113,6 +113,6 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/procfabadddesc"
         android:src="@drawable/ic_add_white_24dp"
-        android:tooltipText="@string/procfabadddesc" />
+        android:tooltipText="@string/devfabadddesc" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
