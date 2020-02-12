@@ -74,15 +74,11 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 break;
 
             case "bme280":
-                setContentView(R.layout.activity_sensoredit_gpio);
-                gpio = findViewById(R.id.sensorGPIO);
-                break;
 
             case "dht11":
                 setContentView(R.layout.activity_sensoredit_gpio);
                 gpio = findViewById(R.id.sensorGPIO);
                 break;
-
 
             default:
                 return;
