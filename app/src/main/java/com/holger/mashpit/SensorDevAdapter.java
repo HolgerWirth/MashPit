@@ -51,7 +51,7 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
                 sensorDevViewHolder.devType.setText("DS18B20");
                 if (online) {
                     if (!sensor_list.contains(devStatus.sensor)) {
-                        sensorDevViewHolder.devStatus.setText("NOT CONNECTED");
+                        sensorDevViewHolder.devStatus.setText(context.getString(R.string.devNotConnected));
                         sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_red_light);
                     }
                 }
@@ -73,7 +73,7 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
         this.sensor_list = Arrays.asList(sensors.split("/"));
     }
 
-    public void setOnline(boolean online)
+    void setOnline(boolean online)
     {
         this.online=online;
     }

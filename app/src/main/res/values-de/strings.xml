@@ -126,4 +126,8 @@
     <string name="devGPIOWarning">Enter a valid GPIO-port!</string>
     <string name="devIntervalWarning">Enter a valid interval</string>
     <string name="devGPIOExists">GPIO-port is already used</string>
+    <string name="devNotConnected">NOT CONNECTED</string>
+    <string name="devBME280">BME280</string>
+    <string name="devDHT11">DHT11</string>
+    <string name="devDS18B20">DS18B20</string>
 </resources>
