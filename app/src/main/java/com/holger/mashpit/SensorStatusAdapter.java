@@ -77,14 +77,12 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
 
     class SensorStatusViewHolder extends RecyclerView.ViewHolder {
         TextView sensorServer;
-        TextView sensorSensor;
         TextView sensorStatus;
         CardView mCardView;
 
         SensorStatusViewHolder(final View v) {
             super(v);
             sensorServer = v.findViewById(R.id.sensorServer);
-            sensorSensor = v.findViewById(R.id.sensorSensor);
             sensorStatus = v.findViewById(R.id.sensorStatus);
 
             mCardView = v.findViewById(R.id.sensorstatuscard_view);

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Widget.MaterialComponents.CardView"
     android:id="@+id/sensorstatuscard_view"
     android:layout_width="match_parent"
@@ -9,8 +10,7 @@
     android:layout_marginLeft="@dimen/mtrl_card_spacing"
     android:layout_marginTop="@dimen/mtrl_card_spacing"
     android:layout_marginRight="@dimen/mtrl_card_spacing"
-    android:foreground="?android:attr/selectableItemBackground"
-    android:minHeight="115dp">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,31 +45,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/sensorSensorTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="10dp"
-                android:textSize="@dimen/abc_text_size_medium_material"
-                android:text="@string/sensorSensorsTitle"/>
-
-            <TextView
-                android:id="@+id/sensorSensor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="180dp"
-                android:layout_marginTop="10dp"
-                android:text="@string/sensorSensors"
-                android:textSize="@dimen/abc_text_size_medium_material"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
             <TextView
                 android:id="@+id/sensorStatusTitle"
                 android:layout_width="wrap_content"
@@ -85,9 +60,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="180dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:textStyle="bold"
                 android:textSize="@dimen/abc_text_size_medium_material"
                 android:text="@string/mpstatProcStatusTitle"/>
         </RelativeLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>
