@@ -27,6 +27,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SensorDevListActivity extends AppCompatActivity {
@@ -214,7 +215,10 @@ public class SensorDevListActivity extends AppCompatActivity {
 
     private List<String> setSensors(String sensors)
     {
-        return (Arrays.asList(sensors.split("/")));
+        if(sensors.contains("/")) {
+            return (Arrays.asList(sensors.split("/")));
+        }
+        return Collections.emptyList();
     }
 
     @Override
