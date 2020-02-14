@@ -215,7 +215,7 @@ public class SensorDevListActivity extends AppCompatActivity {
 
     private List<String> setSensors(String sensors)
     {
-        if(sensors.contains("/")) {
+        if(!sensors.isEmpty()) {
             return (Arrays.asList(sensors.split("/")));
         }
         return Collections.emptyList();
