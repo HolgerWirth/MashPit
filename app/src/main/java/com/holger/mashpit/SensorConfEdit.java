@@ -85,7 +85,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         }
 
         actionButton = findViewById(R.id.editButton);
-        final FloatingActionButton deleteButton = findViewById(R.id.deleteButton);
         final FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
         final FloatingActionButton addButton = findViewById(R.id.intervalfabadd);
 
@@ -151,7 +150,13 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 }
                 if (!editable.toString().isEmpty()) {
                     name = editable.toString();
-                    actionButton.show();
+                    if(!sensors.isEmpty()) {
+                        actionButton.show();
+                    }
+                    else
+                    {
+                        addButton.show();
+                    }
                 }
             }
         });
@@ -198,9 +203,9 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             }
         }
 
-        deleteButton.hide();
         cancelButton.show();
         addButton.show();
+        actionButton.hide();
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -226,7 +231,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 sensors.add(0, newInterval);
                 intervalInsert = true;
                 sa.notifyItemInserted(0);
-                deleteButton.hide();
                 addButton.hide();
                 cancelButton.show();
                 actionButton.hide();
