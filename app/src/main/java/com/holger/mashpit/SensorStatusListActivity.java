@@ -72,6 +72,9 @@ public class SensorStatusListActivity extends AppCompatActivity {
                 sintent.putExtra("alias", result.get(position).getName());
                 sintent.putExtra("sensors",result.get(position).getSensor());
                 sintent.putExtra("online",result.get(position).isActive());
+                sintent.putExtra("system",result.get(position).getSystem());
+                sintent.putExtra("version",result.get(position).getVersion());
+                sintent.putExtra("TS",result.get(position).getTS());
 
                 startActivityForResult(sintent, 0);
             }
@@ -121,6 +124,9 @@ public class SensorStatusListActivity extends AppCompatActivity {
             sensorevent.setName(sensorStatuses.get(i).alias);
             sensorevent.setActive(sensorStatuses.get(i).active);
             sensorevent.setSensor(sensorStatuses.get(i).sensor);
+            sensorevent.setSystem(sensorStatuses.get(i).system);
+            sensorevent.setTS(sensorStatuses.get(i).TS);
+            sensorevent.setVersion(sensorStatuses.get(i).version);
             upresult.add(sensorevent);
         }
         return upresult;

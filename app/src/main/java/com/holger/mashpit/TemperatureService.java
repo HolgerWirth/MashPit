@@ -852,6 +852,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         try {
             obj = new JSONObject(mess);
             boolean status = obj.getInt("status") == 1;
+            long TS=0;
+            String system="--";
+            String version="--";
+            if(obj.has("TS")) {TS = obj.getLong("TS");}
+            if(obj.has("system")) {system = obj.getString("system"); }
+            if(obj.has("version")) {version = obj.getString("version");}
 
             boolean exists = new Select()
                     .from(SensorStatus.class)
@@ -859,14 +865,14 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     .exists();
             if (exists) {
                 new Update(SensorStatus.class)
-                        .set("active=?", obj.getInt("status"))
+                        .set("active=?,TS=?,system=?,version=?", obj.getInt("status"),TS,system,version)
                         .where("server=?", topic[2])
                         .execute();
                 Log.i(DEBUG_TAG, "Sensor server status updated!");
 
             } else {
                 Log.i(DEBUG_TAG, "New sensor server created!");
-                SensorStatus newSensorStat = new SensorStatus(topic[2], "", status, "", "");
+                SensorStatus newSensorStat = new SensorStatus(topic[2], "", status, "", "",TS,system,version);
                 newSensorStat.save();
             }
 
@@ -875,7 +881,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
             if (!status) {
                 EventBus.getDefault().postSticky(sensorEvent);
-            } else {
+            }
+            else {
                 JSONArray sensors_json = obj.getJSONArray("sensors");
                 StringBuilder sensors = new StringBuilder();
                 for (int i = 0; i < sensors_json.length(); i++) {

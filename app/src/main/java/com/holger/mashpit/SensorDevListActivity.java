@@ -1,10 +1,14 @@
 package com.holger.mashpit;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -29,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class SensorDevListActivity extends AppCompatActivity {
     private static final String DEBUG_TAG = "SensorDevListActivity";
@@ -42,11 +47,16 @@ public class SensorDevListActivity extends AppCompatActivity {
     List<Sensors> result;
     boolean iscollapsed=false;
     boolean online=false;
+    private static String translation;
+    private long TS;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensordevlist);
+
+        translation=getApplicationContext().getResources().getString(R.string.uptimeformat);
 
         final CoordinatorLayout coordinatorLayout = findViewById(R.id.sensordev_content);
         snb = new SnackBar(coordinatorLayout);
@@ -75,17 +85,35 @@ public class SensorDevListActivity extends AppCompatActivity {
             alias = getIntent().getStringExtra("alias");
             sensors = getIntent().getStringExtra("sensors");
             online=getIntent().getBooleanExtra("online",false);
+            TS=getIntent().getLongExtra("TS",0);
         }
 
+        TextView serverId = findViewById(R.id.serverId);
+        TextView serverSystem = findViewById(R.id.serverSystem);
+        TextView serverUptime = findViewById(R.id.serverUptime);
+        TextView serverVersion = findViewById(R.id.serverVersion);
+        TextView sensorName = findViewById(R.id.sensorName);
+
+        serverId.setEnabled(false);
+        serverSystem.setEnabled(false);
+        serverUptime.setEnabled(false);
+        serverVersion.setEnabled(false);
+
+        serverId.setText(server);
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
         if(!alias.isEmpty())
         {
             ab.setTitle(alias);
+            sensorName.setText(alias);
         }
         else {
             ab.setTitle(server);
         }
+
+        serverSystem.setText(getIntent().getStringExtra("system"));
+        serverVersion.setText(getIntent().getStringExtra("version"));
+        serverUptime.setText(Long.toString(TS));
 
         final FloatingActionButton fabadd = findViewById(R.id.devfabadd);
         final FloatingActionButton fabBME = findViewById(R.id.devfabaddBME);
@@ -143,6 +171,10 @@ public class SensorDevListActivity extends AppCompatActivity {
 
         result=refreshSensorList();
         sa = new SensorDevAdapter(result);
+
+        if(TS>0) {
+            startTimer(TS);
+        }
 
         ItemClickSupport.addTo(sensordevList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
@@ -254,5 +286,37 @@ public class SensorDevListActivity extends AppCompatActivity {
             result.addAll(refreshSensorList());
             sa.notifyDataSetChanged();
         }
+    }
+
+    public void startTimer(final long TS) {
+        new CountDownTimer(1800000, 1000) {
+            final EditText TS_field = findViewById(R.id.serverUptime);
+            long uptime = 0;
+
+            public void onTick(long millisUntilFinished) {
+                long tsnow = System.currentTimeMillis() / 1000;
+                uptime = tsnow - TS;
+
+                TS_field.setText(getFormattedTimeSpan(uptime));
+            }
+
+            public void onFinish() {
+                TS_field.setText(getFormattedTimeSpan(uptime));
+
+            }
+        }.start();
+    }
+
+    public static String getFormattedTimeSpan(final long span) {
+        long x = span;
+        long seconds = x % 60;
+        x /= 60;
+        long minutes = x % 60;
+        x /= 60;
+        long hours = x % 24;
+        x /= 24;
+        long days = x;
+
+        return String.format(Locale.getDefault(),"%d %s %02d:%02d:%02d", days, translation,hours, minutes, seconds);
     }
 }

@@ -129,8 +129,8 @@
     <string name="sensorGPIOTitle">GPIO</string>
     <string name="intervaladddesc">Add a new interval</string>
     <string name="devfabadddesc">Create a new sensor device</string>
-    <string name="devfabaddNMEdesc">New BME280</string>
-    <string name="devfabaddDHTdesc">Add a new DHT sensor device</string>
+    <string name="devfabaddNMEdesc">New BME280 device</string>
+    <string name="devfabaddDHTdesc">New DHT 11/22 device</string>
     <string name="devGPIOWarning">Enter a valid GPIO-port!</string>
     <string name="devIntervalWarning">Enter a valid interval</string>
     <string name="devGPIOExists">GPIO-port is already used</string>
@@ -138,4 +138,7 @@
     <string name="devBME280">BME280</string>
     <string name="devDHT11">DHT11</string>
     <string name="devDS18B20">DS18B20</string>
+    <string name="serverSystemTypeTitle">System</string>
+    <string name="sensorUptimeTitle">Uptime</string>
+    <string name="serverVersionTitle">Version</string>
 </resources>
