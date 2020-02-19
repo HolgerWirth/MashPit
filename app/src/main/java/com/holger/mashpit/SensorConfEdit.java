@@ -248,7 +248,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                             gpio.setError(getString(R.string.devGPIOWarning));
                             return;
                         }
-                        if (SensorDeviveExists(server, GPIO)) {
+                        if (SensorDeviceExists(server, GPIO)) {
                             gpio.setError(getString(R.string.devGPIOExists));
                             return;
                         }
@@ -271,13 +271,13 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         Log.i(DEBUG_TAG, "Clicked on OK! - OK");
                         sa.getItem(0).name=name;
                         sa.getItem(0).port=GPIO;
-                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT();
-                        if (pubMQTT.PublishSensorConf(context, server, sensor, type, sa.getItem(0).interval, createJSONConfig(0))) {
+                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                        if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0))) {
                             for (int i = 0; i < sa.getItemCount(); i++) {
                                 if (!(name.equals(sa.getItem(i).name))) {
                                     Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
                                     sa.getItem(i).name = name;
-                                    pubMQTT.PublishSensorConf(context, server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
+                                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
                                 }
                             }
                             snb.displayInfo(R.string.pubConfOK);
@@ -364,8 +364,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             public void onClick(DialogInterface dialog, int which) {
                 Log.i(DEBUG_TAG, "Clicked on Delete! - OK");
 
-                SensorPublishMQTT pubMQTT = new SensorPublishMQTT();
-                if (pubMQTT.PublishSensorConf(context, server, sensor, type, sa.getItem(position).interval, ""))
+                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, ""))
                 {
                     snb.displayInfo(R.string.pubConfOK);
                     sensors.remove(position);
@@ -412,8 +412,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 public void onClick(DialogInterface dialog, int which) {
                     Log.i(DEBUG_TAG, "Clicked on Publish! - OK");
 
-                    SensorPublishMQTT pubMQTT = new SensorPublishMQTT();
-                    if (pubMQTT.PublishSensorConf(context, server, sensor, type, sa.getItem(position).interval, createJSONConfig(position)))
+                    SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                    if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position)))
                     {
                         snb.displayInfo(R.string.pubConfOK);
                         resultCode=1;
@@ -428,7 +428,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         }
     }
 
-    private boolean SensorDeviveExists(String server,int GPIO)
+    private boolean SensorDeviceExists(String server,int GPIO)
     {
         return new Select()
                 .from(Sensors.class)
