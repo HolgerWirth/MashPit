@@ -33,6 +33,19 @@ public class SensorStatusListActivity extends AppCompatActivity {
     List<SensorEvent> result = new ArrayList<>();
 
     @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        Log.i(DEBUG_TAG, "ActivityForResult: "+requestCode);
+        if(requestCode==1)
+        {
+            List<SensorEvent> updateresult = updateServerList();
+            result.clear();
+            result.addAll(updateresult);
+            sa.notifyDataSetChanged();
+        }
+        super.startActivityForResult(intent, requestCode);
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensorstatus);
@@ -95,12 +108,14 @@ public class SensorStatusListActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.i(DEBUG_TAG, "OnStart");
         EventBus.getDefault().register(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Log.i(DEBUG_TAG, "OnStop");
         EventBus.getDefault().unregister(this);
     }
 
