@@ -274,6 +274,15 @@ public class SensorDevListActivity extends AppCompatActivity {
             }
         });
 
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                overridePendingTransition(0, 0);
+                setResult(resultCode, null);
+                finish();
+            }
+        });
+
         sa.setSensors(sensors);
         sa.setOnline(online);
         sensordevList.setAdapter(sa);
@@ -340,9 +349,7 @@ public class SensorDevListActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        setResult(1, null);
         super.onStop();
-        setResult(resultCode);
         EventBus.getDefault().unregister(this);
         Log.i(DEBUG_TAG, "onStop()");
     }
@@ -359,6 +366,7 @@ public class SensorDevListActivity extends AppCompatActivity {
                 sa.notifyDataSetChanged();
             }
             sensorName.setText(sensorEvent.getName());
+            sensorName.setEnabled(sensorEvent.isActive());
             serverSystem.setText(sensorEvent.getSystem());
             serverVersion.setText(sensorEvent.getVersion());
             TS=sensorEvent.getTS();
@@ -379,6 +387,12 @@ public class SensorDevListActivity extends AppCompatActivity {
             result.addAll(refreshSensorList());
             sa.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        setResult(resultCode,null);
+        finish();
     }
 
     public void startTimer(final long TS) {
