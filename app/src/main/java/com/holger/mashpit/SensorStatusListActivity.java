@@ -33,16 +33,15 @@ public class SensorStatusListActivity extends AppCompatActivity {
     List<SensorEvent> result = new ArrayList<>();
 
     @Override
-    public void startActivityForResult(Intent intent, int requestCode) {
-        Log.i(DEBUG_TAG, "ActivityForResult: "+requestCode);
-        if(requestCode==1)
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==1)
         {
             List<SensorEvent> updateresult = updateServerList();
             result.clear();
             result.addAll(updateresult);
             sa.notifyDataSetChanged();
         }
-        super.startActivityForResult(intent, requestCode);
     }
 
     @Override
@@ -90,15 +89,6 @@ public class SensorStatusListActivity extends AppCompatActivity {
                 sintent.putExtra("TS",result.get(position).getTS());
 
                 startActivityForResult(sintent, 0);
-            }
-        });
-
-        ItemClickSupport.addTo(sensorstatusList).setOnItemLongClickListener(new ItemClickSupport.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(RecyclerView view, int position, View v) {
-                Log.i(DEBUG_TAG, "Long Clicked!");
-
-                return true;
             }
         });
 

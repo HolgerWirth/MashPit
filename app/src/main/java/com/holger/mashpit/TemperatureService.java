@@ -858,13 +858,14 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             Log.i(DEBUG_TAG, "Sensor status deleted!");
             sensorEvent.setServer(topic[2]);
             sensorEvent.setActive(false);
-            EventBus.getDefault().postSticky(sensorEvent);
+            EventBus.getDefault().post(sensorEvent);
             return;
         }
 
         try {
             obj = new JSONObject(mess);
             boolean status = obj.getInt("status") == 1;
+            StringBuilder sensors = new StringBuilder();
             long TS=0;
             String system="--";
             String version="--";
@@ -897,13 +898,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setTS(TS);
             sensorEvent.setVersion(version);
             sensorEvent.setSystem(system);
+            sensorEvent.setSensor(sensors.toString());
 
             if (!status) {
                 EventBus.getDefault().post(sensorEvent);
             }
             else {
                 JSONArray sensors_json = obj.getJSONArray("sensors");
-                StringBuilder sensors = new StringBuilder();
                 for (int i = 0; i < sensors_json.length(); i++) {
                     sensors.append(sensors_json.get(i).toString());
                     if (i < sensors_json.length() - 1) {
@@ -918,7 +919,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         .execute();
 
                 sensorEvent.setSensor(sensors.toString());
-                EventBus.getDefault().postSticky(sensorEvent);
+                EventBus.getDefault().post(sensorEvent);
             }
         } catch (JSONException e) {
             e.printStackTrace();
