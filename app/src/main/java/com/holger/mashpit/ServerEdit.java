@@ -9,11 +9,11 @@ import android.view.View;
 import android.widget.EditText;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.activeandroid.query.Select;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.MPServer;
 
@@ -44,7 +44,7 @@ public class ServerEdit extends AppCompatActivity {
 
         FloatingActionButton actionButton = findViewById(R.id.editButton);
 
-        final AlertDialog.Builder alertDialog;
+        final MaterialAlertDialogBuilder alertDialog;
         String alias = "";
         long TS = 0;
         List<MPServer> server_alias = new Select().from(MPServer.class).where("name = 'MashPit'").and("MPServer = ?", server).execute();
@@ -74,7 +74,7 @@ public class ServerEdit extends AppCompatActivity {
             }
         });
 
-        alertDialog = new AlertDialog.Builder(this);
+        alertDialog = new MaterialAlertDialogBuilder(this);
         alertDialog.setTitle(getString(R.string.pubConfig));
         alertDialog.setIcon(R.drawable.ic_launcher);
 
