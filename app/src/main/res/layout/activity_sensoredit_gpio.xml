@@ -2,10 +2,10 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layout_gpio"
     tools:context="com.holger.mashpit.SensorConfEdit">
 
     <androidx.appcompat.widget.Toolbar
@@ -110,6 +110,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
+            app:backgroundTint="@android:color/holo_orange_light"
             android:src="@drawable/ic_cancel_white_24dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -118,6 +119,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:contentDescription="@string/procfabadddesc"
+            app:backgroundTint="@android:color/holo_green_light"
             android:src="@drawable/ic_done_white_24dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -127,6 +129,7 @@
             android:layout_margin="16dp"
             android:contentDescription="@string/intervaladddesc"
             android:src="@drawable/ic_add_white_24dp"
+            app:backgroundTint="@color/material_blue_500"
             android:tooltipText="@string/intervaladddesc" />
     </LinearLayout>
 
