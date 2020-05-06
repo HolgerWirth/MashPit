@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -19,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.activeandroid.query.Select;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.model.Sensors;
@@ -37,8 +37,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     private static final String DEBUG_TAG = "SensorConfEdit";
     SensorConfEditAdapter sa;
     RecyclerView intervalList;
-    AlertDialog.Builder alertDialog;
-
+    MaterialAlertDialogBuilder alertDialog;
+    CoordinatorLayout coordinatorLayout;
     String sensor;
     String type;
     String name;
@@ -66,11 +66,12 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         server = getIntent().getStringExtra("server");
         GPIO = getIntent().getIntExtra("GPIO",0);
 
-        alertDialog = new AlertDialog.Builder(this);
+        alertDialog = new MaterialAlertDialogBuilder(this);
 
         switch (type) {
             case "ds18b20":
                 setContentView(R.layout.activity_sensoredit_ds18b20);
+                coordinatorLayout = findViewById(R.id.layout_ds18b20);
                 break;
 
             case "bme280":
@@ -78,6 +79,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             case "dht11":
                 setContentView(R.layout.activity_sensoredit_gpio);
                 gpio = findViewById(R.id.sensorGPIO);
+                coordinatorLayout = findViewById(R.id.layout_gpio);
                 break;
 
             default:
@@ -91,7 +93,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         final EditText sensorId = findViewById(R.id.sensorId);
         final EditText sensorName = findViewById(R.id.sensorName);
 
-        final CoordinatorLayout coordinatorLayout = findViewById(R.id.sensorInterval_content);
         snb = new SnackBar(coordinatorLayout);
 
         Toolbar toolbar = findViewById(R.id.sensoredit_toolbar);
