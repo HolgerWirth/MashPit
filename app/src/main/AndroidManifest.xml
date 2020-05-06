@@ -15,7 +15,8 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/AppTheme"
+        android:fullBackupContent="true">
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
@@ -60,7 +61,7 @@
             android:name="com.holger.mashpit.LineChartActivity"
             android:configChanges="orientation|screenSize"
             android:label="Freezer Temperature"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="fullSensor" />
         <activity
             android:name="com.holger.mashpit.TempChartActivity"
             android:configChanges="orientation|screenSize" />
@@ -75,8 +76,7 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name="com.holger.mashpit.FindServerActivity"
-            android:label="@string/title_activity_find_server"
-            android:theme="@style/Theme.AppCompat.Translucent"/>
+            android:label="@string/title_activity_find_server" />
 
         <activity android:name=".ConfEdit" />
         <activity android:name=".TempPagerActivity" />
