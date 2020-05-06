@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
@@ -14,6 +13,7 @@ import android.widget.EditText;
 import android.widget.Switch;
 
 import com.activeandroid.query.Select;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.holger.mashpit.model.Config;
@@ -34,6 +34,7 @@ public class ConfEdit extends AppCompatActivity {
         EditText IRid = null;
         EditText IRcode = null;
 
+        assert type != null;
         switch(type)
         {
             case "SSR":
@@ -63,8 +64,8 @@ public class ConfEdit extends AppCompatActivity {
         EditText hysterese = findViewById(R.id.confHyst);
         final EditText confName =  findViewById(R.id.confName);
 
-        final AlertDialog.Builder alertDialog;
-        final AlertDialog.Builder deleteDialog;
+        final MaterialAlertDialogBuilder alertDialog;
+        final MaterialAlertDialogBuilder deleteDialog;
 
         Toolbar toolbar = findViewById(R.id.confedit_toolbar);
         setSupportActionBar(toolbar);
@@ -79,6 +80,7 @@ public class ConfEdit extends AppCompatActivity {
         ab.setTitle(name);
 
         Log.i(DEBUG_TAG, "Started with action: " + action+" and type: "+type);
+        assert action != null;
         if (action.equals("edit")) {
             actionButton.show();
             Config conf = new Select().from(Config.class).where("name = ?", name).and("MPServer = ?",server).orderBy("topic ASC").executeSingle();
@@ -143,7 +145,7 @@ public class ConfEdit extends AppCompatActivity {
             }
         });
 
-        alertDialog = new AlertDialog.Builder(this);
+        alertDialog = new MaterialAlertDialogBuilder(this);
         alertDialog.setTitle(getString(R.string.pubConfig));
         alertDialog.setMessage(getString(R.string.confPublishAlert,name));
         alertDialog.setIcon(R.drawable.ic_launcher);
@@ -160,7 +162,7 @@ public class ConfEdit extends AppCompatActivity {
             }
         });
 
-        deleteDialog = new AlertDialog.Builder(this);
+        deleteDialog = new MaterialAlertDialogBuilder(this);
         deleteDialog.setTitle(getString(R.string.pubConfig));
         deleteDialog.setMessage(getString(R.string.confdelAlert,name));
         deleteDialog.setIcon(R.drawable.ic_launcher);
