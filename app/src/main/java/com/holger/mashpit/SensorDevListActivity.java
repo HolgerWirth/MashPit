@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -24,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.activeandroid.query.Select;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.model.Sensors;
@@ -75,8 +75,8 @@ public class SensorDevListActivity extends AppCompatActivity {
         snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "OnCreate");
 
-        final AlertDialog.Builder alertDialog;
-        alertDialog = new AlertDialog.Builder(this);
+        final MaterialAlertDialogBuilder alertDialog;
+        alertDialog = new MaterialAlertDialogBuilder(this);
         final Context context = this;
 
         sensordevList = findViewById(R.id.sensordevList);
