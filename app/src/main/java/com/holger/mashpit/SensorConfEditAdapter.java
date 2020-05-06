@@ -10,13 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.holger.mashpit.model.Sensors;
 
 import java.util.List;
@@ -112,7 +112,7 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
     class IntervalViewHolder extends RecyclerView.ViewHolder {
         TextView sensorIntervalView;
         EditText sensorInterval;
-        Switch sensorIntervalActive;
+        SwitchMaterial sensorIntervalActive;
         CardView mCardView;
         ImageButton deleteButton;
 
