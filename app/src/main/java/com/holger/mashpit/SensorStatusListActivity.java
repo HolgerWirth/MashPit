@@ -115,7 +115,6 @@ public class SensorStatusListActivity extends AppCompatActivity {
         List<SensorEvent> updateresult = updateServerList();
         result.clear();
         result.addAll(updateresult);
-        EventBus.getDefault().removeStickyEvent(SensorEvent.class);
         sa.notifyDataSetChanged();
     }
 
