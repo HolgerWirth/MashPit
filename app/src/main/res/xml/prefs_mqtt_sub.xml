@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:icon="@drawable/ic_launcher"
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
-
-        <PreferenceCategory android:title="@string/prefs_mqtt_title">
-            <com.holger.mashpit.prefs.SettingsEdit
+            <EditTextPreference
                 android:key="mashpit_domain"
                 android:title="MashPit Domain" />
-            <com.holger.mashpit.prefs.SettingsEdit
+            <EditTextPreference
                 android:key="broker_url"
                 android:title="@string/prefs_mqtt_broker"
                 android:summary="@string/prefs_mqtt_broker_sum"
                 android:defaultValue="192.168.1.20"/>
-            <com.holger.mashpit.prefs.SettingsEdit
+            <EditTextPreference
                 android:key="broker_port"
                 android:title="@string/prefs_mqtt_port"
                 android:summary="1883"
                 android:inputType="number"
                 android:digits="0123456789"
                 android:defaultValue="1883"/>
-            <com.holger.mashpit.prefs.SettingsEdit
+            <EditTextPreference
                 android:key="broker_user"
-                android:title="@string/prefs_mqtt_send_user"
-                android:defaultValue=""/>
+                android:title="@string/prefs_mqtt_send_user" />
             <EditTextPreference
                 android:key="broker_password"
                 android:title="@string/prefs_mqtt_send_password"
                 android:inputType="textPassword" />
-        </PreferenceCategory>
-</PreferenceScreen>
+</androidx.preference.PreferenceScreen>

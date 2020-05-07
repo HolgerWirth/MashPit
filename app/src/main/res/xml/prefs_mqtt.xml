@@ -5,12 +5,11 @@
     android:persistent="false"
     android:title="Subscreen">
 
-        <PreferenceCategory android:title="@string/prefs_mqtt_title">
             <PreferenceScreen android:title="MQTT Broker (Subscribe)"
                 android:fragment="com.holger.mashpit.prefs.MQTTSettingsSub"/>
             <PreferenceScreen android:title="MQTT Broker (Publish)"
                 android:fragment="com.holger.mashpit.prefs.MQTTSettingsPub"/>
-            <com.holger.mashpit.prefs.SettingsEdit
+            <EditTextPreference
                 android:key="device_id"
                 android:title="Device ID"
                 android:summary=""
@@ -19,7 +18,7 @@
             <Preference android:title="@string/title_activity_find_server"
                 android:key="find server">
             </Preference>
-        </PreferenceCategory>
+
     <Preference
         android:title="Subscriber List"
         android:summary="Some Description">

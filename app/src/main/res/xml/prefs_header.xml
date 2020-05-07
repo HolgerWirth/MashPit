@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<preference-headers
+<PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <header
+    <Preference
         android:icon="@drawable/ic_mqttlogo"
         android:fragment="com.holger.mashpit.prefs.MQTTSettings"
         android:title="MQTT Settings"
         android:summary="Broker and subscriptions">
-    </header>
-    <header
+    </Preference>
+    <Preference
         android:icon="@drawable/ic_thermometer"
         android:fragment="com.holger.mashpit.prefs.ServiceSettings"
         android:title="Service Settings"
         android:summary="Settings for the temperature service">
-    </header>
-    <header
+    </Preference>
+    <Preference
         android:icon="@drawable/ic_chart_line"
         android:fragment="com.holger.mashpit.prefs.TempChartSettings"
         android:title="TempChart Settings"
         android:summary="Settings for TempChart">
-    </header>
-    <header
+    </Preference>
+    <Preference
         android:icon="@drawable/ic_meshprocess"
         android:fragment="com.holger.mashpit.prefs.ProcessSettings"
         android:title="Mash Process Settings"
         android:summary="Settings for the mash process">
-    </header>
-</preference-headers>
+    </Preference>
+</PreferenceScreen>

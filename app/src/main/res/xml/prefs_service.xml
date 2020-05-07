@@ -5,15 +5,9 @@
     android:persistent="false"
     android:title="Subscreen">
 
-        <PreferenceCategory android:title="Temperature service">
-            <CheckBoxPreference
-                android:key="StartService"
-                android:title="Start service automatically"
-                android:defaultValue="true"/>
-            <com.holger.mashpit.prefs.TopicListPreference
-                android:defaultValue="@array/pref_topic_list_default"
-                android:summary="@string/pref_topic_list_summary"
-                android:title="@string/pref_topic_list_title"
-                android:key="service_topics"/>
-        </PreferenceCategory>
+    <SwitchPreferenceCompat
+        android:key="StartService"
+        android:title="Start service automatically"
+        android:summaryOff="Automatic start of the MQTT service is disabled"
+        android:summaryOn="The MQTT service will be started automatically" />
 </PreferenceScreen>

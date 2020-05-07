@@ -3,5 +3,4 @@
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
-
 </PreferenceScreen>

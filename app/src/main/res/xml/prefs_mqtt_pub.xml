@@ -5,38 +5,37 @@
     android:persistent="false"
     android:title="Subscreen">
 
-        <PreferenceCategory android:title="@string/prefs_mqtt_title_pub">
-            <CheckBoxPreference
-                android:key="broker_same"
-                android:title="@string/prefs_same_broker"
-                android:defaultValue="false"/>
-            <com.holger.mashpit.prefs.SettingsEdit
-                android:dependency="broker_same"
-                android:key="send_mashpit_domain"
-                android:title="MashPit Domain" />
-            <com.holger.mashpit.prefs.SettingsEdit
-                android:dependency="broker_same"
-                android:key="send_broker_url"
-                android:title="@string/prefs_mqtt_broker"
-                android:summary="@string/prefs_mqtt_broker_sum"
-                android:defaultValue="192.168.1.20"/>
-            <com.holger.mashpit.prefs.SettingsEdit
-                android:dependency="broker_same"
-                android:key="send_broker_port"
-                android:title="@string/prefs_mqtt_port"
-                android:summary="1883"
-                android:inputType="number"
-                android:digits="0123456789"
-                android:defaultValue="1883"/>
-            <com.holger.mashpit.prefs.SettingsEdit
-                android:dependency="broker_same"
-                android:title="@string/prefs_mqtt_send_user"
-                android:key="send_broker_user"
-                android:defaultValue=""/>
-            <EditTextPreference
-                android:dependency="broker_same"
-                android:title="@string/prefs_mqtt_send_password"
-                android:key="send_broker_password"
-                android:inputType="textPassword" />
-        </PreferenceCategory>
+    <SwitchPreferenceCompat
+        android:key="broker_same"
+        android:summaryOff="Use the same broker for publishing"
+        android:summaryOn="@string/prefs_same_broker"
+        android:title="Publish broker" />
+    <EditTextPreference
+        android:dependency="broker_same"
+        android:key="send_mashpit_domain"
+        android:title="MashPit Domain" />
+    <EditTextPreference
+        android:defaultValue="192.168.1.20"
+        android:dependency="broker_same"
+        android:key="send_broker_url"
+        android:summary="@string/prefs_mqtt_broker_sum"
+        android:title="@string/prefs_mqtt_broker" />
+    <EditTextPreference
+        android:defaultValue="1883"
+        android:dependency="broker_same"
+        android:digits="0123456789"
+        android:inputType="number"
+        android:key="send_broker_port"
+        android:summary="1883"
+        android:title="@string/prefs_mqtt_port" />
+    <EditTextPreference
+        android:defaultValue=" "
+        android:dependency="broker_same"
+        android:key="send_broker_user"
+        android:title="@string/prefs_mqtt_send_user" />
+    <EditTextPreference
+        android:dependency="broker_same"
+        android:inputType="textPassword"
+        android:key="send_broker_password"
+        android:title="@string/prefs_mqtt_send_password" />
 </PreferenceScreen>
