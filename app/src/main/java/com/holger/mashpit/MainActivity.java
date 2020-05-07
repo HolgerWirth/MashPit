@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             Set<String> prefdefaults = prefs.getStringSet("process_topics", new HashSet<String>());
-            if (prefdefaults != null && prefdefaults.contains(myEvent.getSensor() + "/" + myEvent.getInterval())) {
+            if (prefdefaults.contains(myEvent.getSensor() + "/" + myEvent.getInterval())) {
                 currTemp = myEvent.getEvent();
                 updatePieData(currTemp);
             }
