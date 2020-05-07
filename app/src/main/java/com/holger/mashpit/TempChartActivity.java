@@ -132,7 +132,7 @@ public class TempChartActivity extends AppCompatActivity {
                 });
     }
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.i(DEBUG_TAG, "onConfiguratonChanged");
     }
