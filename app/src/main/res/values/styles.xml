@@ -9,6 +9,7 @@
         <item name="colorAccent">@color/primaryColor</item>
         <item name="colorControlActivated">@android:color/holo_blue_light</item>
         <item name="materialAlertDialogTheme">@style/AlertDialogTheme</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
     <style name="AppBarOverlay" parent="ThemeOverlay.MaterialComponents.ActionBar" />
