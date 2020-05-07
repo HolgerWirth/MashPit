@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:icon="@drawable/ic_launcher"
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
             <EditTextPreference
+                app:iconSpaceReserved="false"
                 android:key="mashpit_domain"
                 android:title="MashPit Domain" />
             <EditTextPreference
+                app:iconSpaceReserved="false"
                 android:key="broker_url"
                 android:title="@string/prefs_mqtt_broker"
                 android:summary="@string/prefs_mqtt_broker_sum"
                 android:defaultValue="192.168.1.20"/>
             <EditTextPreference
+                app:iconSpaceReserved="false"
                 android:key="broker_port"
                 android:title="@string/prefs_mqtt_port"
                 android:summary="1883"
@@ -20,10 +24,12 @@
                 android:digits="0123456789"
                 android:defaultValue="1883"/>
             <EditTextPreference
+                app:iconSpaceReserved="false"
                 android:key="broker_user"
                 android:title="@string/prefs_mqtt_send_user" />
             <EditTextPreference
+                app:iconSpaceReserved="false"
                 android:key="broker_password"
                 android:title="@string/prefs_mqtt_send_password"
                 android:inputType="textPassword" />
-</androidx.preference.PreferenceScreen>
+</PreferenceScreen>

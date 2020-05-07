@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:icon="@drawable/ic_launcher"
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
 
     <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
         android:key="StartService"
         android:title="Start service automatically"
         android:summaryOff="Automatic start of the MQTT service is disabled"

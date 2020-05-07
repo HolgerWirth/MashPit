@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:icon="@drawable/ic_launcher"
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
 
     <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
         android:key="broker_same"
         android:summaryOff="Use the same broker for publishing"
         android:summaryOn="@string/prefs_same_broker"
         android:title="Publish broker" />
     <EditTextPreference
+        app:iconSpaceReserved="false"
         android:dependency="broker_same"
         android:key="send_mashpit_domain"
         android:title="MashPit Domain" />
     <EditTextPreference
+        app:iconSpaceReserved="false"
         android:defaultValue="192.168.1.20"
         android:dependency="broker_same"
         android:key="send_broker_url"
         android:summary="@string/prefs_mqtt_broker_sum"
         android:title="@string/prefs_mqtt_broker" />
     <EditTextPreference
+        app:iconSpaceReserved="false"
         android:defaultValue="1883"
         android:dependency="broker_same"
         android:digits="0123456789"
@@ -29,11 +34,13 @@
         android:summary="1883"
         android:title="@string/prefs_mqtt_port" />
     <EditTextPreference
+        app:iconSpaceReserved="false"
         android:defaultValue=" "
         android:dependency="broker_same"
         android:key="send_broker_user"
         android:title="@string/prefs_mqtt_send_user" />
     <EditTextPreference
+        app:iconSpaceReserved="false"
         android:dependency="broker_same"
         android:inputType="textPassword"
         android:key="send_broker_password"

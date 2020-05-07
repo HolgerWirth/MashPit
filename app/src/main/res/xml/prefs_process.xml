@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:icon="@drawable/ic_launcher"
     android:key="subs_screen"
     android:persistent="false"
     android:title="Subscreen">
 
     <SwitchPreferenceCompat
-        android:key="ScreenOn"
+        app:key="ScreenOn"
         android:title="@string/prefs_proc_screen"
         android:summaryOff="Display will turn off automatically"
         android:summaryOn="Display stays on" />
     <ListPreference
+        app:iconSpaceReserved="false"
         android:defaultValue="@array/pref_topic_list_default"
         android:summary="@string/pref_topic_list_summary"
         android:title="@string/pref_topic_list_title"
