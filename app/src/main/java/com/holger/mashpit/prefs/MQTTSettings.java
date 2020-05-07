@@ -2,43 +2,42 @@ package com.holger.mashpit.prefs;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.holger.mashpit.FindServerActivity;
 import com.holger.mashpit.MashPit;
 import com.holger.mashpit.R;
 
-public class MQTTSettings extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-
+public class MQTTSettings extends PreferenceFragmentCompat {
     private static final String DEBUG_TAG = "MQTTSettings";
-    String IP;
-    String port;
+    private String IP;
+    private String port;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.prefs_mqtt);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.prefs_mqtt, rootKey);
+        EditTextPreference editText = findPreference("device_id");
+        if (editText != null) {
+            editText.setSummary(MashPit.mDeviceId);
+        }
 
-        MashPit.reconnect_action = false;
-
-        SettingsEdit editText = (SettingsEdit) findPreference("device_id");
-        editText.setSummary(MashPit.mDeviceId);
-
-        Preference pref = findPreference("find server");
-        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                startActivityForResult(new Intent(getActivity(), FindServerActivity.class), 0);
-                return true;
-            }
-        });
+        androidx.preference.Preference pref = findPreference("find server");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    startActivityForResult(new Intent(getActivity(), FindServerActivity.class), 0);
+                    return true;
+                }
+            });
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -49,7 +48,7 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
 
                 Log.i(DEBUG_TAG, "Found MQTT Server IP: " + IP + " Port: " + port);
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getPreferenceScreen().getContext());
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getPreferenceScreen().getContext());
                 builder.setTitle("MQTT Server found!");
                 builder.setMessage("Do you want to use the broker with IP: " + IP);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -57,19 +56,23 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i(DEBUG_TAG, "Use broker with IP: " + IP);
 
-                        SettingsEdit editIP = (SettingsEdit) findPreference("broker_url");
+                        EditTextPreference editIP = findPreference("broker_url");
+                        assert editIP != null;
                         editIP.setSummary(IP);
                         editIP.setText(IP);
 
-                        SettingsEdit editPort = (SettingsEdit) findPreference("broker_port");
+                        EditTextPreference editPort = findPreference("broker_port");
+                        assert editPort != null;
                         editPort.setSummary(port);
                         editPort.setText(port);
 
-                        SettingsEdit seditIP = (SettingsEdit) findPreference("send_broker_url");
+                        EditTextPreference seditIP = findPreference("send_broker_url");
+                        assert seditIP != null;
                         seditIP.setSummary(IP);
                         seditIP.setText(IP);
 
-                        SettingsEdit seditPort = (SettingsEdit) findPreference("send_broker_port");
+                        EditTextPreference seditPort = findPreference("send_broker_port");
+                        assert seditPort != null;
                         seditPort.setSummary(port);
                         seditPort.setText(port);
                     }
@@ -81,22 +84,5 @@ public class MQTTSettings extends PreferenceFragment implements SharedPreference
                 Toast.makeText(getActivity(), "MQTT Server not found!", Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-
     }
 }

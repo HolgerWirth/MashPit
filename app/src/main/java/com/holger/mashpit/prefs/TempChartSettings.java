@@ -1,41 +1,51 @@
 package com.holger.mashpit.prefs;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
-import androidx.appcompat.app.AlertDialog;
+
+import androidx.annotation.NonNull;
+import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
+
 import android.text.InputType;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.widget.EditText;
 
 import com.activeandroid.query.Delete;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.holger.mashpit.MashPit;
 import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.R;
 
 import java.util.ArrayList;
 
-public class TempChartSettings extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class TempChartSettings extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String DEBUG_TAG = "TempChartSettings";
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.prefs_tempchart, rootKey);
         final String Mode = getActivity().getIntent().getStringExtra("EXTRA_MODE");
         Log.i(DEBUG_TAG, "Mode: " + Mode);
 
-        MashPit.modedeleted=false;
+        Context activityContext = getActivity();
+// We need to set a TypedValue instance that will be used to retrieve the theme id
+        TypedValue themeTypedValue = new TypedValue();
+// We load our 'preferenceTheme' Theme attr into themeTypedValue
+        activityContext.getTheme().resolveAttribute(R.attr.preferenceTheme, themeTypedValue, true);
+// We create a ContextWrapper which holds a reference to out Preference Theme
+        ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(activityContext, themeTypedValue.resourceId);
 
-        addPreferencesFromResource(R.xml.prefs_tempchart);
-        PreferenceScreen root = this.getPreferenceScreen();
+        MashPit.modedeleted=false;
+        PreferenceScreen root = getPreferenceScreen();
 
         ArrayList<String> entries = new ArrayList<>();
         if(Mode != null)
@@ -51,20 +61,19 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
 
         for (final String head : entries) {
             Log.i(DEBUG_TAG,"Creating preferences for: "+head);
+            PreferenceCategory preferenceCategory = new PreferenceCategory(contextThemeWrapper);
+            preferenceCategory.setTitle(getString(R.string.prefs_mode_category)+head+"'");
+            getPreferenceScreen().addPreference(preferenceCategory); //Adding a category
 
-            PreferenceCategory dialogBasedPrefCat = new PreferenceCategory(root.getContext());
-            dialogBasedPrefCat.setTitle(getString(R.string.prefs_mode_category)+head+"'");
-            root.addPreference(dialogBasedPrefCat); //Adding a category
+            EditTextPreference editTextPreference = new EditTextPreference(contextThemeWrapper);
+            editTextPreference.setKey("delete_"+head+"_key");
+            editTextPreference.setTitle(R.string.prefs_delete_title);
+            editTextPreference.setDefaultValue(head);
+            editTextPreference.setSummary(getString(R.string.prefs_delete_sum)+head+"'");
 
-
-            Preference editTextDel = new Preference( root.getContext());
-            editTextDel.setTitle(R.string.prefs_delete_title);
-            editTextDel.setKey("delete_"+head+"_key");
-            editTextDel.setDefaultValue(head);
-            editTextDel.setSummary(getString(R.string.prefs_delete_sum)+head+"'");
-            editTextDel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            editTextPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(preference.getContext());
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(preference.getContext());
                     builder.setTitle(getString(R.string.delete_alert_title)+" '"+head+"'");
                     builder.setMessage(getString(R.string.delete_alert));
                     builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
@@ -75,48 +84,63 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
                     });
                     builder.setNegativeButton("Cancel", null);
                     builder.show();
-
                     return true;
                 }
             });
-            dialogBasedPrefCat.addPreference(editTextDel);
+            getPreferenceScreen().addPreference(editTextPreference);
 
-            EditText editText;
-            EditTextPreference editTextData = new SettingsEdit(root.getContext());
+            EditTextPreference editTextData = new EditTextPreference(contextThemeWrapper);
             editTextData.setTitle("Keep data (days)");
             editTextData.setKey(head+"_key_data");
             editTextData.setDefaultValue("30");
             editTextData.setSummary("30");
-            editText = editTextData.getEditText();
-            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-            dialogBasedPrefCat.addPreference(editTextData);
+            editTextData.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                }
+            });
+            root.addPreference(editTextData);
 
-            EditTextPreference editTextMax = new SettingsEdit(root.getContext());
+            EditTextPreference editTextMax = new EditTextPreference(contextThemeWrapper);
             editTextMax.setTitle("Max. Temperature");
             editTextMax.setKey(head+"_key_max");
             editTextMax.setDefaultValue("20");
             editTextMax.setSummary("20");
-            editText = editTextMax.getEditText();
-            editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
-            dialogBasedPrefCat.addPreference(editTextMax);
+            editTextMax.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                }
+            });
+            root.addPreference(editTextMax);
 
-            EditTextPreference editTextMin = new SettingsEdit(root.getContext());
+            EditTextPreference editTextMin = new EditTextPreference(contextThemeWrapper);
             editTextMin.setTitle("Min. Temperature");
             editTextMin.setKey(head+"_key_min");
             editTextMin.setDefaultValue("0");
             editTextMin.setSummary("0");
-            editText = editTextMin.getEditText();
-            editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
-            dialogBasedPrefCat.addPreference(editTextMin);
+            editTextMin.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                }
+            });
+            root.addPreference(editTextMin);
 
-            EditTextPreference editTextMenu = new SettingsEdit(root.getContext());
+            EditTextPreference editTextMenu = new EditTextPreference(contextThemeWrapper);
             editTextMenu.setTitle("Menu Name");
             editTextMenu.setDefaultValue(head);
             editTextMenu.setKey(head+"_key_name");
             editTextMenu.setSummary(head);
-            editText = editTextMenu.getEditText();
-            editText.setInputType(InputType.TYPE_CLASS_TEXT);
-            dialogBasedPrefCat.addPreference(editTextMenu);
+            editTextMenu.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener()
+            {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                }
+            });
+            root.addPreference(editTextMenu);
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(root.getContext());
             String disp_sensor=prefs.getString(head + "_sens_name_0","");
@@ -143,13 +167,13 @@ public class TempChartSettings extends PreferenceFragment implements SharedPrefe
                         break;
                     }
 
-                    EditTextPreference editSensorName = new SettingsEdit(root.getContext());
+                    EditTextPreference editSensorName = new EditTextPreference(contextThemeWrapper);
                     editSensorName.setTitle("Alias Name for " + (j+1)+". Sensor");
                     editSensorName.setDefaultValue(disp_sensor);
                     editSensorName.setKey(head + "_sens_name_" + j);
                     editSensorName.setSummary(disp_sensor);
-                    editText = editTextMenu.getEditText();
-                    editText.setInputType(InputType.TYPE_CLASS_TEXT);
+//                    editText = editTextMenu.getEditText();
+//                    editText.setInputType(InputType.TYPE_CLASS_TEXT);
                     sensorBasedPrefCat.addPreference(editSensorName);
                     j++;
                 }
