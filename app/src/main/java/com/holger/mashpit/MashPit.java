@@ -18,12 +18,9 @@ import java.util.List;
 public class MashPit extends com.activeandroid.app.Application {
     private static final String DEBUG_TAG = "MashPit";
     static Boolean menu_action=false;
-    public static Boolean reconnect_action=false;
     public static List<Temperature> TempModes;
     public static boolean modedeleted;
     public static String mDeviceId;
-    public static String MPDomain;
-    public static String MPDomain_send;
 
     @Override
     public void onCreate() {
