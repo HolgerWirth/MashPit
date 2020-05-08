@@ -13,6 +13,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
+import com.example.myapp.MyEventBusIndex;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -450,6 +452,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.i(DEBUG_TAG, "OnStart()...");
+        EventBus eventBus = EventBus.builder().addIndex(new MyEventBusIndex()).build();
         EventBus.getDefault().register(this);
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb=new SnackBar(coordinatorLayout);
