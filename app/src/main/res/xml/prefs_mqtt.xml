@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    app:icon="@drawable/ic_launcher"
-    app:key="subs_screen"
-    app:persistent="false"
-    app:title="Subscreen">
-            <PreferenceScreen
-                app:title="MQTT Broker (Subscribe)"
-                app:iconSpaceReserved="false"
-                app:fragment="com.holger.mashpit.prefs.MQTTSettingsSub"/>
-            <PreferenceScreen
-                app:title="MQTT Broker (Publish)"
-                app:iconSpaceReserved="false"
-                app:fragment="com.holger.mashpit.prefs.MQTTSettingsPub"/>
-            <EditTextPreference
-                app:iconSpaceReserved="false"
-                app:key="device_id"
-                app:title="Device ID"
-                app:summary=""
-                app:enabled="false"
-                app:defaultValue="xxx"/>
-            <Preference
-                app:title="@string/title_activity_find_server"
-                app:iconSpaceReserved="false"
-                app:key="find server">
-            </Preference>
-
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:icon="@drawable/ic_launcher"
+    android:key="subs_screen"
+    android:persistent="false"
+    android:title="Subscreen">
+    <PreferenceScreen
+        android:fragment="com.holger.mashpit.prefs.MQTTSettingsSub"
+        android:title="MQTT Broker (Subscribe)"
+        app:iconSpaceReserved="false" />
+    <PreferenceScreen
+        android:fragment="com.holger.mashpit.prefs.MQTTSettingsPub"
+        android:title="MQTT Broker (Publish)"
+        app:iconSpaceReserved="false" />
+    <EditTextPreference
+        android:defaultValue="xxx"
+        android:enabled="false"
+        android:key="device_id"
+        android:summary=""
+        android:title="Device ID"
+        app:iconSpaceReserved="false" />
     <Preference
-        app:iconSpaceReserved="false"
-        app:title="Subscriber List"
-        app:summary="Some Description">
-
+        android:key="find server"
+        android:title="@string/title_activity_find_server"
+        app:iconSpaceReserved="false" />
+    <Preference
+        android:summary="Some Description"
+        android:title="Subscriber List"
+        app:iconSpaceReserved="false">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.holger.mashpit"
-            android:targetClass="com.holger.mashpit.SubscribeListActivity" />
+            android:targetClass="com.holger.mashpit.SubscribeListActivity"
+            android:targetPackage="com.holger.mashpit" />
     </Preference>
 </PreferenceScreen>
