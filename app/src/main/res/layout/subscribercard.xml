@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/card_view"
+    android:id="@+id/subscribbercard_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp"
-    android:clickable="true"
-    android:focusable="true"
+    android:clickable="false"
+    android:focusable="false"
     android:foreground="?android:attr/selectableItemBackground"
     android:layout_margin="8dp">
 
@@ -16,85 +15,78 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/sTitel"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:background="@color/cardview_dark_background"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:gravity="center_horizontal|center_vertical"
-            android:textColor="@android:color/white" />
-
-        <TextView
-            android:id="@+id/sIntervalTitle"
+            android:id="@+id/subServerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/devNameTitle"
+            android:layout_marginTop="5dp"
             android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_below="@id/sTitel"
+            android:layout_marginStart="5dp"/>
+
+        <TextView
+            android:id="@+id/subServer"
+            android:text="@string/devNameTitle"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="100dp" />
+
+        <TextView
+            android:id="@+id/subSensorTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subServerTitle"
+            android:text="@string/sensorIdTitle"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="5dp"/>
+
+        <TextView
+            android:id="@+id/subSensor"
+            android:text="@string/sensorIdTitle"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subServerTitle"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="100dp" />
+
+        <TextView
+            android:id="@+id/subIntervalTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subSensorTitle"
             android:text="@string/intervall"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp" />
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="5dp"/>
 
         <TextView
-            android:id="@+id/sInterval"
+            android:id="@+id/subInterval"
             android:text="@string/intervall"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/subSensorTitle"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_below="@id/sIntervalTitle"
-            android:layout_marginTop="10dp"
-            android:layout_alignBaseline="@id/sIntervalTitle"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="150dp" />
+            android:layout_marginStart="100dp" />
 
-        <TextView
-            android:id="@+id/sPersistTitle"
+        <ImageButton
+            android:id="@+id/subDeleteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_below="@id/sIntervalTitle"
-            android:text="@string/save_events"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp" />
-
-        <TextView
-            android:id="@+id/sPersist"
-            android:textStyle="bold"
-            android:text="@string/save_events"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_marginTop="10dp"
-            android:layout_alignBaseline="@id/sPersistTitle"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="150dp" />
-
-        <TextView
-            android:id="@+id/sRemarkTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_below="@id/sPersistTitle"
-            android:text="@string/remark"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginBottom="5dp"/>
-
-        <TextView
-            android:id="@+id/sRemark"
-            android:textStyle="bold"
-            android:text="@string/remark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:layout_marginTop="10dp"
-            android:layout_alignBaseline="@id/sRemarkTitle"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="150dp" />
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="15dp"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete_black_24dp"
+            android:contentDescription="Delete Subscription" />
 
     </RelativeLayout>
     </androidx.cardview.widget.CardView>

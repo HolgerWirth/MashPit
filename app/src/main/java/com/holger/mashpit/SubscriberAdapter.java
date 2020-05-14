@@ -7,24 +7,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.holger.mashpit.model.Subscriber;
+import com.holger.mashpit.model.Subscriptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.SubscriberViewHolder> {
-
     private static final String DEBUG_TAG = "SubscriberAdapter";
+    private List<Subscriptions> subscriberList;
+    private DeleteSubscriptionCallback deleteSubscriptionCallback;
 
-    private List<Subscriber> subscriberList;
-    private List<Subscriber> delsubscriberList = new ArrayList<>();
-
-    SubscriberAdapter(List<Subscriber> subscriberList) {
-
+    SubscriberAdapter(List<Subscriptions> subscriberList) {
         this.subscriberList = subscriberList;
-        if(subscriberList != null) Log.i(DEBUG_TAG, "Subscribers: "+this.subscriberList.size());
+        if(subscriberList != null) Log.i(DEBUG_TAG, "Subscriptions: "+this.subscriberList.size());
+    }
+
+    void refreshSubscribers(List<Subscriptions> subscriberList)
+    {
+        this.subscriberList = subscriberList;
+        if(subscriberList != null) Log.i(DEBUG_TAG, "Refresh subscriptions: "+this.subscriberList.size());
     }
 
     @Override
@@ -38,15 +41,12 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
 
     @Override
     public void onBindViewHolder(@NonNull SubscriberViewHolder subscriberViewHolder, int i) {
-        Subscriber sub = this.subscriberList.get(i);
-        subscriberViewHolder.topic.setText(sub.topic);
-        subscriberViewHolder.interval.setText(sub.interval);
-        subscriberViewHolder.remark.setText(sub.remark);
-        subscriberViewHolder.persistent.setText(R.string.no);
-        if(sub.persistent)
-        {
-            subscriberViewHolder.persistent.setText(R.string.yes);
-        }
+        Subscriptions sub = this.subscriberList.get(i);
+        String interval = Integer.toString(sub.interval);
+        subscriberViewHolder.server.setText(sub.server);
+        subscriberViewHolder.server.setTag(sub.id);
+        subscriberViewHolder.sensor.setText(sub.sensor);
+        subscriberViewHolder.interval.setText(interval);
     }
 
     @NonNull
@@ -60,72 +60,36 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
     }
 
     class SubscriberViewHolder extends RecyclerView.ViewHolder {
-        protected TextView topic;
+        TextView server;
+        TextView sensor;
         TextView interval;
-        protected TextView persistent;
-        TextView remark;
+        ImageButton deleteButton;
         CardView mCardView;
 
         SubscriberViewHolder(final View v) {
             super(v);
-            topic = v.findViewById(R.id.sTitel);
-            interval = v.findViewById(R.id.sInterval);
-            persistent = v.findViewById(R.id.sPersist);
-            remark = v.findViewById(R.id.sRemark);
+            server = v.findViewById(R.id.subServer);
+            sensor = v.findViewById(R.id.subSensor);
+            interval = v.findViewById(R.id.subInterval);
+            deleteButton = v.findViewById(R.id.subDeleteButton);
+            mCardView = v.findViewById(R.id.subscribbercard_view);
 
-            mCardView = v.findViewById(R.id.card_view);
-
-           v.setOnClickListener(new View.OnClickListener() {
+           deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: onClick()");
-                    mCardView.setPressed(true);
+                    Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
+                    deleteButton.setPressed(true);
+                    deleteSubscriptionCallback.onSubscriptionDeleted((long) server.getTag());
                 }
             });
-
         }
     }
-    void addItem(Subscriber dataObj, int index) {
-        subscriberList.add(index, dataObj);
-        notifyItemInserted(index);
+
+    public interface DeleteSubscriptionCallback {
+        void onSubscriptionDeleted(long position);
     }
 
-    void addItem(Subscriber dataObj) {
-        subscriberList.add(dataObj);
-        notifyItemInserted(subscriberList.size());
+    void setOnItemClickListener(SubscriberAdapter.DeleteSubscriptionCallback callback){
+        deleteSubscriptionCallback = callback;
     }
-
-    void addDelItem(Subscriber dataObj) {
-        delsubscriberList.add(dataObj);
-    }
-
-    Subscriber getItem(int index) {
-        return subscriberList.get(index);
-    }
-
-    void deleteItem(int index) {
-        addDelItem(getItem(index));
-        subscriberList.remove(index);
-        notifyItemRemoved(index);
-    }
-
-    void changeItem(int index, Subscriber dataObj) {
-        Subscriber sub=subscriberList.get(index);
-        sub.topic=dataObj.topic;
-        sub.interval=dataObj.interval;
-        sub.persistent=dataObj.persistent;
-        sub.remark = dataObj.remark;
-        addDelItem(dataObj);
-        notifyItemChanged(index);
-    }
-
-    List<Subscriber> getSubscriberList()
-    {
-        return subscriberList;
-    }
-    List<Subscriber> getDelSubscriberList()
-    {
-        return delsubscriberList;
-    }
-
 }

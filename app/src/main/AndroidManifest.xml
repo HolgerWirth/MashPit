@@ -10,42 +10,38 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name="com.holger.mashpit.MashPit"
+        android:name=".MashPit"
         android:allowBackup="true"
+        android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:fullBackupContent="true">
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/AppTheme">
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
             android:authorities="com.holger.mashpit"
             android:enabled="true"
-            android:exported="false">
-        </provider>
-
-        <!-- Notice this tag which provides the database name -->
+            android:exported="false" /> <!-- Notice this tag which provides the database name -->
         <meta-data
             android:name="AA_DB_NAME"
-            android:value="MashPitDB.db" />
-
-        <!-- Notice this tag which provides the database version -->
+            android:value="MashPitDB.db" /> <!-- Notice this tag which provides the database version -->
         <meta-data
             android:name="AA_DB_VERSION"
             android:value="5" />
         <meta-data
             android:name="AA_MODELS"
             android:value="com.holger.mashpit.model.Temperature,
-            com.holger.mashpit.model.Process,
-            com.holger.mashpit.model.MPStatus,
-            com.holger.mashpit.model.Config,
-            com.holger.mashpit.model.MPServer,
-            com.holger.mashpit.model.SensorStatus,
-            com.holger.mashpit.model.Sensors"/>
+                         com.holger.mashpit.model.Process,
+                         com.holger.mashpit.model.MPStatus,
+                         com.holger.mashpit.model.Config,
+                         com.holger.mashpit.model.MPServer,
+                         com.holger.mashpit.model.SensorStatus,
+                         com.holger.mashpit.model.Sensors,
+                         com.holger.mashpit.model.Subscriptions"/>
 
         <activity
-            android:name="com.holger.mashpit.MainActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name">
             <intent-filter>
@@ -55,38 +51,37 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.holger.mashpit.TemperatureService" />
+        <service android:name=".TemperatureService" />
 
         <activity
-            android:name="com.holger.mashpit.LineChartActivity"
+            android:name=".LineChartActivity"
             android:configChanges="orientation|screenSize"
             android:label="Freezer Temperature"
             android:screenOrientation="fullSensor" />
         <activity
-            android:name="com.holger.mashpit.TempChartActivity"
+            android:name=".TempChartActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name="com.holger.mashpit.prefs.SettingsActivity"
+            android:name=".prefs.SettingsActivity"
             android:label="Preferences" />
         <activity
-            android:name="com.holger.mashpit.SubscribeListActivity"
+            android:name=".SubscribeEdit"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name="com.holger.mashpit.SubscribeEdit"
-            android:configChanges="orientation|screenSize" />
-        <activity
-            android:name="com.holger.mashpit.FindServerActivity"
+            android:name=".FindServerActivity"
             android:label="@string/title_activity_find_server" />
-
         <activity android:name=".ConfEdit" />
         <activity android:name=".TempPagerActivity" />
-        <activity android:name=".MPStatusListActivity"
+        <activity
+            android:name=".MPStatusListActivity"
             android:label="MashPit Server" />
         <activity android:name=".MPProcListActivity" />
         <activity android:name=".ServerEdit" />
         <activity android:name=".SensorStatusListActivity" />
         <activity android:name=".SensorDevListActivity" />
         <activity android:name=".SensorConfEdit" />
+        <activity android:name=".SelectSensorActivity" />
+        <activity android:name=".SubscriberActivity" />
     </application>
 
 </manifest>
