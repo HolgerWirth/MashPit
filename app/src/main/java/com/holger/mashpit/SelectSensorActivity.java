@@ -226,7 +226,7 @@ public class SelectSensorActivity extends AppCompatActivity {
                 sensorName = result.name;
             }
             myChip.name = sensorName;
-            myChip.active = result.active;
+            myChip.active = true;
             myChip.selectable = true;
             categories.add(myChip);
         }
