@@ -41,7 +41,7 @@ public class SelectSensorActivity extends AppCompatActivity {
     private int selInterval;
 
     FloatingActionButton actionButton;
-    String topicString="";
+    String topicString = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +58,10 @@ public class SelectSensorActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.i(DEBUG_TAG, "Clicked on FAB: Done");
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra("server",selDevice);
-                returnIntent.putExtra("sensor",selSensor);
-                returnIntent.putExtra("interval",selInterval);
-                setResult(1,returnIntent);
+                returnIntent.putExtra("server", selDevice);
+                returnIntent.putExtra("sensor", selSensor);
+                returnIntent.putExtra("interval", selInterval);
+                setResult(1, returnIntent);
                 finish();
             }
         });
@@ -102,13 +102,13 @@ public class SelectSensorActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        setResult(0,null);
+        setResult(0, null);
         finish();
     }
 
     public void ChipUnselected(String currentGroup, String chip) {
         if (currentGroup.equals("devices")) {
-            if(selDevice.equals(chip)) {
+            if (selDevice.equals(chip)) {
                 sensorGroup.removeAllViews();
                 intervalGroup.removeAllViews();
                 sensorLayout.setVisibility(View.GONE);
@@ -117,16 +117,17 @@ public class SelectSensorActivity extends AppCompatActivity {
             }
         }
         if (currentGroup.equals("sensors")) {
-            if(selSensor.equals(chip)) {
+            if (selSensor.equals(chip)) {
                 intervalLayout.setVisibility(View.GONE);
                 actionButton.hide();
             }
         }
         if (currentGroup.equals("intervals")) {
-            if(selInterval==Integer.parseInt(chip.trim()))
-            actionButton.hide();
+            if (selInterval == Integer.parseInt(chip.trim()))
+                actionButton.hide();
         }
     }
+
     public void ChipSelected(String currentGroup, String chip) {
         if (currentGroup.equals("devices")) {
             selDevice = chip;
@@ -145,18 +146,25 @@ public class SelectSensorActivity extends AppCompatActivity {
             setIntervals(chip);
         }
         if (currentGroup.equals("intervals")) {
-            selInterval=Integer.parseInt(chip.trim());
-            topicString=getTopic(selDevice, selSensor, chip);
+            selInterval = Integer.parseInt(chip.trim());
+            topicString = getTopic(selDevice, selSensor, chip);
             actionButton.show();
         }
     }
 
-    public void setCategoryChips(ChipGroup chipsPrograms, String group, ArrayList<String> categorys) {
-        for (String category :
-                categorys) {
+    public void setCategoryChips(ChipGroup chipsPrograms, String group, List<Chips> chips) {
+        for (Chips category : chips) {
             @SuppressLint("InflateParams") Chip mChip = (Chip) this.getLayoutInflater().inflate(R.layout.sensor_chip_category, null, false);
-            mChip.setText(category);
+            mChip.setText(category.name);
             mChip.setTag(group);
+//            mChip.setTextIsSelectable(category.selectable);
+            if (!category.active) {
+                mChip.setChipBackgroundColorResource(R.color.design_default_color_error);
+            }
+            if (!category.selectable) {
+                mChip.setEnabled(false);
+//                mChip.setChipBackgroundColorResource(R.color.material_blue_500);
+            }
             int paddingDp = (int) TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, 10,
                     getResources().getDisplayMetrics()
@@ -168,8 +176,7 @@ public class SelectSensorActivity extends AppCompatActivity {
                     if (b) {
                         Log.i(DEBUG_TAG, "Chip selected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
                         ChipSelected(compoundButton.getTag().toString(), compoundButton.getText().toString());
-                    }
-                    else {
+                    } else {
                         Log.i(DEBUG_TAG, "Chip unselected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
                         ChipUnselected(compoundButton.getTag().toString(), compoundButton.getText().toString());
                     }
@@ -181,21 +188,25 @@ public class SelectSensorActivity extends AppCompatActivity {
     }
 
     private void setDevices() {
-        ArrayList<String> categories = new ArrayList<>();
+        List<Chips> categories = new ArrayList<>();
         serverresult = updateServerList();
 
         for (SensorEvent result : serverresult) {
+            Chips myChip = new Chips();
             if (result.getName().isEmpty()) {
-                categories.add(result.getServer());
+                myChip.name = result.getServer();
             } else {
-                categories.add(result.getName());
+                myChip.name = result.getName();
             }
+            myChip.active = result.isActive();
+            myChip.selectable = true;
+            categories.add(myChip);
         }
         setCategoryChips(deviceGroup, "devices", categories);
     }
 
     private void setSensors(String device) {
-        ArrayList<String> categories = new ArrayList<>();
+        List<Chips> categories = new ArrayList<>();
 
         for (SensorEvent result : serverresult) {
             if (result.getName().equals(device)) {
@@ -206,23 +217,33 @@ public class SelectSensorActivity extends AppCompatActivity {
 
         List<Sensors> updateresult = updateSensorList(device);
         String sensorName;
+
         for (Sensors result : updateresult) {
+            Chips myChip = new Chips();
             if (result.name.isEmpty()) {
                 sensorName = result.sensor;
             } else {
                 sensorName = result.name;
             }
-            categories.add(sensorName);
+            myChip.name = sensorName;
+            myChip.active = result.active;
+            myChip.selectable = true;
+            categories.add(myChip);
         }
         setCategoryChips(sensorGroup, "sensors", categories);
     }
 
     private void setIntervals(String sensor) {
-        ArrayList<String> categories = new ArrayList<>();
+        List<Chips> categories = new ArrayList<>();
         List<Sensors> intervallist = updateIntervalList(sensor);
+
         DecimalFormat formatter = new DecimalFormat("####");
         for (Sensors result : intervallist) {
-            categories.add(String.format("%4s", formatter.format(result.interval)));
+            Chips myChip = new Chips();
+            myChip.name = String.format("%4s", formatter.format(result.interval));
+            myChip.active = true;
+            myChip.selectable = result.active;
+            categories.add(myChip);
         }
         setCategoryChips(intervalGroup, "intervals", categories);
     }
@@ -270,21 +291,27 @@ public class SelectSensorActivity extends AppCompatActivity {
 
         for (SensorEvent result : serverresult) {
             if (result.getName().equals(device) || result.getServer().equals(device)) {
-                selDevice=result.getServer();
+                selDevice = result.getServer();
                 topic += result.getServer();
                 break;
             }
         }
         for (Sensors sensors : sensorresult) {
             if (sensors.name.equals(sensor) || sensors.sensor.equals(sensor)) {
-                selSensor=sensors.sensor;
+                selSensor = sensors.sensor;
                 topic += "/temp/" + sensors.sensor;
                 break;
             }
         }
-        selInterval=Integer.parseInt(interval.trim());
+        selInterval = Integer.parseInt(interval.trim());
         topic += "/" + interval.trim();
         Log.i(DEBUG_TAG, "Topic: " + topic);
         return topic;
     }
+}
+
+class Chips {
+    String name;
+    boolean active;
+    boolean selectable;
 }
