@@ -11,6 +11,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.SensorStatus;
 import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.model.Subscriptions;
+import com.holger.mashpit.tools.SubscriptionHandler;
+import com.holger.share.Constants;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +31,8 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     private static final String DEBUG_TAG = "SubscriberActivity";
     SubscriberAdapter sa;
     String action = "TEST";
+    boolean durable;
+    SubscriptionHandler subscriptionHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +53,14 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         ab.setTitle("Sensor Data");
 
         action=getIntent().getStringExtra("ACTION");
+        durable = getIntent().getBooleanExtra("DURABLE",false);
         if(action==null)
         {
             action="TEST";
         }
-        Log.i(DEBUG_TAG, "SubscriberActivity started with: " + action);
+
+        subscriptionHandler = new SubscriptionHandler(action);
+        Log.i(DEBUG_TAG, "SubscriberActivity started with: " + action + " and durable="+durable);
 
         final FloatingActionButton addButton = findViewById(R.id.subscriberfabadd);
 
@@ -119,17 +126,34 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
             String server = data.getStringExtra("server");
             String sensor = data.getStringExtra("sensor");
             int interval = data.getIntExtra("interval", 0);
-            Log.i(DEBUG_TAG, "New subscription: " + action + ", " + server + ", " + sensor + ", " + interval);
+            String topic = "/SE/"+server+"/temp/"+sensor+"/"+interval;
+            Log.i(DEBUG_TAG, "New subscription added: " + topic);
 
             boolean exists = new Select().from(Subscriptions.class).where("action = ?", action)
                     .and("server = ?", server)
                     .and("sensor=?", sensor)
                     .and("interval=?", interval).exists();
-            if (!exists) {
-                Log.i(DEBUG_TAG, "Subscription inserted: " + action + ", " + server + ", " + sensor + ", " + interval);
-                Subscriptions subscriptions = new Subscriptions(action, server, sensor, interval, 0);
-                subscriptions.save();
 
+            if (!exists) {
+                if(!(subscriptionHandler.getAllSubscription(durable).contains(topic)))
+                {
+                    Log.i(DEBUG_TAG, "New subscription!");
+                    Intent serviceIntent = new Intent(this, TemperatureService.class);
+                    serviceIntent.setAction(Constants.ACTION.SUBSCRIBE_ACTION);
+                    serviceIntent.putExtra("TOPIC",topic);
+                    serviceIntent.putExtra("DURABLE",durable);
+                    startService(serviceIntent);
+                }
+                Log.i(DEBUG_TAG, "Subscription inserted: " + action + ", " + server + ", " + sensor + ", " + interval);
+                Subscriptions subscriptions;
+                if(durable) {
+                    subscriptions = new Subscriptions(action, server, sensor, interval, 1);
+                }
+                else
+                {
+                    subscriptions = new Subscriptions(action, server, sensor, interval, 0);
+                }
+                subscriptions.save();
                 sa.refreshSubscribers(refreshSubscriber());
                 sa.notifyDataSetChanged();
             }
@@ -139,14 +163,25 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     @Override
     public void onSubscriptionDeleted(final long position) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                Subscriptions sub = new Select().from(Subscriptions.class).where("clientId = ?", position).executeSingle();
+                String topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
+
                 new Delete().from(Subscriptions.class).where("clientId = ?", position).execute();
                 sa.refreshSubscribers(refreshSubscriber());
                 sa.notifyDataSetChanged();
+
+                if (!(subscriptionHandler.getAllSubscription(durable).contains(topic))) {
+                    Intent serviceIntent = new Intent(SubscriberActivity.this, TemperatureService.class);
+                    serviceIntent.setAction(Constants.ACTION.UNSUBSCRIBE_ACTION);
+                    serviceIntent.putExtra("TOPIC", topic);
+                    startService(serviceIntent);
+                }
             }
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
