@@ -8,6 +8,8 @@ public class Constants {
         String STOPFOREGROUND_ACTION = "com.holger.mashpit.action.stopforeground";
         String CONNECT_ACTION = "com.holger.mashpit.action.connect";
         String RECONNECT_ACTION = "com.holger.mashpit.action.reconnect";
+        String SUBSCRIBE_ACTION = "com.holger.mashpit.action.subscribe";
+        String UNSUBSCRIBE_ACTION = "com.holger.mashpit.action.unsubscribe";
         String CHECK_ACTION = "com.holger.mashpit.action.check";
 
     }
