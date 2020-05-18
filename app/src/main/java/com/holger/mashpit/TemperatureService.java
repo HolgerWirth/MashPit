@@ -39,17 +39,15 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
+import com.holger.mashpit.events.SensorDataEvent;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.events.StatusEvent;
-import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
 import com.holger.mashpit.model.Process;
 import com.holger.mashpit.model.SensorStatus;
 import com.holger.mashpit.model.Sensors;
-import com.holger.mashpit.model.Subscriber;
-import com.holger.mashpit.model.Temperature;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -65,14 +63,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
+import com.holger.mashpit.tools.PreferenceHandler;
+import com.holger.mashpit.tools.SubscriptionHandler;
 import com.holger.share.Constants;
 
 public class TemperatureService extends Service implements MqttCallback,DataClient.OnDataChangedListener {
@@ -100,30 +95,28 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private NetworkConnectionIntentReceiver networkConnectionMonitor;
     SharedPreferences prefs;
 
+    SubscriptionHandler subscriptionHandler;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(DEBUG_TAG, "onCreate()...");
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        subscriptionHandler = new SubscriptionHandler("Service");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        String action;
         if(intent==null)
         {
                 Log.i(DEBUG_TAG, "onStartCommand: received null intent");
-        }
-
-        String action;
-        if(intent!=null)
-        {
-                action = intent.getAction();
-                Log.i(DEBUG_TAG, "onStartCommand: Received action of " + action);
+                action=Constants.ACTION.STARTFOREGROUND_ACTION;
         }
         else
         {
-            action=Constants.ACTION.STARTFOREGROUND_ACTION;
+                action = intent.getAction();
+                Log.i(DEBUG_TAG, "onStartCommand: Received action of " + action);
         }
 
         if (action != null) {
@@ -173,10 +166,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         EventBus.getDefault().register(this);
                     }
 
-                    TemperatureEvent myEvent = EventBus.getDefault().getStickyEvent(TemperatureEvent.class);
+                    SensorDataEvent myEvent = EventBus.getDefault().getStickyEvent(SensorDataEvent.class);
                     if (myEvent != null) {
                         Log.i(DEBUG_TAG, "Found sticky event!");
-                        updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
+                        updateNotification(myEvent);
                     }
 
                     registerBroadcastReceivers();
@@ -190,108 +183,51 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         return(START_STICKY);
                     }
 
-                    List<Subscriber> delresult = new ArrayList<>();
-                    String delsubs=prefs.getString("delsublist","");
-                    int subs_count;
-                    if(delsubs.length()>0) {
-                        try {
-                            JSONObject subscribers = new JSONObject(delsubs);
-                            JSONArray subarray = subscribers.getJSONArray("delsubscriber");
-                            subs_count = subarray.length();
-                            for (int i = 0; i < subs_count; i++) {
-                                JSONObject subobj = subarray.getJSONObject(i);
-                                Subscriber sub = new Subscriber();
-                                sub.topic = subobj.getString("topic");
-                                sub.interval = subobj.getString("interval");
-                                delresult.add(sub);
-                            }
-                        } catch (JSONException e) {
-                            Log.i(DEBUG_TAG, "delsublist preference does not exist");
-                        }
-                        String[] topic = new String[delresult.size()];
-                        for (int i = 0; i < delresult.size(); i++) {
-                            Subscriber sub = delresult.get(i);
-                            String mytopic = "/temp/" + sub.topic + "/" + sub.interval;
-                            topic[i] = mytopic;
-                        }
-                        for (String aTopic : topic) {
-                            Log.i(DEBUG_TAG, "Unubscribe from: " + aTopic);
-                        }
-                        try {
-                            mClient.unsubscribe(topic);
-                        } catch (MqttException e) {
-                            Log.i(DEBUG_TAG, "Can't unsubscribe");
-                        }
-                        prefs.edit().putString("delsublist", "").apply();
-                        Log.i(DEBUG_TAG, "Successfully unsubscribed");
-                    }
-
-                    List<Subscriber> result = new ArrayList<>();
-                    String subs=prefs.getString("sublist","");
-                    if(subs.length()>0) {
-                        try {
-                            JSONObject subscribers = new JSONObject(subs);
-                            JSONArray subarray = subscribers.getJSONArray("subscriber");
-                            subs_count=subarray.length();
-                            for (int i = 0; i < subs_count; i++) {
-                                JSONObject subobj = subarray.getJSONObject(i);
-                                Subscriber sub = new Subscriber();
-                                sub.topic = subobj.getString("topic");
-                                sub.interval = subobj.getString("interval");
-                                sub.persistent = subobj.getBoolean("durable");
-                                result.add(sub);
-                            }
-                        } catch (JSONException e) {
-                            Log.i(DEBUG_TAG, "sublist preference does not exist");
-                        }
-                    }
-
-                    String[] topic = new String[result.size()+2];
-                    int[] qos = new int[result.size()+2];
-                    for(int i=0;i<result.size();i++)
-                    {
-                        Subscriber sub = result.get(i);
-                        String mytopic="/temp/"+sub.topic+"/"+sub.interval;
-                        topic[i]=mytopic;
-                        if(sub.persistent) {
-                            qos[i] = 2;
-                        }
-                        else
-                        {
-                            qos[i]=0;
-                        }
-                    }
-//                    topic[result.size()]=MQTT_DOMAIN+"/MP/process";
-//                    qos[result.size()]=0;
-
-                    // Delete all status messages from the database
-                    topic[result.size()]=MQTT_DOMAIN+"/MP/#";
-
                     new Delete()
                             .from(MPServer.class)
                             .execute();
 
-                    topic[result.size()]=MQTT_DOMAIN+"/MP/#";
-                    topic[result.size()+1]=MQTT_DOMAIN+"/SE/#";
-
-/*                    new Delete().from(Sensors.class)
-                            .execute();
-*/
-                    qos[result.size()+1]=0;
-
-                    for(int i=0;i<topic.length;i++)
+                    List<String> delTopics = PreferenceHandler.getArrayList(this, "delTopics");
+                    boolean failedDel = false;
+                    for (String sub : delTopics) {
+                        try {
+                            Log.i(DEBUG_TAG, "Unsubscribe: " + MQTT_DOMAIN + sub);
+                            mClient.unsubscribe(MQTT_DOMAIN + sub);
+                        } catch (MqttException e) {
+                            failedDel=true;
+                            e.printStackTrace();
+                        }
+                    }
+                    if(!failedDel)
                     {
-                        Log.i(DEBUG_TAG, "Subscribe to: "+topic[i]+" with qos: "+qos[i]);
+                        PreferenceHandler.removePreference(this,"delTopics");
                     }
 
+                    List<String> topics = subscriptionHandler.getAllSubscription(false);
+                    List<String> topics_durable = subscriptionHandler.getAllSubscription(true);
+                    topics.add("/SE/"+"+/"+"conf/#");
+                    topics.add("/SE/"+"+/"+"status");
+                    topics.add("/MP/#");
+
                     try {
-                        mClient.subscribe(topic,qos);
+                        for (String sub : topics) {
+                            Log.i(DEBUG_TAG, "Subscribe to: " +MQTT_DOMAIN+ sub + " with qos: 0");
+                            mClient.subscribe(MQTT_DOMAIN+sub, 0);
+                        }
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
-                    Log.i(DEBUG_TAG, "Successfully subscribed");
 
+                    try {
+                        for (String sub : topics_durable) {
+                            Log.i(DEBUG_TAG, "Subscribe to: " +MQTT_DOMAIN+ sub + " with qos: 2");
+                            mClient.subscribe(MQTT_DOMAIN+sub, 2);
+                        }
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                     break;
+
                 case Constants.ACTION.STOPFOREGROUND_ACTION:
                     Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
                     unregisterBroadcastReceivers();
@@ -325,11 +261,21 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         e.printStackTrace();
                     }
                     break;
+
                 case Constants.ACTION.CHECK_ACTION:
                     Log.i(DEBUG_TAG, "Check action");
                     checkConnection();
                     break;
 
+                case Constants.ACTION.SUBSCRIBE_ACTION:
+                    Log.i(DEBUG_TAG, "Subscribe action");
+                    subscribeTopic(intent.getStringExtra("TOPIC"),intent.getBooleanExtra("DURABLE",false));
+                    break;
+
+                case Constants.ACTION.UNSUBSCRIBE_ACTION:
+                    Log.i(DEBUG_TAG, "Unsubscribe action");
+                    unsubscribeTopic(intent.getStringExtra("TOPIC"));
+                    break;
             }
         }
         return START_STICKY;
@@ -572,16 +518,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
-    private void updateNotification(long timestamp,String status,String sensor,String event) {
-        Log.i(DEBUG_TAG, sensor + ": " + event);
-        SimpleDateFormat fmtout = new SimpleDateFormat("HH:mm:ss", Locale.GERMANY);
-        Date df = new java.util.Date(timestamp*1000);
+    private void updateNotification(SensorDataEvent event) {
+        Log.i(DEBUG_TAG, "updateNotification");
         builder.setColor(Color.BLACK);
-        if(status.equals("NOK")) {
-            builder.setColor(Color.RED);
-        }
-        builder.setContentTitle(event);
-        builder.setContentText(new StringBuilder().append(sensor).append(" / ").append(fmtout.format(df)));
+        builder.setContentTitle(event.getData("Temp") + "°");
+        builder.setContentText(new StringBuilder().append(event.getSensor()).append(" / ").append(event.getTimestamp()));
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager != null) {
             mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
@@ -590,47 +531,28 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        TemperatureEvent tempEvent = new TemperatureEvent();
         ProcessEvent processEvent = new ProcessEvent();
         MPStatusEvent mpstatusEvent = new MPStatusEvent();
+
         boolean exists;
         JSONObject obj;
 
         String mess = new String(message.getPayload());
 
         String[] parts = topic.split("/");
-        tempEvent.setTopic(parts[1]);
         processEvent.setTopic(parts[1]);
 
-        Log.i(DEBUG_TAG, "'" + parts[1] + "/" + parts[2] + "' messageArrived with QoS: " + message.getQos());
+        Log.i(DEBUG_TAG, "'" + parts[2] + "/" + parts[3] + "' messageArrived with QoS: " + message.getQos());
 
         if(parts[1].equals("SE")){
+            if(parts[3].equals("temp"))
+            {
+                Log.i(DEBUG_TAG, "'" + parts[4] + "/" + parts[5] + "' Temperature message arrived with QoS: " + message.getQos());
+                submitSensorData(parts,mess);
+                return;
+            }
             handleSensorData(parts,mess);
             return;
-        }
-        if (parts[1].equals("temp")) {
-            obj = new JSONObject(mess);
-            try {
-                tempEvent.setEvent(obj.getString("Temp") + "°");
-                tempEvent.setTemperature(obj.getString("Temp"));
-                tempEvent.setMode(obj.getString("Mode"));
-                tempEvent.setSensor(parts[2]);
-                tempEvent.setInterval(Integer.parseInt(parts[3]));
-                tempEvent.setTimestamp(Long.parseLong(obj.getString("TS")));
-                tempEvent.setQoS(message.getQos());
-                tempEvent.setStatus("OK");
-                Temperature temp = new Temperature(tempEvent.getTimestamp(), tempEvent.getTemperature(), tempEvent.getSensor(), tempEvent.getMode());
-                if (message.getQos() > 0) {
-                    temp.save();
-                    Log.i(DEBUG_TAG, "Mode: " + tempEvent.getMode() + " Temperature: " + tempEvent.getEvent() + " inserted!");
-                }
-                EventBus.getDefault().postSticky(tempEvent);
-
-                sendData(tempEvent.getMode(), tempEvent.getSensor(), tempEvent.getEvent());
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
         }
         if (parts[1].equals("MP")) {
             if (parts[2].equals("process")) {
@@ -754,6 +676,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 }
             }
         }
+    }
+
+    private void submitSensorData(String[] parts, String mess) {
+        SensorDataEvent sensorData = new SensorDataEvent();
+        sensorData.setServer(parts[2]);
+        sensorData.setSensor(parts[4]);
+        sensorData.setInterval(Integer.parseInt(parts[5]));
+        sensorData.setType(parts[3]);
+        sensorData.setData(mess);
+
+        EventBus.getDefault().postSticky(sensorData);
     }
 
     private void handleSensorData(String[] topic,String mess)
@@ -927,12 +860,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-    public void onEventMainThread(TemperatureEvent myEvent) {
-        Set<String> prefdefaults = prefs.getStringSet("service_topics", new HashSet<String>());
-        if(prefdefaults.contains(myEvent.getSensor()+"/"+myEvent.getInterval()))
+    public void onEventMainThread(SensorDataEvent myEvent) {
+        if(subscriptionHandler.checkSubscription(myEvent.getTopicString()))
         {
             Log.i(DEBUG_TAG, "Notification updated");
-            updateNotification(myEvent.getTimestamp(),myEvent.getStatus(),myEvent.getSensor(), myEvent.getEvent());
+            updateNotification(myEvent);
         }
     }
 
@@ -962,7 +894,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
-    private void sendData(String mode, String sensor, String message) {
+    private void sendDatatoWear(String mode, String sensor, String message) {
         PutDataMapRequest dataMap = PutDataMapRequest.create(Constants.WEAR.RUN_UPDATE_NOTIFICATION);
         dataMap.getDataMap().putString(Constants.WEAR.KEY_TITLE, "Temperature");
         dataMap.getDataMap().putString(Constants.WEAR.KEY_SENSOR, sensor);
@@ -985,5 +917,34 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         Log.e(DEBUG_TAG, "Sending message failed: " + e);
                     }
                 });
+    }
+
+    private void subscribeTopic(String topic, boolean durable)
+    {
+        try {
+            if(durable) {
+                mClient.subscribe(MQTT_DOMAIN+topic, 2);
+            }
+            else
+            {
+                mClient.subscribe(MQTT_DOMAIN+topic, 0);
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+        subscriptionHandler.refreshSubscription();
+    }
+
+    private void unsubscribeTopic(String topic)
+    {
+        try {
+            mClient.unsubscribe(MQTT_DOMAIN+topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+            List<String> deltopics = PreferenceHandler.getArrayList(this,"delTopics");
+            deltopics.add(topic);
+            PreferenceHandler.saveArrayList(this, deltopics,"delTopics");
+        }
+        subscriptionHandler.refreshSubscription();
     }
 }
