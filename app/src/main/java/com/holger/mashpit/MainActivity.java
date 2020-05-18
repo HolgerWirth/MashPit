@@ -14,7 +14,7 @@ import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
-import com.example.myapp.MyEventBusIndex;
+import com.holger.mashpit.MashPitEventBusIndex;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -293,7 +293,6 @@ public class MainActivity extends AppCompatActivity {
                             case R.id.nav_temppager:
                                 Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
                                 startActivity(o);
-                                finish();
                                 break;
 
                         }
@@ -452,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.i(DEBUG_TAG, "OnStart()...");
-        EventBus eventBus = EventBus.builder().addIndex(new MyEventBusIndex()).build();
+        EventBus eventBus = EventBus.builder().addIndex(new MashPitEventBusIndex()).build();
         EventBus.getDefault().register(this);
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb=new SnackBar(coordinatorLayout);
