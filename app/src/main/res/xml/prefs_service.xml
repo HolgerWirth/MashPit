@@ -12,4 +12,22 @@
         android:title="Start service automatically"
         android:summaryOff="Automatic start of the MQTT service is disabled"
         android:summaryOn="The MQTT service will be started automatically" />
+    <Preference
+        android:summary="@string/sub_selectSummary"
+        android:title="@string/sub_selectSensorData"
+        app:iconSpaceReserved="false">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.holger.mashpit.SubscriberActivity"
+            android:targetPackage="com.holger.mashpit">
+            <extra
+                android:name="ACTION"
+                android:value="Service">
+            </extra>
+            <extra
+                android:name="DURABLE"
+                android:value="false">
+            </extra>
+        </intent>
+    </Preference>
 </PreferenceScreen>
