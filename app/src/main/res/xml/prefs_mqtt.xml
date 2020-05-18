@@ -24,13 +24,4 @@
         android:key="find server"
         android:title="@string/title_activity_find_server"
         app:iconSpaceReserved="false" />
-    <Preference
-        android:summary="Some Description"
-        android:title="Subscriber List"
-        app:iconSpaceReserved="false">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="com.holger.mashpit.SubscribeListActivity"
-            android:targetPackage="com.holger.mashpit" />
-    </Preference>
 </PreferenceScreen>
