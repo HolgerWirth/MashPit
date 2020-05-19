@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:icon="@drawable/ic_launcher"
+    android:key="subs_screen"
+    android:persistent="false"
+    android:title="Subscreen">
+
+    <Preference
+        android:summary="@string/sub_selectSummary"
+        android:title="@string/sub_selectSensorData"
+        app:iconSpaceReserved="false">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.holger.mashpit.SubscriberActivity"
+            android:targetPackage="com.holger.mashpit">
+            <extra
+                android:name="ACTION"
+                android:value="Pager">
+            </extra>
+            <extra
+                android:name="DURABLE"
+                android:value="false">
+            </extra>
+        </intent>
+    </Preference>
+</PreferenceScreen>

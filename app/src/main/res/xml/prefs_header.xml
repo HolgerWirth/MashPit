@@ -8,10 +8,16 @@
         android:summary="Broker and subscriptions">
     </Preference>
     <Preference
-        android:icon="@drawable/ic_thermometer"
+        android:icon="@drawable/ic_notification"
         android:fragment="com.holger.mashpit.prefs.ServiceSettings"
         android:title="Service Settings"
         android:summary="Settings for the temperature service">
+    </Preference>
+    <Preference
+        android:icon="@drawable/ic_thermometer"
+        android:fragment="com.holger.mashpit.prefs.PagerSettings"
+        android:title="Pager Settings"
+        android:summary="Settings for the pager display">
     </Preference>
     <Preference
         android:icon="@drawable/ic_chart_line"
