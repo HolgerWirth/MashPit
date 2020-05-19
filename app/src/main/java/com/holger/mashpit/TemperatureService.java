@@ -37,6 +37,7 @@ import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+import com.google.android.gms.wearable.WearableListenerService;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.SensorDataEvent;
@@ -174,7 +175,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     registerBroadcastReceivers();
                     Wearable.getDataClient(this).addListener(this);
-
 
                     try {
                         connect();
@@ -521,8 +521,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private void updateNotification(SensorDataEvent event) {
         Log.i(DEBUG_TAG, "updateNotification");
         builder.setColor(Color.BLACK);
+        String server = subscriptionHandler.getServerAlias(event.getServer());
+        String sensor = subscriptionHandler.getSensorAlias(event.getServer(),event.getSensor());
         builder.setContentTitle(event.getData("Temp") + "°");
-        builder.setContentText(new StringBuilder().append(event.getSensor()).append(" / ").append(event.getTimestamp()));
+        builder.setContentText(new StringBuilder().append(server).append(" / ").append(sensor).append("  ").append(event.getTimestamp()));
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager != null) {
             mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
