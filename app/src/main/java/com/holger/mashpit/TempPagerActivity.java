@@ -4,23 +4,25 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+
 import androidx.core.view.GravityCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Description;
@@ -28,10 +30,11 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.holger.mashpit.events.TemperatureEvent;
+import com.holger.mashpit.events.SensorDataEvent;
 import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.prefs.SettingsActivity;
 import com.holger.mashpit.tools.SnackBar;
+import com.holger.mashpit.tools.SubscriptionHandler;
 import com.holger.share.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -46,7 +49,9 @@ public class TempPagerActivity extends AppCompatActivity {
     NavigationView navigationView;
     private DrawerLayout mDrawerLayout;
     float cAngle = 270f;
-    boolean doubleBackToExitPressedOnce = false;
+
+    String action = "Pager";
+    SubscriptionHandler subscriptionHandler;
 
     SnackBar snb;
     View.OnClickListener mOnClickListener;
@@ -80,6 +85,8 @@ public class TempPagerActivity extends AppCompatActivity {
             menu = navigationView.getMenu();
             MashPit.createSubMenu(menu, getApplicationContext());
         }
+
+        subscriptionHandler = new SubscriptionHandler(action);
 
         ViewPager pager = findViewById(R.id.pagerview);
         pagerAdapter = new TempPagerAdapter(pieCharts);
@@ -203,30 +210,27 @@ public class TempPagerActivity extends AppCompatActivity {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getTempEvent(TemperatureEvent myEvent) {
+    public void getTempEvent(SensorDataEvent myEvent) {
         View pieChart;
         boolean found = false;
-
-        Log.i(DEBUG_TAG, "getTempEvent");
-        if (myEvent != null) {
-            Log.i(DEBUG_TAG, "TempEvent arrived: " + myEvent.getTopic());
-            for(int i=0; i<pieCharts.size(); i++)
-            {
+        String alias = subscriptionHandler.getSensorAlias(myEvent.getServer(),myEvent.getSensor());
+        if (subscriptionHandler.checkSubscription(myEvent.getTopicString())) {
+            Log.i(DEBUG_TAG, "SensorDataEvent arrived: " + myEvent.getTopicString());
+            for (int i = 0; i < pieCharts.size(); i++) {
                 pieChart = pieCharts.get(i);
-                if(myEvent.getSensor().contentEquals(pieChart.getContentDescription()))
-                {
-                    Log.i(DEBUG_TAG, "getTempEvent: "+pieChart.getContentDescription()+" found!");
-                    ((PieChart) pieChart).setCenterText(myEvent.getEvent());
+                if (alias.contentEquals(pieChart.getContentDescription())) {
+                    ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
                     pagerAdapter.notifyDataSetChanged();
                     pagerAdapter.updatePie(i);
                     found = true;
                     break;
                 }
             }
-            if(!found)
-            {
-                pieChart=createPiePage(myEvent.getSensor());
-                ((PieChart) pieChart).setCenterText(myEvent.getEvent());
+
+            if (!found) {
+                Log.i(DEBUG_TAG, "New page created: " + alias);
+                pieChart = createPiePage(alias);
+                ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
                 pieCharts.add(pieChart);
                 pagerAdapter.notifyDataSetChanged();
             }
@@ -247,7 +251,8 @@ public class TempPagerActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "OnStart()...");
         EventBus.getDefault().register(this);
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
-        snb=new SnackBar(coordinatorLayout);
+        snb = new SnackBar(coordinatorLayout);
+        subscriptionHandler.refreshSubscription();
 
         snb.setmOnClickListener(
                 mOnClickListener = new View.OnClickListener() {
@@ -271,25 +276,5 @@ public class TempPagerActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            MashPit.menu_action=false;
-            super.onBackPressed();
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, R.string.click_back, Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
-            }
-        }, 2000);
     }
 }

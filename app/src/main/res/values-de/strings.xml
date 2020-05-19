@@ -133,4 +133,11 @@
     <string name="serverSystemTypeTitle">System</string>
     <string name="sensorUptimeTitle">Uptime</string>
     <string name="serverVersionTitle">Version</string>
+    <string name="header_select_sensor">Sensor Selection</string>
+    <string name="header_select_interval">Interval Selection</string>
+    <string name="header_delect_device">Device Selection</string>
+    <string name="sub_delete">Delete sensor data</string>
+    <string name="sub_delete_text">Do you really want to delete the sensor data?</string>
+    <string name="sub_selectSummary">Select sensor data for notifications</string>
+    <string name="sub_selectSensorData">Select sensor data</string>
 </resources>
