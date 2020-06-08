@@ -37,7 +37,6 @@ import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
-import com.google.android.gms.wearable.WearableListenerService;
 import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.SensorDataEvent;
@@ -529,6 +528,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         if (mNotificationManager != null) {
             mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
         }
+
+        sendDatatoWear(server, sensor, event.getData("Temp") + "°");
     }
 
     @Override
