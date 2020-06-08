@@ -714,6 +714,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         JSONObject obj;
         SensorEvent sensorEvent = new SensorEvent();
         int port=0;
+        int sda=0;
+        int scl=0;
+        int alt=0;
 
         if (topic[4].equals("server")) {
             try {
@@ -752,6 +755,18 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             {
                 port=obj.getInt("PIN");
             }
+            if(obj.has("SDA"))
+            {
+                sda=obj.getInt("SDA");
+            }
+            if(obj.has("SCL"))
+            {
+                scl=obj.getInt("SCL");
+            }
+            if(obj.has("ALT"))
+            {
+                alt=obj.getInt("ALT");
+            }
 
             boolean exists = new Select()
                     .from(Sensors.class)
@@ -761,12 +776,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     .exists();
             if (exists) {
                 new Update(Sensors.class)
-                        .set("active=?, name=?, port=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"),port)
+                        .set("active=?, name=?, port=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"))
                         .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
                         .execute();
             } else {
                 Sensors sensors = new Sensors(topic[2], topic[5], false, obj.getBoolean("active"), "", obj.getString("type"), obj.getString("name"),
-                        Integer.parseInt(topic[6]), port, "");
+                        Integer.parseInt(topic[6]), port,sda,scl,alt,"");
                 sensors.save();
             }
             sensorEvent.setServer(topic[2]);

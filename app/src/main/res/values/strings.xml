@@ -148,4 +148,11 @@
     <string name="sub_delete_text">Do you really want to delete the sensor data?</string>
     <string name="sub_selectSummary">Select sensor data for notifications</string>
     <string name="sub_selectSensorData">Select sensor data</string>
+    <string name="sensorSDATitle">SDA</string>
+    <string name="sensorSCLTitle">SCL</string>
+    <string name="sensorAltitudeTitle">Altitude</string>
+    <string name="devSDAExists">SDA port already used!</string>
+    <string name="devSCLExists">SCL port already used!</string>
+    <string name="devSDAWarning">Please enter the SDA port</string>
+    <string name="devSCLWarning">Please enter the SCL port</string>
 </resources>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/layout_gpio"
+    tools:context="com.holger.mashpit.SensorConfEdit">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/sensoredit_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/sensoredit_toolbar"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_marginRight="5dp"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sensorIdField"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="@string/sensorIdTitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sensorId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/sensorNameField"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="@string/sensorNameTitle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/sensorName"
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/sensorGPIOField"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="90dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:hint="@string/sensorGPIOTitle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/sensorGPIO"
+                    android:layout_width="90dp"
+                    android:layout_height="wrap_content"
+                    android:digits="0123456789"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="15dp"
+            android:background="@android:color/darker_gray" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/sensorIntervalList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="7dp" />
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/sensorInterval_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top"
+            android:orientation="vertical" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/canceldelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:orientation="vertical">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:backgroundTint="@android:color/holo_orange_light"
+            android:src="@drawable/ic_cancel_white_24dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/editButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/procfabadddesc"
+            app:backgroundTint="@android:color/holo_green_light"
+            android:src="@drawable/ic_done_white_24dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/intervalfabadd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/intervaladddesc"
+            android:src="@drawable/ic_add_white_24dp"
+            app:backgroundTint="@color/material_blue_500"
+            android:tooltipText="@string/intervaladddesc" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

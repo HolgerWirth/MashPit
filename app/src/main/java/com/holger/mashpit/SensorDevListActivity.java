@@ -164,7 +164,6 @@ public class SensorDevListActivity extends AppCompatActivity {
                 l.putExtra("type", "bme280");
                 l.putExtra("server",server);
                 l.putExtra("name","BME280");
-                l.putExtra("GPIO",0);
                 startActivityForResult(l, 0);
             }
         });
@@ -270,6 +269,9 @@ public class SensorDevListActivity extends AppCompatActivity {
                 l.putExtra("server",sensors.server);
                 l.putExtra("active",sensors.active);
                 l.putExtra("GPIO",sensors.port);
+                l.putExtra("SDA",sensors.sda);
+                l.putExtra("SCL",sensors.scl);
+                l.putExtra("ALT",sensors.alt);
                 startActivityForResult(l, 0);
             }
         });

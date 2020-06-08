@@ -26,6 +26,12 @@ public class Sensors extends Model implements Serializable {
     public int interval;
     @Column(name = "port")
     public int port;
+    @Column(name = "sda")
+    public int sda;
+    @Column(name = "scl")
+    public int scl;
+    @Column(name = "alt")
+    public int alt;
     @Column(name = "address")
     public String address;
 
@@ -35,7 +41,7 @@ public class Sensors extends Model implements Serializable {
         super();
     }
 
-    public Sensors(String server, String sensor, boolean online, boolean active,String alias, String type, String name,int interval,int port,String address) {
+    public Sensors(String server, String sensor, boolean online, boolean active,String alias, String type, String name,int interval,int port,int sda,int scl,int alt,String address) {
         super();
         this.server=server;
         this.sensor=sensor;
@@ -46,6 +52,9 @@ public class Sensors extends Model implements Serializable {
         this.name=name;
         this.interval=interval;
         this.port=port;
+        this.sda = sda;
+        this.scl = scl;
+        this.alt = alt;
         this.address=address;
     }
 }
