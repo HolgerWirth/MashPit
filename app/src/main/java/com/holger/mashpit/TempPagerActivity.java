@@ -31,6 +31,7 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.holger.mashpit.events.SensorDataEvent;
+import com.holger.mashpit.events.SensorStickyEvent;
 import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.prefs.SettingsActivity;
 import com.holger.mashpit.tools.SnackBar;
@@ -210,29 +211,36 @@ public class TempPagerActivity extends AppCompatActivity {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getTempEvent(SensorDataEvent myEvent) {
-        View pieChart;
-        boolean found = false;
-        String alias = subscriptionHandler.getSensorAlias(myEvent.getServer(),myEvent.getSensor());
-        if (subscriptionHandler.checkSubscription(myEvent.getTopicString())) {
-            Log.i(DEBUG_TAG, "SensorDataEvent arrived: " + myEvent.getTopicString());
-            for (int i = 0; i < pieCharts.size(); i++) {
-                pieChart = pieCharts.get(i);
-                if (alias.contentEquals(pieChart.getContentDescription())) {
-                    ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
-                    pagerAdapter.notifyDataSetChanged();
-                    pagerAdapter.updatePie(i);
-                    found = true;
-                    break;
-                }
-            }
+    public void getTempEvent(SensorStickyEvent stickyEvent) {
+        updatePager(stickyEvent);
+    }
 
-            if (!found) {
-                Log.i(DEBUG_TAG, "New page created: " + alias);
-                pieChart = createPiePage(alias);
-                ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
-                pieCharts.add(pieChart);
-                pagerAdapter.notifyDataSetChanged();
+    protected void updatePager(SensorStickyEvent stickyEvent)
+    {
+        View pieChart;
+        for(SensorDataEvent myEvent : stickyEvent.sticky) {
+            String alias = subscriptionHandler.getSensorAlias(myEvent.getServer(), myEvent.getSensor());
+            if (subscriptionHandler.checkSubscription(myEvent.getTopicString())) {
+                Log.i(DEBUG_TAG, "SensorDataEvent arrived: " + myEvent.getTopicString());
+                boolean found = false;
+                for (int i = 0; i < pieCharts.size(); i++) {
+                    pieChart = pieCharts.get(i);
+                    if (alias.contentEquals(pieChart.getContentDescription())) {
+                        ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
+                        pagerAdapter.notifyDataSetChanged();
+                        pagerAdapter.updatePie(i);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    Log.i(DEBUG_TAG, "New page created: " + alias);
+                    pieChart = createPiePage(alias);
+                    ((PieChart) pieChart).setCenterText(myEvent.getData("Temp") + "°");
+                    pieCharts.add(pieChart);
+                    pagerAdapter.notifyDataSetChanged();
+                }
             }
         }
     }

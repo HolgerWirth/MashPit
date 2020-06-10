@@ -41,6 +41,7 @@ import com.holger.mashpit.events.MPStatusEvent;
 import com.holger.mashpit.events.ProcessEvent;
 import com.holger.mashpit.events.SensorDataEvent;
 import com.holger.mashpit.events.SensorEvent;
+import com.holger.mashpit.events.SensorStickyEvent;
 import com.holger.mashpit.events.StatusEvent;
 import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPServer;
@@ -96,6 +97,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     SharedPreferences prefs;
 
     SubscriptionHandler subscriptionHandler;
+    SensorStickyEvent stickyData;
 
     @Override
     public void onCreate() {
@@ -103,6 +105,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         Log.i(DEBUG_TAG, "onCreate()...");
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         subscriptionHandler = new SubscriptionHandler("Service");
+        stickyData = new SensorStickyEvent();
     }
 
     @Override
@@ -164,12 +167,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     if(!EventBus.getDefault().isRegistered(this)) {
                         Log.i(DEBUG_TAG, "EventBus register");
                         EventBus.getDefault().register(this);
-                    }
-
-                    SensorDataEvent myEvent = EventBus.getDefault().getStickyEvent(SensorDataEvent.class);
-                    if (myEvent != null) {
-                        Log.i(DEBUG_TAG, "Found sticky event!");
-                        updateNotification(myEvent);
                     }
 
                     registerBroadcastReceivers();
@@ -570,7 +567,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     proc.save();
                     Log.i(DEBUG_TAG, "Process updated");
                 }
-                EventBus.getDefault().postSticky(processEvent);
+                EventBus.getDefault().post(processEvent);
             }
 
             if (parts[3].equals("conf")) {
@@ -605,7 +602,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         mpstatusEvent.setMPServer(parts[2]);
                         mpstatusEvent.setType("SRV");
                         mpstatusEvent.setStatusTopic("MashPit");
-                        EventBus.getDefault().postSticky(mpstatusEvent);
+                        EventBus.getDefault().post(mpstatusEvent);
                     } else {
                         exists = new Select()
                                 .from(Config.class)
@@ -642,7 +639,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             .and("MPServer = ?", parts[2])
                             .execute();
                     mpstatusEvent.setPID("DEL");
-                    EventBus.getDefault().postSticky(mpstatusEvent);
+                    EventBus.getDefault().post(mpstatusEvent);
                     Log.i(DEBUG_TAG, "Status deleted!");
                 }
                 else {
@@ -672,7 +669,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             MPStatus mpstatus = new MPStatus(mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer(), mpstatusEvent.isActive(), mpstatusEvent.getPID(), mpstatusEvent.getType());
                             mpstatus.save();
                         }
-                        EventBus.getDefault().postSticky(mpstatusEvent);
+                        EventBus.getDefault().post(mpstatusEvent);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -688,8 +685,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         sensorData.setInterval(Integer.parseInt(parts[5]));
         sensorData.setType(parts[3]);
         sensorData.setData(mess);
+        EventBus.getDefault().post(sensorData);
 
-        EventBus.getDefault().postSticky(sensorData);
+        stickyData.addSticky(sensorData);
+        EventBus.getDefault().postSticky(stickyData);
     }
 
     private void handleSensorData(String[] topic,String mess)
@@ -745,7 +744,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setSensor(topic[5]);
             sensorEvent.setInterval(Integer.parseInt(topic[6]));
             sensorEvent.setType(topic[4]);
-            EventBus.getDefault().postSticky(sensorEvent);
+            EventBus.getDefault().post(sensorEvent);
             return;
         }
 
@@ -790,7 +789,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setType(topic[4]);
             sensorEvent.setActive(obj.getBoolean("active"));
             sensorEvent.setName(obj.getString("name"));
-            EventBus.getDefault().postSticky(sensorEvent);
+            EventBus.getDefault().post(sensorEvent);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -878,11 +877,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-    public void onEventMainThread(SensorDataEvent myEvent) {
-        if(subscriptionHandler.checkSubscription(myEvent.getTopicString()))
-        {
-            Log.i(DEBUG_TAG, "Notification updated");
-            updateNotification(myEvent);
+    public void onEventMainThread(SensorStickyEvent stickyEvent) {
+        Log.i(DEBUG_TAG, "StickyEvent arrived!");
+        for(SensorDataEvent myEvent : stickyEvent.sticky) {
+            if (subscriptionHandler.checkSubscription(myEvent.getTopicString())) {
+                Log.i(DEBUG_TAG, "Notification updated");
+                updateNotification(myEvent);
+            }
         }
     }
 
