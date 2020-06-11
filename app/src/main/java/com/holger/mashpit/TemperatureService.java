@@ -775,7 +775,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     .exists();
             if (exists) {
                 new Update(Sensors.class)
-                        .set("active=?, name=?, port=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"))
+                        .set("active=?, name=?, port=?, sda=?, scl=?, alt=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"),port,sda,scl,alt)
                         .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
                         .execute();
             } else {
