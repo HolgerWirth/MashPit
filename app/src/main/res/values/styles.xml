@@ -9,6 +9,7 @@
         <item name="colorAccent">@color/primaryColor</item>
         <item name="colorControlActivated">@android:color/holo_blue_light</item>
         <item name="materialAlertDialogTheme">@style/AlertDialogTheme</item>
+        <item name="alertDialogTheme">@style/PreferenceDialogTheme</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
@@ -35,6 +36,20 @@
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
     </style>
+
+    <style name="PreferenceDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:background">#e0e0e0</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/PreferenceTitleTextStyle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/BodyTextStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+    </style>
+
+    <style name="PreferenceTitleTextStyle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">#000000</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
     <style name="TitleTextStyle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
         <item name="android:textColor">#fafafa</item>
         <item name="android:textStyle">bold</item>
@@ -52,7 +67,6 @@
         <item name="android:textColor">#757575</item>
         <item name="rippleColor">#a4a4a4</item>
     </style>
-
     <style name="MySwitch" parent="@style/Widget.MaterialComponents.CompoundButton.Switch">
         <item name="colorControlActivated">@android:color/holo_green_light</item>
         <item name="colorAccent">@android:color/holo_green_light</item>
