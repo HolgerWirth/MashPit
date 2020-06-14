@@ -381,10 +381,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                             sda.setError(getString(R.string.devSDAExists));
                             return;
                         }
-                        if (SensorSCLExists(server, SCL)) {
-                            scl.setError(getString(R.string.devSCLExists));
-                            return;
-                        }
                     }
                 }
                 alertDialog.setTitle(getString(R.string.pubConfig));
@@ -579,15 +575,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 .from(Sensors.class)
                 .where("server=?", server)
                 .and("sda=?", sda)
-                .exists();
-    }
-
-    private boolean SensorSCLExists(String server,int scl)
-    {
-        return new Select()
-                .from(Sensors.class)
-                .where("server=?", server)
-                .and("scl=?", scl)
                 .exists();
     }
 
