@@ -78,8 +78,10 @@
         <activity android:name=".MPProcListActivity" />
         <activity android:name=".ServerEdit" />
         <activity android:name=".SensorStatusListActivity" />
-        <activity android:name=".SensorDevListActivity" />
-        <activity android:name=".SensorConfEdit" />
+        <activity android:name=".SensorDevListActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name=".SensorConfEdit"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity android:name=".SelectSensorActivity" />
         <activity android:name=".SubscriberActivity" />
     </application>
