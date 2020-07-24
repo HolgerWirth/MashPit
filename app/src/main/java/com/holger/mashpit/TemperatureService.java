@@ -182,6 +182,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     new Delete()
                             .from(MPServer.class)
                             .execute();
+                    new Delete()
+                            .from(Sensors.class)
+                            .execute();
 
                     List<String> delTopics = PreferenceHandler.getArrayList(this, "delTopics");
                     boolean failedDel = false;
@@ -820,10 +823,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             String system="--";
             String version="--";
             String alias="";
+            String IPaddress="";
             if(obj.has("TS")) {TS = obj.getLong("TS");}
             if(obj.has("system")) {system = obj.getString("system"); }
             if(obj.has("version")) {version = obj.getString("version");}
             if(obj.has("alias")) {alias = obj.getString("alias");}
+            if(obj.has("IP")) {IPaddress = obj.getString("IP");}
 
             boolean exists = new Select()
                     .from(SensorStatus.class)
@@ -831,14 +836,14 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     .exists();
             if (exists) {
                 new Update(SensorStatus.class)
-                        .set("active=?,TS=?,system=?,alias=?,version=?", obj.getInt("status"),TS,system,alias,version)
+                        .set("active=?,TS=?,system=?,alias=?,version=?,IP=?", obj.getInt("status"),TS,system,alias,version,IPaddress)
                         .where("server=?", topic[2])
                         .execute();
                 Log.i(DEBUG_TAG, "Sensor server status updated!");
 
             } else {
                 Log.i(DEBUG_TAG, "New sensor server created!");
-                SensorStatus newSensorStat = new SensorStatus(topic[2], "", status, "", "",TS,system,version);
+                SensorStatus newSensorStat = new SensorStatus(topic[2], "", status, "", "",TS,system,version,IPaddress);
                 newSensorStat.save();
             }
 
@@ -848,12 +853,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setTS(TS);
             sensorEvent.setVersion(version);
             sensorEvent.setSystem(system);
+            sensorEvent.setIP(IPaddress);
             sensorEvent.setSensor(sensors.toString());
 
-            if (!status) {
-                EventBus.getDefault().post(sensorEvent);
-            }
-            else {
+            if (status) {
                 JSONArray sensors_json = obj.getJSONArray("sensors");
                 for (int i = 0; i < sensors_json.length(); i++) {
                     sensors.append(sensors_json.get(i).toString());
@@ -861,16 +864,16 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         sensors.append("/");
                     }
                 }
-                Log.i(DEBUG_TAG, "Sensors connected: "+sensors);
+                Log.i(DEBUG_TAG, "Sensors connected: " + sensors);
 
                 new Update(SensorStatus.class)
-                        .set("active=?, alias=?, sensor=?", obj.getInt("status"), obj.getString("alias"),sensors.toString())
+                        .set("active=?, alias=?, sensor=?", obj.getInt("status"), obj.getString("alias"), sensors.toString())
                         .where("server=?", topic[2])
                         .execute();
 
                 sensorEvent.setSensor(sensors.toString());
-                EventBus.getDefault().post(sensorEvent);
             }
+            EventBus.getDefault().post(sensorEvent);
         } catch (JSONException e) {
             e.printStackTrace();
         }
