@@ -155,4 +155,9 @@
     <string name="devSCLExists">SCL port already used!</string>
     <string name="devSDAWarning">Please enter the SDA port</string>
     <string name="devSCLWarning">Please enter the SCL port</string>
+    <string name="serverIPTitle">IP Address</string>
+    <string name="signatureMD5">Firmware image details</string>
+    <string name="updateFTPAlert">Do you reeally want to update the sensor device?</string>
+    <string name="selectFirmwareImage">Select an firmware image</string>
+    <string name="uploadFirmwareImage">Upload firmware image</string>
 </resources>
