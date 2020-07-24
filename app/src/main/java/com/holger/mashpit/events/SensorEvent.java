@@ -10,6 +10,7 @@ public class SensorEvent {
         private long TS;
         private String system;
         private String version;
+        private String IP;
 
         public long getTS() {
                 return TS;
@@ -82,4 +83,13 @@ public class SensorEvent {
         public void setActive(boolean active) {
                 this.active = active;
         }
+
+        public String getIP() {
+                return IP;
+        }
+
+        public void setIP(String IP) {
+                this.IP = IP;
+        }
+
 }
