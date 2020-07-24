@@ -24,6 +24,8 @@ public class SensorStatus extends Model implements Serializable {
     public String system;
     @Column(name = "version")
     public String version;
+    @Column(name = "IP")
+    public String IP;
 
     public SensorStatus() {
         // Notice how super() has been called to perform default initialization
@@ -31,7 +33,7 @@ public class SensorStatus extends Model implements Serializable {
         super();
     }
 
-    public SensorStatus(String server, String sensor, boolean active, String alias, String type,long TS,String system,String version) {
+    public SensorStatus(String server, String sensor, boolean active, String alias, String type,long TS,String system,String version,String IP) {
         super();
         this.server=server;
         this.sensor=sensor;
@@ -41,5 +43,6 @@ public class SensorStatus extends Model implements Serializable {
         this.TS=TS;
         this.system=system;
         this.version=version;
+        this.IP=IP;
     }
 }
