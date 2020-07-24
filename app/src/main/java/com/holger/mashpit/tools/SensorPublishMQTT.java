@@ -66,6 +66,26 @@ public class SensorPublishMQTT {
         return mqttClient;
     }
 
+    public boolean PublishServerUpdate(String server, String send)
+    {
+        try {
+            MqttClient mqttClient=ConnectMQTT();
+            MqttMessage message = new MqttMessage(send.getBytes());
+            int qos = 2;
+            message.setQos(qos);
+            message.setRetained(false);
+            mqttClient.publish(MQTT_DOMAIN+"/SE/"+server+"/conf/update", message);
+            Log.i(DEBUG_TAG,"Status message published");
+            mqttClient.disconnect();
+            Log.i(DEBUG_TAG,"Disconnected");
+            return true;
+        } catch (MqttException me) {
+            Log.i(DEBUG_TAG,"Publish failed: "+me.getReasonCode());
+            Log.i(DEBUG_TAG,"Cause: "+me.getCause());
+            return false;
+        }
+    }
+
     public boolean PublishServerStatus(String server, String send)
     {
         try {
