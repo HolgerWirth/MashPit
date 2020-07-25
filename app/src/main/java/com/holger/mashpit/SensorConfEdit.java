@@ -91,6 +91,14 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 coordinatorLayout = findViewById(R.id.layout_bme280);
                 break;
 
+            case "bh1750":
+                setContentView(R.layout.activity_sensoredit_bme280);
+                sda = findViewById(R.id.sensorSDA);
+                scl = findViewById(R.id.sensorSCL);
+                alt = findViewById(R.id.sensorALT);
+                coordinatorLayout = findViewById(R.id.layout_bme280);
+                break;
+
             case "dht11":
                 setContentView(R.layout.activity_sensoredit_gpio);
                 gpio = findViewById(R.id.sensorGPIO);
