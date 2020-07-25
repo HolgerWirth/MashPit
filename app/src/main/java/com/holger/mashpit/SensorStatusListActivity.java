@@ -86,6 +86,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
                 sintent.putExtra("online",result.get(position).isActive());
                 sintent.putExtra("system",result.get(position).getSystem());
                 sintent.putExtra("version",result.get(position).getVersion());
+                sintent.putExtra("IP",result.get(position).getIP());
                 sintent.putExtra("TS",result.get(position).getTS());
 
                 startActivityForResult(sintent, 0);
@@ -131,6 +132,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
             sensorevent.setSystem(sensorStatuses.get(i).system);
             sensorevent.setTS(sensorStatuses.get(i).TS);
             sensorevent.setVersion(sensorStatuses.get(i).version);
+            sensorevent.setIP(sensorStatuses.get(i).IP);
             upresult.add(sensorevent);
         }
         return upresult;
