@@ -79,20 +79,14 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/serverVersionField"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
-                android:hint="@string/serverVersionTitle">
-
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/serverVersion"
                     android:layout_width="100dp"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="10dp"
+                    style="@style/FirmawareUpdateButtonStyle"
+                    android:text="V???" />
         </LinearLayout>
 
         <View
