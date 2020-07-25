@@ -25,12 +25,17 @@
         android:layout_marginRight="5dp"
         android:orientation="vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+    <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/sensorIdField"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
             android:hint="@string/sensorIdTitle">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -38,6 +43,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sensorTypeField"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:hint="@string/sensorTypeTitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sensorType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/sensorNameField"
