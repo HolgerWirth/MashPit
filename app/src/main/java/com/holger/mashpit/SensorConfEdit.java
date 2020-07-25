@@ -44,8 +44,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     String name;
     String server;
     int GPIO;
-    int SDA;
-    int SCL;
     int ALT;
     List<Sensors> sensors;
     Context context = this;
@@ -56,9 +54,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     FloatingActionButton actionButton;
     SnackBar snb;
     EditText gpio = null;
-    EditText sda = null;
-    EditText scl = null;
-    EditText alt = null;
+    EditText altField = null;
+    EditText typeField = null;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -71,8 +68,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         name = getIntent().getStringExtra("name");
         server = getIntent().getStringExtra("server");
         GPIO = getIntent().getIntExtra("GPIO",0);
-        SDA = getIntent().getIntExtra("SDA",0);
-        SCL = getIntent().getIntExtra("SCL",0);
         ALT = getIntent().getIntExtra("ALT",0);
 
         alertDialog = new MaterialAlertDialogBuilder(this);
@@ -81,21 +76,27 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             case "ds18b20":
                 setContentView(R.layout.activity_sensoredit_ds18b20);
                 coordinatorLayout = findViewById(R.id.layout_ds18b20);
+                typeField = findViewById(R.id.sensorType);
+                typeField.setText(type);
+                typeField.setEnabled(false);
                 break;
 
             case "bme280":
                 setContentView(R.layout.activity_sensoredit_bme280);
-                sda = findViewById(R.id.sensorSDA);
-                scl = findViewById(R.id.sensorSCL);
-                alt = findViewById(R.id.sensorALT);
+                typeField = findViewById(R.id.sensorType);
+                typeField.setText(type);
+                typeField.setEnabled(false);
+                altField = findViewById(R.id.sensorALT);
+                altField.setText(Integer.toString(ALT));
+                altField.setEnabled(false);
                 coordinatorLayout = findViewById(R.id.layout_bme280);
                 break;
 
             case "bh1750":
-                setContentView(R.layout.activity_sensoredit_bme280);
-                sda = findViewById(R.id.sensorSDA);
-                scl = findViewById(R.id.sensorSCL);
-                alt = findViewById(R.id.sensorALT);
+                setContentView(R.layout.activity_sensoredit_i2c);
+                typeField = findViewById(R.id.sensorType);
+                typeField.setText(type);
+                typeField.setEnabled(false);
                 coordinatorLayout = findViewById(R.id.layout_bme280);
                 break;
 
@@ -103,6 +104,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 setContentView(R.layout.activity_sensoredit_gpio);
                 gpio = findViewById(R.id.sensorGPIO);
                 coordinatorLayout = findViewById(R.id.layout_gpio);
+                gpio.setEnabled(false);
+                gpio.setText(Integer.toString(GPIO));
                 break;
 
             default:
@@ -146,22 +149,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         sensorName.setText(name);
         sensorId.setText(sensor);
         sensorId.setEnabled(false);
-        if (type.equals("dht11")) {
-            assert gpio != null;
-            gpio.setEnabled(false);
-            gpio.setText(Integer.toString(GPIO));
-        }
-        if (type.equals("bme280")) {
-            assert sda != null;
-            sda.setEnabled(false);
-            sda.setText(Integer.toString(SDA));
-            assert scl != null;
-            scl.setEnabled(false);
-            scl.setText(Integer.toString(SCL));
-            assert alt != null;
-            alt.setEnabled(false);
-            alt.setText(Integer.toString(ALT));
-        }
 
         sensorName.addTextChangedListener(new TextWatcher() {
 
@@ -196,10 +183,9 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             }
         });
 
-        assert action != null;
         if (action.equals("insert")) {
-            if(type.equals("dht11")) {
-                Log.i(DEBUG_TAG, "Add new "+type);
+            if (type.equals("dht11")) {
+                Log.i(DEBUG_TAG, "Add new " + type);
                 assert gpio != null;
                 gpio.setEnabled(true);
                 gpio.addTextChangedListener(new TextWatcher() {
@@ -216,113 +202,51 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                     @Override
                     public void afterTextChanged(Editable editable) {
                         Log.i(DEBUG_TAG, "GPIO port changed");
-                        GPIO=0;
-                        if(!editable.toString().equals("0"))
-                        {
+                        GPIO = 0;
+                        if (!editable.toString().equals("0")) {
                             gpio.setError(null);
-                            sensor=type+"-"+editable.toString();
+                            sensor = type + "-" + editable.toString();
                             sensorId.setText(sensor);
-                            if(!editable.toString().isEmpty()) {
+                            if (!editable.toString().isEmpty()) {
                                 GPIO = Integer.parseInt(editable.toString());
                             }
-                        }
-                        else
-                        {
+                        } else {
                             gpio.setError(getString(R.string.devGPIOWarning));
                         }
                     }
                 });
                 Log.i(DEBUG_TAG, "Add new DHT11");
             }
-            if(type.equals("bme280"))
-            {
-                assert sda != null;
-                sda.setEnabled(true);
-                sda.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    }
-                    @Override
-                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    }
-                    @Override
-                    public void afterTextChanged(Editable editable) {
-                        Log.i(DEBUG_TAG, "SDA port changed");
-                        SDA=0;
-                        if(!editable.toString().equals("0"))
-                        {
-                            sda.setError(null);
-                            sensor=type+"-"+editable.toString()+SCL;
-                            sensorId.setText(sensor);
-                            if(!editable.toString().isEmpty()) {
-                                SDA = Integer.parseInt(editable.toString());
-                            }
-                        }
-                        else
-                        {
-                            sda.setError(getString(R.string.devGPIOWarning));
-                        }
-                    }
-                });
+        }
 
-                assert scl != null;
-                scl.setEnabled(true);
-                scl.addTextChangedListener(new TextWatcher() {
+        if(sensors.isEmpty()) {
+            if (type.equals("bme280")) {
+                altField.setEnabled(true);
+                altField.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                     }
-                    @Override
-                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    }
-                    @Override
-                    public void afterTextChanged(Editable editable) {
-                        Log.i(DEBUG_TAG, "SCL port changed");
-                        SCL=0;
-                        if(!editable.toString().equals("0"))
-                        {
-                            scl.setError(null);
-                            sensor=type+"-"+SDA+editable.toString();
-                            sensorId.setText(sensor);
-                            if(!editable.toString().isEmpty()) {
-                                SCL = Integer.parseInt(editable.toString());
-                            }
-                        }
-                        else
-                        {
-                            scl.setError(getString(R.string.devGPIOWarning));
-                        }
-                    }
-                });
 
-                assert alt != null;
-                alt.setEnabled(true);
-                alt.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    }
                     @Override
                     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                     }
+
                     @Override
                     public void afterTextChanged(Editable editable) {
                         Log.i(DEBUG_TAG, "Altitude changed");
-                        ALT=0;
-                        if(!editable.toString().equals("0"))
-                        {
-                            alt.setError(null);
-                            if(!editable.toString().isEmpty()) {
+                        ALT = 0;
+                        if (!editable.toString().equals("0")) {
+                            altField.setError(null);
+                            if (!editable.toString().isEmpty()) {
                                 ALT = Integer.parseInt(editable.toString());
                             }
-                        }
-                        else
-                        {
-                            alt.setError(getString(R.string.devGPIOWarning));
+                        } else {
+                            altField.setError(getString(R.string.devGPIOWarning));
                         }
                     }
                 });
             }
         }
-
         cancelButton.show();
         addButton.show();
         actionButton.hide();
@@ -374,23 +298,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         }
                     }
                 }
-                if(type.equals("bme280"))
-                {
-                    if(action.equals("insert")) {
-                        if (SDA == 0) {
-                            sda.setError(getString(R.string.devSDAWarning));
-                            return;
-                        }
-                        if (SCL == 0) {
-                            scl.setError(getString(R.string.devSCLWarning));
-                            return;
-                        }
-                        if (SensorSDAExists(server, SDA)) {
-                            sda.setError(getString(R.string.devSDAExists));
-                            return;
-                        }
-                    }
-                }
                 alertDialog.setTitle(getString(R.string.pubConfig));
                 alertDialog.setMessage(getString(R.string.confPublishAlert, name));
                 alertDialog.setIcon(R.drawable.ic_launcher);
@@ -408,8 +315,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         Log.i(DEBUG_TAG, "Clicked on OK! - OK");
                         sa.getItem(0).name=name;
                         sa.getItem(0).port=GPIO;
-                        sa.getItem(0).sda=SDA;
-                        sa.getItem(0).scl=SCL;
                         sa.getItem(0).alt=ALT;
                         SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
                         if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0))) {
@@ -577,15 +482,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 .exists();
     }
 
-    private boolean SensorSDAExists(String server,int sda)
-    {
-        return new Select()
-                .from(Sensors.class)
-                .where("server=?", server)
-                .and("sda=?", sda)
-                .exists();
-    }
-
     private String createJSONConfig(int position)
     {
         JSONObject obj = new JSONObject();
@@ -599,8 +495,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             }
             if(type.equals("bme280"))
             {
-                obj.put("SDA",sa.getItem(position).sda);
-                obj.put("SCL",sa.getItem(position).scl);
                 obj.put("ALT",sa.getItem(position).alt);
             }
             obj.put("active", sa.getItem(position).active);
