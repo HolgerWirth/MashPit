@@ -62,6 +62,9 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
             case ("dht11"):
                 sensorDevViewHolder.devType.setText("DHT11");
                 break;
+            case ("bh1750"):
+                sensorDevViewHolder.devType.setText("BH1750");
+                break;
             default:
                 sensorDevViewHolder.devType.setText("");
                 break;
