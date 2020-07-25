@@ -83,7 +83,7 @@
                     android:id="@+id/serverVersion"
                     android:layout_width="100dp"
                     android:layout_height="60dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginStart="10dp"
                     style="@style/FirmawareUpdateButtonStyle"
                     android:text="V???" />
