@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -50,6 +51,8 @@ public class SensorDevListActivity extends AppCompatActivity {
     String server;
     String alias;
     String sensors;
+    String IP;
+    String system;
     RecyclerView sensordevList;
     List<Sensors> result;
     boolean iscollapsed=false;
@@ -57,8 +60,8 @@ public class SensorDevListActivity extends AppCompatActivity {
     private static String translation;
     private long TS;
     private TextView serverSystem;
-    private TextView serverVersion;
     private TextView sensorName;
+    private Button serverVersion;
     private CountDownTimer countdown;
 
     private int resultCode=0;
@@ -75,11 +78,11 @@ public class SensorDevListActivity extends AppCompatActivity {
         snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "OnCreate");
 
+
+        sensordevList = findViewById(R.id.sensordevList);
         final MaterialAlertDialogBuilder alertDialog;
         alertDialog = new MaterialAlertDialogBuilder(this);
         final Context context = this;
-
-        sensordevList = findViewById(R.id.sensordevList);
 
         sensordevList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
@@ -96,9 +99,11 @@ public class SensorDevListActivity extends AppCompatActivity {
         });
 
         server = getIntent().getStringExtra("server");
+        system = getIntent().getStringExtra("system");
         alias = getIntent().getStringExtra("alias");
         sensors = getIntent().getStringExtra("sensors");
         online = getIntent().getBooleanExtra("online", false);
+        IP = getIntent().getStringExtra("IP");
         TS = getIntent().getLongExtra("TS", 0);
 
         TextView serverId = findViewById(R.id.serverId);
@@ -110,7 +115,6 @@ public class SensorDevListActivity extends AppCompatActivity {
         serverId.setEnabled(false);
         serverSystem.setEnabled(false);
         serverUptime.setEnabled(false);
-        serverVersion.setEnabled(false);
 
         serverId.setText(server);
         final ActionBar ab = getSupportActionBar();
@@ -124,7 +128,7 @@ public class SensorDevListActivity extends AppCompatActivity {
             ab.setTitle(server);
         }
 
-        serverSystem.setText(getIntent().getStringExtra("system"));
+        serverSystem.setText(system);
         serverVersion.setText(getIntent().getStringExtra("version"));
         serverUptime.setText(Long.toString(TS));
         sensorName.setText(alias);
@@ -221,6 +225,17 @@ public class SensorDevListActivity extends AppCompatActivity {
                     }
                 });
                 alertDialog.show();
+            }
+        });
+
+        serverVersion.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.i(DEBUG_TAG, "Clicked on serverVersion");
+                Intent l = new Intent(getApplicationContext(), SensorUpdateActivity.class);
+                l.putExtra("server", server);
+                l.putExtra("system", system);
+                l.putExtra("IP", IP);
+                startActivityForResult(l, 0);
             }
         });
 
@@ -327,7 +342,7 @@ public class SensorDevListActivity extends AppCompatActivity {
                 xSensor.interval = 0;
                 xSensor.name = defaultsensor.get(i);
                 xSensor.server = server;
-                xSensor.type = "ds18b20";
+                xSensor.type = getSensorType(defaultsensor.get(i));
                 upresult.add(t, xSensor);
             }
         }
@@ -432,5 +447,27 @@ public class SensorDevListActivity extends AppCompatActivity {
         long days = x;
 
         return String.format(Locale.getDefault(),"%d %s %02d:%02d:%02d", days, translation,hours, minutes, seconds);
+    }
+
+    private static String getSensorType(String autodetect)
+    {
+        String[] type=autodetect.split("-");
+        switch(type[0]) {
+            case "28":
+                return ("ds18b20");
+
+            case "bme280":
+                return ("bme280");
+
+            case "oled":
+                return ("oled");
+
+            case "unknown":
+                return ("unknown");
+
+            case "bh1750":
+                return ("bh1750");
+        }
+        return("");
     }
 }
