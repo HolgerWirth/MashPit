@@ -92,19 +92,21 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     private List<Subscriptions> refreshSubscriber() {
         List<Subscriptions> dbresult;
         List<Subscriptions> subscriptions = new ArrayList<>();
+        String serverId="";
         dbresult = new Select().from(Subscriptions.class).where("action=?",action).orderBy("server ASC").execute();
         for (Subscriptions sub : dbresult) {
             sub.id=sub.getId();
             List<SensorStatus> sensorStatuses = new Select().from(SensorStatus.class).where("server=?",sub.server).orderBy("server ASC").execute();
             for (SensorStatus sensor : sensorStatuses) {
                 if (sub.server.equals(sensor.server)) {
+                    serverId=sensor.server;
                     if (!sensor.alias.isEmpty()) {
                         sub.server = sensor.alias;
                     }
                     break;
                 }
             }
-            List<Sensors> sensorNames = new Select().from(Sensors.class).where("sensor=?",sub.sensor).execute();
+            List<Sensors> sensorNames = new Select().from(Sensors.class).where("server=?",serverId).and("sensor=?",sub.sensor).execute();
             for(Sensors sensorName : sensorNames)
             {
                 if(!sensorName.name.isEmpty())
