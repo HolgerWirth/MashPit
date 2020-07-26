@@ -287,7 +287,7 @@ public class SelectSensorActivity extends AppCompatActivity {
     }
 
     private String getTopic(String device, String sensor, String interval) {
-        String topic = "/SE";
+        String topic = "/SE/";
 
         for (SensorEvent result : serverresult) {
             if (result.getName().equals(device) || result.getServer().equals(device)) {
