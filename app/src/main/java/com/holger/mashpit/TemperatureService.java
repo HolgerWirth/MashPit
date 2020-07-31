@@ -720,6 +720,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         int scl=0;
         int alt=0;
 
+        if (topic[4].equals("update")) {
+            return;
+        }
+
         if (topic[4].equals("server")) {
             try {
                 obj = new JSONObject(mess);
