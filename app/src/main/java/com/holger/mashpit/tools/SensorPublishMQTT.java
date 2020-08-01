@@ -2,6 +2,7 @@ package com.holger.mashpit.tools;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -11,7 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class SensorPublishMQTT {
+public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     private MemoryPersistence persistence = new MemoryPersistence();
     private static final String DEBUG_TAG = "SensorPublishMQTT";
 
@@ -21,6 +22,15 @@ public class SensorPublishMQTT {
     private String MQTT_BROKER;
     private String MQTT_DOMAIN;
     private String clientId;
+
+    String topic;
+    String send;
+    int qos;
+    boolean retained;
+    boolean success;
+    int position=(-1);
+
+    public OnPublishConfiguration mListener;
 
     public SensorPublishMQTT(Context context)
     {
@@ -41,7 +51,12 @@ public class SensorPublishMQTT {
             MQTT_DOMAIN= prefs.getString("mashpit_domain","");
         }
 
+        mListener = (OnPublishConfiguration) context;
         clientId=prefs.getString("device_id","");
+    }
+
+    public interface OnPublishConfiguration {
+        void PublishConfigurationCallback(Boolean success, int position); // you can change the parameter here. depends on what you want.
     }
 
     private MqttClient ConnectMQTT()
@@ -61,6 +76,7 @@ public class SensorPublishMQTT {
             mqttClient.connect(connOpts);
             Log.i(DEBUG_TAG, "Connected");
         } catch (MqttException e) {
+            success=false;
             e.printStackTrace();
         }
         return mqttClient;
@@ -68,60 +84,73 @@ public class SensorPublishMQTT {
 
     public boolean PublishServerUpdate(String server, String send)
     {
-        try {
-            MqttClient mqttClient=ConnectMQTT();
-            MqttMessage message = new MqttMessage(send.getBytes());
-            int qos = 2;
-            message.setQos(qos);
-            message.setRetained(false);
-            mqttClient.publish(MQTT_DOMAIN+"/SE/"+server+"/conf/update", message);
-            Log.i(DEBUG_TAG,"Status message published");
-            mqttClient.disconnect();
-            Log.i(DEBUG_TAG,"Disconnected");
-            return true;
-        } catch (MqttException me) {
-            Log.i(DEBUG_TAG,"Publish failed: "+me.getReasonCode());
-            Log.i(DEBUG_TAG,"Cause: "+me.getCause());
-            return false;
-        }
+        this.send=send;
+        this.topic="/SE/"+server+"/conf/update";
+        this.retained=false;
+        this.qos=2;
+        execute();
+        return true;
     }
 
     public boolean PublishServerStatus(String server, String send)
     {
+        this.send=send;
+        this.topic="/SE/"+server+"/conf/server";
+        this.qos=2;
+        this.retained=false;
+        execute();
+        return true;
+    }
+
+    public void PublishSensorConf(String server, String sensor, String type, int interval, String send) {
+        this.send=send;
+        this.topic="/SE/"+server+"/conf/"+type+"/"+sensor+"/"+interval;
+        this.qos=2;
+        this.retained=true;
+        execute();
+    }
+
+    public void PublishSensorConf(String server, String sensor, String type, int interval, int position) {
+        this.send="";
+        this.topic="/SE/"+server+"/conf/"+type+"/"+sensor+"/"+interval;
+        this.qos=2;
+        this.retained=true;
+        this.position=position;
+        execute();
+    }
+
+    public void publishMessage() {
         try {
-            MqttClient mqttClient=ConnectMQTT();
+            MqttClient mqttClient = ConnectMQTT();
             MqttMessage message = new MqttMessage(send.getBytes());
-            int qos = 2;
             message.setQos(qos);
-            message.setRetained(false);
-            mqttClient.publish(MQTT_DOMAIN+"/SE/"+server+"/conf/server", message);
-            Log.i(DEBUG_TAG,"Status message published");
+            message.setRetained(retained);
+            Log.i(DEBUG_TAG, "Configration topic: "+topic);
+            mqttClient.publish(MQTT_DOMAIN + topic, message);
+            Log.i(DEBUG_TAG, "Configration message published");
             mqttClient.disconnect();
-            Log.i(DEBUG_TAG,"Disconnected");
-            return true;
+            Log.i(DEBUG_TAG, "Disconnected");
+            success=true;
         } catch (MqttException me) {
-            Log.i(DEBUG_TAG,"Publish failed: "+me.getReasonCode());
-            Log.i(DEBUG_TAG,"Cause: "+me.getCause());
-            return false;
+            Log.i(DEBUG_TAG, "Publish failed: " + me.getReasonCode());
+            Log.i(DEBUG_TAG, "Cause: " + me.getCause());
+            success=false;
         }
     }
 
-    public boolean PublishSensorConf(String server, String sensor, String type, int interval, String send) {
+    @Override
+    protected Void doInBackground(Void... voids) {
         try {
-            MqttClient mqttClient=ConnectMQTT();
-            MqttMessage message = new MqttMessage(send.getBytes());
-            int qos = 2;
-            message.setQos(qos);
-            message.setRetained(true);
-            mqttClient.publish(MQTT_DOMAIN+"/SE/"+server+"/conf/"+type+"/"+sensor+"/"+interval, message);
-            Log.i(DEBUG_TAG,"Configration message published");
-            mqttClient.disconnect();
-            Log.i(DEBUG_TAG,"Disconnected");
-            return true;
-        } catch (MqttException me) {
-            Log.i(DEBUG_TAG,"Publish failed: "+me.getReasonCode());
-            Log.i(DEBUG_TAG,"Cause: "+me.getCause());
-            return false;
+            publishMessage();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        mListener.PublishConfigurationCallback(success,position);
     }
 }

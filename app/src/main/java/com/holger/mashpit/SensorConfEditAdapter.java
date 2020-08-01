@@ -48,7 +48,7 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
 
     @Override
     public int getItemCount() {
-        if(intervalList == null)
+        if(this.intervalList == null)
         {
             return 0;
         }

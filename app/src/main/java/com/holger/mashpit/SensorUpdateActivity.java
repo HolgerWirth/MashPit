@@ -39,7 +39,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
-public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate.OnFTPUpdateListener {
+public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate.OnFTPUpdateListener,SensorPublishMQTT.OnPublishConfiguration {
     private static final String DEBUG_TAG = "SensorUpdateActivity";
 
     SnackBar snb;
@@ -50,6 +50,9 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
     String alias;
     String IP;
     String localPath;
+
+    Context context;
+    String generatedString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,10 +180,10 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
     public void startUpdate() {
         Log.i(DEBUG_TAG, "Starting update of: " + IP);
         int myPass = new Random().nextInt(300000) + 10000;
-        final String generatedString = Integer.toString(myPass);
+        generatedString = Integer.toString(myPass);
         final MaterialAlertDialogBuilder alertDialog;
         alertDialog = new MaterialAlertDialogBuilder(this);
-        final Context context = this;
+        context = this;
         Log.i(DEBUG_TAG, "FTP Upload for user: " + server + " and password: " + generatedString);
 
         alertDialog.setTitle(getString(R.string.pubConfig));
@@ -201,13 +204,7 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
                     e.printStackTrace();
                 }
                 SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                if (pubMQTT.PublishServerUpdate(server, obj.toString())) {
-                    snb.displayInfo(R.string.pubConfOK);
-                    new FTPUpdate(context,IP,server,generatedString,localPath);
-                } else {
-                    snb.displayInfo(R.string.pubConfNOK);
-                }
-                new FTPUpdate(context,IP,server,generatedString,localPath);
+                pubMQTT.PublishServerUpdate(server, obj.toString());
             }
 
         });
@@ -237,5 +234,15 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
             }
         });
         alertDialog.show();
+    }
+
+    @Override
+    public void PublishConfigurationCallback(Boolean success, int position) {
+        if (success) {
+            snb.displayInfo(R.string.pubConfOK);
+            new FTPUpdate(context, IP, server, generatedString, localPath);
+        } else {
+            snb.displayInfo(R.string.pubConfNOK);
+        }
     }
 }

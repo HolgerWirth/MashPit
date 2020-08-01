@@ -35,7 +35,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class SensorConfEdit extends AppCompatActivity implements SensorConfEditAdapter.IntervalChangeCallback {
+public class SensorConfEdit extends AppCompatActivity implements SensorConfEditAdapter.IntervalChangeCallback,SensorPublishMQTT.OnPublishConfiguration {
     private static final String DEBUG_TAG = "SensorConfEdit";
     SensorConfEditAdapter sa;
     RecyclerView intervalList;
@@ -100,7 +100,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 typeField = findViewById(R.id.sensorType);
                 typeField.setText(type);
                 typeField.setEnabled(false);
-                coordinatorLayout = findViewById(R.id.layout_bme280);
+                coordinatorLayout = findViewById(R.id.layout_i2c);
                 break;
 
             default:
@@ -350,29 +350,25 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                        sa.getItem(0).name=name;
-                        sa.getItem(0).port=GPIO;
-                        sa.getItem(0).alt=ALT;
-                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                        if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0))) {
-                            for (int i = 0; i < sa.getItemCount(); i++) {
-                                if (!(name.equals(sa.getItem(i).name))) {
-                                    Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
-                                    sa.getItem(i).name = name;
-                                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
-                                }
+//                        sa.getItem(0).name = name;
+//                        sa.getItem(0).port = GPIO;
+//                        sa.getItem(0).alt = ALT;
+                        Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
+                        for (int i = 0; i < sa.getItemCount(); i++) {
+                            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                            if (!(name.equals(sa.getItem(i).name))) {
+                                Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
+                                sa.getItem(i).name = name;
+                                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
                             }
-                            snb.displayInfo(R.string.pubConfOK);
-                            sensors.remove(0);
-                            sa.notifyItemRemoved(0);
-                            intervalInsert = false;
-                            cancelButton.hide();
-                            actionButton.hide();
-                            addButton.show();
-                            resultCode=1;
-                        } else {
-                            snb.displayInfo(R.string.pubConfNOK);
                         }
+                        sensors.remove(0);
+                        sa.notifyItemRemoved(0);
+                        intervalInsert = false;
+                        cancelButton.hide();
+                        actionButton.hide();
+                        addButton.show();
+                        resultCode = 1;
                     }
                 });
                 alertDialog.show();
@@ -447,17 +443,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 Log.i(DEBUG_TAG, "Clicked on Delete! - OK");
 
                 SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, ""))
-                {
-                    snb.displayInfo(R.string.pubConfOK);
-                    sensors.remove(position);
-                    sa.notifyItemRemoved(position);
-                    resultCode=1;
-                }
-                else
-                {
-                    snb.displayInfo(R.string.pubConfNOK);
-                }
+                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, position);
             }
         });
         alertDialog.show();
@@ -495,14 +481,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                     Log.i(DEBUG_TAG, "Clicked on Publish! - OK");
 
                     SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                    if (pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position)))
-                    {
-                        snb.displayInfo(R.string.pubConfOK);
-                        resultCode=1;
-                    } else
-                    {
-                        snb.displayInfo(R.string.pubConfNOK);
-                    }
+                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position));
                 }
             });
 
@@ -549,6 +528,21 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         if(sensor.equals(xSensor)) {
             sa.setIntervalList(refreshIntervalList(xSensor));
             sa.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void PublishConfigurationCallback(Boolean success,int position) {
+        if (success) {
+            snb.displayInfo(R.string.pubConfOK);
+            if(position>=0)
+            {
+                sensors.remove(position);
+                sa.notifyItemRemoved(position);
+            }
+            resultCode = 1;
+        } else {
+            snb.displayInfo(R.string.pubConfNOK);
         }
     }
 }

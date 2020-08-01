@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class SensorDevListActivity extends AppCompatActivity {
+public class SensorDevListActivity extends AppCompatActivity implements SensorPublishMQTT.OnPublishConfiguration {
     private static final String DEBUG_TAG = "SensorDevListActivity";
     SnackBar snb;
     SensorDevAdapter sa;
@@ -64,6 +64,9 @@ public class SensorDevListActivity extends AppCompatActivity {
     private Button serverVersion;
     private CountDownTimer countdown;
 
+    private FloatingActionButton fabOK;
+    private FloatingActionButton fabadd;
+
     private int resultCode=0;
 
     @SuppressLint("SetTextI18n")
@@ -74,7 +77,7 @@ public class SensorDevListActivity extends AppCompatActivity {
 
         translation=getApplicationContext().getResources().getString(R.string.uptimeformat);
 
-        final CoordinatorLayout coordinatorLayout = findViewById(R.id.sensordev_content);
+        final CoordinatorLayout coordinatorLayout = findViewById(R.id.snb_content);
         snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "OnCreate");
 
@@ -134,10 +137,10 @@ public class SensorDevListActivity extends AppCompatActivity {
         sensorName.setText(alias);
         sensorName.setEnabled(online);
 
-        final FloatingActionButton fabadd = findViewById(R.id.devfabadd);
+        fabadd = findViewById(R.id.devfabadd);
         final FloatingActionButton fabGPIO = findViewById(R.id.devfabaddGPIO);
         final LinearLayout speeddial= this.findViewById(R.id.devspeeddial);
-        final FloatingActionButton fabOK = findViewById(R.id.devfabOK);
+        fabOK = findViewById(R.id.devfabOK);
 
         fabOK.hide();
 
@@ -197,14 +200,7 @@ public class SensorDevListActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                         SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                        if (pubMQTT.PublishServerStatus(server, obj.toString())) {
-                            snb.displayInfo(R.string.pubConfOK);
-                            fabOK.hide();
-                            fabadd.show();
-                            resultCode = 1;
-                        } else {
-                            snb.displayInfo(R.string.pubConfNOK);
-                        }
+                        pubMQTT.PublishServerStatus(server, obj.toString());
                     }
                 });
                 alertDialog.show();
@@ -454,4 +450,18 @@ public class SensorDevListActivity extends AppCompatActivity {
         }
         return("");
     }
+
+    @Override
+    public void PublishConfigurationCallback(Boolean success, int position) {
+        if(success) {
+            snb.displayInfo(R.string.pubConfOK);
+            fabOK.hide();
+            fabadd.show();
+            resultCode = 1;
+        }
+        else {
+            snb.displayInfo(R.string.pubConfNOK);
+        }
+
+}
 }
