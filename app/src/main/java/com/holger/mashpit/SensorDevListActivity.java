@@ -135,8 +135,7 @@ public class SensorDevListActivity extends AppCompatActivity {
         sensorName.setEnabled(online);
 
         final FloatingActionButton fabadd = findViewById(R.id.devfabadd);
-        final FloatingActionButton fabBME = findViewById(R.id.devfabaddBME);
-        final FloatingActionButton fabDHT = findViewById(R.id.devfabaddDHT);
+        final FloatingActionButton fabGPIO = findViewById(R.id.devfabaddGPIO);
         final LinearLayout speeddial= this.findViewById(R.id.devspeeddial);
         final FloatingActionButton fabOK = findViewById(R.id.devfabOK);
 
@@ -156,23 +155,7 @@ public class SensorDevListActivity extends AppCompatActivity {
             }
         });
 
-        fabBME.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the BME FAB");
-                speeddial.setVisibility(LinearLayout.GONE);
-                iscollapsed=false;
-                Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
-                l.putExtra("ACTION", "insert");
-                l.putExtra("sensor", "BME280");
-                l.putExtra("type", "bme280");
-                l.putExtra("server",server);
-                l.putExtra("name","BME280");
-                startActivityForResult(l, 0);
-            }
-        });
-
-        fabDHT.setOnClickListener(new View.OnClickListener() {
+        fabGPIO.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(DEBUG_TAG, "Clicked the DHT FAB");
@@ -180,10 +163,10 @@ public class SensorDevListActivity extends AppCompatActivity {
                 iscollapsed=false;
                 Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
                 l.putExtra("ACTION", "insert");
-                l.putExtra("sensor", "DHT11");
-                l.putExtra("type", "dht11");
+                l.putExtra("sensor", "");
+                l.putExtra("type", "gpio");
                 l.putExtra("server",server);
-                l.putExtra("name","DHT11");
+                l.putExtra("name","");
                 l.putExtra("GPIO",0);
                 l.putExtra("address","0");
                 startActivityForResult(l, 0);
@@ -235,6 +218,7 @@ public class SensorDevListActivity extends AppCompatActivity {
                 l.putExtra("server", server);
                 l.putExtra("system", system);
                 l.putExtra("IP", IP);
+                l.putExtra("alias",alias);
                 startActivityForResult(l, 0);
             }
         });

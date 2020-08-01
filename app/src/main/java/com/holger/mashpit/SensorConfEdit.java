@@ -8,6 +8,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 
 import androidx.appcompat.app.ActionBar;
@@ -56,6 +58,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     EditText gpio = null;
     EditText altField = null;
     EditText typeField = null;
+    AutoCompleteTextView typeDropdown;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -100,16 +103,16 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 coordinatorLayout = findViewById(R.id.layout_bme280);
                 break;
 
-            case "dht11":
+            default:
                 setContentView(R.layout.activity_sensoredit_gpio);
                 gpio = findViewById(R.id.sensorGPIO);
                 coordinatorLayout = findViewById(R.id.layout_gpio);
                 gpio.setEnabled(false);
                 gpio.setText(Integer.toString(GPIO));
+                typeDropdown = findViewById(R.id.sensorTypeDropdown);
+                typeDropdown.setText(type,true);
+                typeDropdown.setEnabled(false);
                 break;
-
-            default:
-                return;
         }
 
         actionButton = findViewById(R.id.editButton);
@@ -184,9 +187,43 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         });
 
         if (action.equals("insert")) {
-            if (type.equals("dht11")) {
+            if (type.equals("gpio")) {
+                type="";
                 Log.i(DEBUG_TAG, "Add new " + type);
-                assert gpio != null;
+                typeDropdown.setEnabled(true);
+                String[] GPIODevices = new String[] {"dht11","oled","Test 3"};
+
+                ArrayAdapter<String> adapter =
+                        new ArrayAdapter<>(
+                                context,
+                                R.layout.sensortype_dropdown_item,
+                                GPIODevices);
+
+                AutoCompleteTextView editTextFilledExposedDropdown =
+                        typeDropdown;
+                editTextFilledExposedDropdown.setAdapter(adapter);
+                typeDropdown.setText("",true);
+
+                typeDropdown.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        Log.i(DEBUG_TAG, "Sensor type changed");
+                        type=editable.toString();
+                        sensor=type;
+                        sensorId.setText(sensor);
+                    }
+                });
+
                 gpio.setEnabled(true);
                 gpio.addTextChangedListener(new TextWatcher() {
                     @Override
