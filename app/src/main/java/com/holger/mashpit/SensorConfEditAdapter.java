@@ -61,6 +61,7 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
         sensors = this.getItem(i);
         intervalViewHolder.sensorIntervalView.setTag(i);
         intervalViewHolder.sensorIntervalView.setText(Integer.toString(sensors.interval));
+        intervalViewHolder.sensorInterval.setEnabled(false);
 
         if(sensors.active)
         {

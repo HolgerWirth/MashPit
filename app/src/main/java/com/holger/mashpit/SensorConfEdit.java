@@ -350,16 +350,23 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-//                        sa.getItem(0).name = name;
-//                        sa.getItem(0).port = GPIO;
-//                        sa.getItem(0).alt = ALT;
-                        Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
-                        for (int i = 0; i < sa.getItemCount(); i++) {
+                        if(intervalInsert) {
+                            Log.i(DEBUG_TAG, "New interval added!");
+                            sa.getItem(0).name = name;
+                            sa.getItem(0).port = GPIO;
+                            sa.getItem(0).alt = ALT;
                             SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                            if (!(name.equals(sa.getItem(i).name))) {
-                                Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
-                                sa.getItem(i).name = name;
-                                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
+                            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0));
+                        }
+                        else {
+                            Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
+                            for (int i = 0; i < sa.getItemCount(); i++) {
+                                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                                if (!(name.equals(sa.getItem(i).name))) {
+                                    Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
+                                    sa.getItem(i).name = name;
+                                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
+                                }
                             }
                         }
                         sensors.remove(0);
@@ -544,5 +551,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         } else {
             snb.displayInfo(R.string.pubConfNOK);
         }
+        sa.notifyDataSetChanged();
     }
 }
