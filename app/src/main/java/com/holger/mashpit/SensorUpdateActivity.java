@@ -10,8 +10,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.OpenableColumns;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,15 +39,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
-public class SensorUpdateActivity extends AppCompatActivity {
+public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate.OnFTPUpdateListener {
     private static final String DEBUG_TAG = "SensorUpdateActivity";
 
     SnackBar snb;
     TextView signatureMD5;
-    File uploadFile;
     Button uploadImage;
 
     String server;
+    String alias;
     String IP;
     String localPath;
 
@@ -65,6 +72,7 @@ public class SensorUpdateActivity extends AppCompatActivity {
 
         IP = getIntent().getStringExtra("IP");
         server = getIntent().getStringExtra("server");
+        alias = getIntent().getStringExtra("alias");
 
         Button selectImage = findViewById(R.id.selectImage);
         uploadImage = findViewById(R.id.uploadImage);
@@ -121,23 +129,49 @@ public class SensorUpdateActivity extends AppCompatActivity {
             uploadImage.setVisibility(View.VISIBLE);
             Uri uri = data.getData();
             assert uri != null;
-            String path = uri.getPath();
-            assert path != null;
-            String[] spath = path.split(":");
-            localPath = spath[1];
-            Log.i(DEBUG_TAG, "Image file chosen: " + localPath);
-            uploadFile = new File(spath[1]);
-            String fileinfo = "Filename: "+uploadFile.getName();
-            fileinfo+="\nFile size: "+uploadFile.length()+" bytes";
+            File path =Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Log.i(DEBUG_TAG, "Image path: " + path.getAbsolutePath());
+            File uploadFile = new File(path,displayName(uri));
+            localPath=uploadFile.getPath();
+            Log.i(DEBUG_TAG, "Image File: " + displayName(uri));
+
             Locale locale = ConfigurationCompat.getLocales(Resources.getSystem().getConfiguration()).get(0);
             SimpleDateFormat fmtout = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", locale);
             Date df = new java.util.Date(uploadFile.lastModified());
-            fileinfo+="\nLast modified: "+fmtout.format(df);
-            fileinfo+="\n\nMD5 signature: "+MD5.calculateMD5(uploadFile);
-            signatureMD5.setText(fileinfo);
+
+            SpannableStringBuilder infoText= new SpannableStringBuilder();
+            SpannableString filename = new SpannableString(uploadFile.getName());
+            filename.setSpan(new StyleSpan(Typeface.BOLD), 0, filename.length(), 0);
+            infoText.append("Filename: ")
+                    .append(filename);
+            SpannableString filesize = new SpannableString(uploadFile.length()+ " bytes");
+            filesize.setSpan(new StyleSpan(Typeface.BOLD), 0, filesize.length(), 0);
+            infoText.append("\nFile size: ")
+                    .append(filesize);
+            SpannableString lastmodified = new SpannableString(fmtout.format(df));
+            lastmodified.setSpan(new StyleSpan(Typeface.BOLD), 0, lastmodified.length(), 0);
+            infoText.append("\nLast modified: ")
+                    .append(lastmodified);
+            SpannableString md5sig = new SpannableString(MD5.calculateMD5(uploadFile));
+            md5sig.setSpan(new StyleSpan(Typeface.BOLD), 0, md5sig.length(), 0);
+            infoText.append("\nMD5 signature: ")
+                    .append(md5sig);
+            signatureMD5.setText(infoText);
             signatureMD5.setEnabled(false);
             uploadImage.setEnabled(true);
         }
+    }
+
+    private String displayName(Uri uri) {
+
+        Cursor mCursor =
+                getApplicationContext().getContentResolver().query(uri, null, null, null, null);
+        assert mCursor != null;
+        int indexedname = mCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        mCursor.moveToFirst();
+        String filename = mCursor.getString(indexedname);
+        mCursor.close();
+        return filename;
     }
 
     public void startUpdate() {
@@ -173,6 +207,33 @@ public class SensorUpdateActivity extends AppCompatActivity {
                 } else {
                     snb.displayInfo(R.string.pubConfNOK);
                 }
+                new FTPUpdate(context,IP,server,generatedString,localPath);
+            }
+
+        });
+        alertDialog.show();
+    }
+
+    @Override
+    public void FTPCallback(Boolean success) {
+        Log.i(DEBUG_TAG, "FTPUpdate success!");
+        final MaterialAlertDialogBuilder alertDialog;
+        alertDialog = new MaterialAlertDialogBuilder(this);
+        alertDialog.setTitle(getString(R.string.updateFTPTitle));
+        if(alias.isEmpty()) {
+            alertDialog.setMessage(getString(R.string.updateFTPsuccess, server));
+        }
+        else
+        {
+            alertDialog.setMessage(getString(R.string.updateFTPsuccess, alias));
+        }
+        alertDialog.setIcon(R.drawable.ic_launcher);
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.i(DEBUG_TAG, "FTP success: Clicked on OK! - OK");
+                onBackPressed();
             }
         });
         alertDialog.show();

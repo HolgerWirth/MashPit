@@ -158,6 +158,8 @@
     <string name="serverIPTitle">IP Address</string>
     <string name="signatureMD5">Firmware image details</string>
     <string name="updateFTPAlert">Do you reeally want to update the sensor device?</string>
-    <string name="selectFirmwareImage">Select an firmware image</string>
-    <string name="uploadFirmwareImage">Upload firmware image</string>
+    <string name="selectFirmwareImage">Select firmware</string>
+    <string name="uploadFirmwareImage">Upload firmware</string>
+    <string name="updateFTPTitle">Successfully updated!</string>
+    <string name="updateFTPsuccess">Firmware on node: \"%1$s\" was updated successfully!</string>
 </resources>
