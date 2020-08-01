@@ -23,6 +23,7 @@ public class FTPUpdate extends AsyncTask<Void, Void, Void> {
     String user;
     String pass;
     FTPClient myFTP;
+    public OnFTPUpdateListener mListener;
 
     private WeakReference<Context> weakContext;
     private String localDirPath;
@@ -34,8 +35,13 @@ public class FTPUpdate extends AsyncTask<Void, Void, Void> {
         this.user=user;
         this.pass=pass;
         this.weakContext = new WeakReference<>(mContext);
+        mListener = (OnFTPUpdateListener) mContext;
         execute();
 
+    }
+
+    public interface OnFTPUpdateListener {
+        void FTPCallback(Boolean success); // you can change the parameter here. depends on what you want.
     }
 
     @Override
@@ -63,6 +69,7 @@ public class FTPUpdate extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         mProgress.dismiss(); //Dismiss the above Dialogue
+        mListener.FTPCallback(true);
     }
 
     public void UploadFileByFTP(final String IP, String userName,String password, String serverFilePath, String localFilePath) throws Exception {
@@ -99,7 +106,7 @@ public class FTPUpdate extends AsyncTask<Void, Void, Void> {
             };
             myFTP.storeFile(serverFilePath, cis);
             input.close();
-            myFTP.noop(); // check that control connection is working OK
+            myFTP.noop();
             myFTP.logout();
         }
         catch (FTPConnectionClosedException e) {
