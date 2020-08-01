@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/layout_gpio"
+    android:id="@+id/layout_i2c"
     tools:context="com.holger.mashpit.SensorConfEdit">
 
     <androidx.appcompat.widget.Toolbar
