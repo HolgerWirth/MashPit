@@ -453,15 +453,13 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
     @Override
     public void PublishConfigurationCallback(Boolean success, int position) {
-        if(success) {
+        if (success) {
             snb.displayInfo(R.string.pubConfOK);
             fabOK.hide();
             fabadd.show();
             resultCode = 1;
-        }
-        else {
+        } else {
             snb.displayInfo(R.string.pubConfNOK);
         }
-
-}
+    }
 }

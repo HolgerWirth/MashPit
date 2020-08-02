@@ -371,6 +371,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         }
                         sensors.remove(0);
                         sa.notifyItemRemoved(0);
+                        intervalList.setAdapter(sa);
                         intervalInsert = false;
                         cancelButton.hide();
                         actionButton.hide();
