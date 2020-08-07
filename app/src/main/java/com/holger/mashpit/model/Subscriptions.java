@@ -12,6 +12,8 @@ public class Subscriptions extends Model implements Serializable {
     public long id;
     @Column(name="action", index = true)
     public String action;
+    @Column(name="name", index = true)
+    public String name;
     @Column(name = "server", index = true)
     public String server;
     @Column(name = "sensor", index = true)
@@ -25,9 +27,10 @@ public class Subscriptions extends Model implements Serializable {
         super();
     }
 
-    public Subscriptions(String action,String server, String sensor, int interval, int durable)
+    public Subscriptions(String action,String name,String server, String sensor, int interval, int durable)
     {
         this.action = action;
+        this.name = name;
         this.server = server;
         this.sensor = sensor;
         this.interval = interval;

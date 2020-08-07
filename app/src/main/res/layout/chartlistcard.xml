@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/chardlistcard_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:cardCornerRadius="4dp"
+    android:clickable="false"
+    android:focusable="false"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:layout_margin="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/chartNameTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/devNameTitle"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="5dp"/>
+
+        <TextView
+            android:id="@+id/chartName"
+            android:text="@string/devNameTitle"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="120dp" />
+
+        <TextView
+            android:id="@+id/chartDescTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chartDescTitle"
+            android:layout_below="@id/chartNameTitle"
+            android:layout_marginTop="5dp"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="5dp"/>
+
+        <TextView
+            android:id="@+id/chartDesc"
+            android:text="@string/devNameTitle"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/chartName"
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:layout_marginStart="120dp" />
+
+
+        <ImageButton
+            android:id="@+id/chartDeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="15dp"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete_black_24dp"
+            android:contentDescription="@string/chart_delete" />
+
+    </RelativeLayout>
+    </androidx.cardview.widget.CardView>

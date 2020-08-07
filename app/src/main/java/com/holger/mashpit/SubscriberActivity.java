@@ -148,12 +148,13 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
                 }
                 Log.i(DEBUG_TAG, "Subscription inserted: " + action + ", " + server + ", " + sensor + ", " + interval);
                 Subscriptions subscriptions;
+                String name="";
                 if(durable) {
-                    subscriptions = new Subscriptions(action, server, sensor, interval, 1);
+                    subscriptions = new Subscriptions(action, name, server, sensor, interval, 1);
                 }
                 else
                 {
-                    subscriptions = new Subscriptions(action, server, sensor, interval, 0);
+                    subscriptions = new Subscriptions(action, name, server, sensor, interval, 0);
                 }
                 subscriptions.save();
                 sa.refreshSubscribers(refreshSubscriber());

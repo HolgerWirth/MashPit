@@ -29,7 +29,7 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.holger.mashpit.events.TemperatureEvent;
 import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.prefs.SettingsActivity;
-import com.holger.mashpit.prefs.TempChartSettings;
+import com.holger.mashpit.prefs.ChartSettings;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
 
@@ -147,7 +147,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             case R.id.action_tempsettings:
                 Log.i(DEBUG_TAG, "Settings selected");
                 Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, TempChartSettings.class.getName() );
+                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, ChartSettings.class.getName() );
                 intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
                 intent.putExtra("EXTRA_MODE",TempMode);
                 startActivity(intent);

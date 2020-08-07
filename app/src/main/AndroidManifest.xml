@@ -19,7 +19,6 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
-        <activity android:name=".SensorUpdateActivity"></activity>
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
@@ -34,7 +33,7 @@
             android:value="5" />
         <meta-data
             android:name="AA_MODELS"
-            android:value="com.holger.mashpit.model.Temperature,                          com.holger.mashpit.model.Process,                          com.holger.mashpit.model.MPStatus,                          com.holger.mashpit.model.Config,                          com.holger.mashpit.model.MPServer,                          com.holger.mashpit.model.SensorStatus,                          com.holger.mashpit.model.Sensors,                          com.holger.mashpit.model.Subscriptions" />
+            android:value="com.holger.mashpit.model.Temperature,                          com.holger.mashpit.model.Process,                          com.holger.mashpit.model.MPStatus,                          com.holger.mashpit.model.Config,                          com.holger.mashpit.model.MPServer,                          com.holger.mashpit.model.SensorStatus,                          com.holger.mashpit.model.Sensors,                          com.holger.mashpit.model.Subscriptions,             com.holger.mashpit.model.Charts" />
 
         <activity
             android:name=".MainActivity"
@@ -82,6 +81,9 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity android:name=".SelectSensorActivity" />
         <activity android:name=".SubscriberActivity" />
+        <activity android:name=".SensorUpdateActivity" />
+        <activity android:name=".ChartEditActivity"></activity>
+        <activity android:name=".ChartListActivity"></activity>
     </application>
 
 </manifest>

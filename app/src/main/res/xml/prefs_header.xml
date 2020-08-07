@@ -21,7 +21,7 @@
     </Preference>
     <Preference
         android:icon="@drawable/ic_chart_line"
-        android:fragment="com.holger.mashpit.prefs.TempChartSettings"
+        android:fragment="com.holger.mashpit.prefs.ChartSettings"
         android:title="TempChart Settings"
         android:summary="Settings for TempChart">
     </Preference>

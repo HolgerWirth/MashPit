@@ -162,4 +162,9 @@
     <string name="uploadFirmwareImage">Upload firmware</string>
     <string name="updateFTPTitle">Successfully updated!</string>
     <string name="updateFTPsuccess">Firmware on node: \"%1$s\" was updated successfully!</string>
+    <string name="chart_delete">Delete Chart</string>
+    <string name="chart_createSummary">Create chart</string>
+    <string name="chart_createChart">Create a new chart</string>
+    <string name="chartDescTitle">Description:</string>
+    <string name="chartNameTitle">Name</string>
 </resources>
