@@ -106,7 +106,8 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
         Log.i(DEBUG_TAG, "Chartlist changed");
         if(resultCode==1)
         {
-            sa.refreshCharts(refreshCharts());
+            charts=refreshCharts();
+            sa.refreshCharts(charts);
             sa.notifyDataSetChanged();
         }
     }
@@ -123,7 +124,8 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 new Delete().from(Charts.class).where("clientId = ?", position).execute();
-                sa.refreshCharts(refreshCharts());
+                charts=refreshCharts();
+                sa.refreshCharts(charts);
                 sa.notifyDataSetChanged();
             }
         });

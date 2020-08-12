@@ -48,6 +48,8 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     private String desc="";
     private boolean durable=false;
     SubscriberAdapter sa;
+    RecyclerView subscriberList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,7 +168,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         }
 
         subscriptionHandler = new SubscriptionHandler(action);
-        final RecyclerView subscriberList = findViewById(R.id.chartSubscriberList);
+        subscriberList = findViewById(R.id.chartSubscriberList);
         subscriberList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -204,6 +206,11 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                 Log.i(DEBUG_TAG, "New subscription for: "+type);
                 subscriptions = new Subscriptions("Chart",type, server, sensor, interval, 1);
                 subscriptions.save();
+                name=type;
+                sa = new SubscriberAdapter(refreshSubscriber());
+                sa.setOnItemClickListener(this);
+                subscriberList.setAdapter(sa);
+
                 fabOK.show();
             }
         }
