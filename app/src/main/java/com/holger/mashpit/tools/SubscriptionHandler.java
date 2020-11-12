@@ -40,6 +40,10 @@ public class SubscriptionHandler {
 
     public String getSensorAlias(String server,String sensor) {
         Sensors sensors = new Select().from(Sensors.class).where("server = ?", server).and("sensor = ?",sensor).executeSingle();
+        if(sensors==null)
+        {
+            return "";
+        }
         if(sensors.name.isEmpty())
         {
             return sensors.sensor;
