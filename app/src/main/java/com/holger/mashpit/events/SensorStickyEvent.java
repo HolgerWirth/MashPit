@@ -11,7 +11,8 @@ public class SensorStickyEvent {
         boolean found=false;
         for(SensorDataEvent sensor : sticky)
         {
-            if(sensor.getSensor().equals(event.getSensor()))
+            String uniqueSensor = sensor.getServer()+sensor.getSensor();
+            if(uniqueSensor.equals(event.getServer()+event.getSensor()))
             {
                 sticky.set(i,event);
                 found=true;
