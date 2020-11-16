@@ -213,8 +213,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     try {
                         for (String sub : topics) {
-                            Log.i(DEBUG_TAG, "Subscribe to: " +MQTT_DOMAIN+ sub + " with qos: 1");
-                            mClient.subscribe(MQTT_DOMAIN+sub, 1);
+                            Log.i(DEBUG_TAG, "Nondurable subsctiption to: " +MQTT_DOMAIN+ sub + " with qos: 0");
+                            mClient.subscribe(MQTT_DOMAIN+sub, 0);
                         }
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -222,7 +222,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     try {
                         for (String sub : topics_durable) {
-                            Log.i(DEBUG_TAG, "Subscribe to: " +MQTT_DOMAIN+ sub + " with qos: 2");
+                            Log.i(DEBUG_TAG, "Durable subscription to: " +MQTT_DOMAIN+ sub + " with qos: 2");
                             mClient.subscribe(MQTT_DOMAIN+sub, 2);
                         }
                     } catch (MqttException e) {
@@ -958,6 +958,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             else
             {
                 mClient.subscribe(MQTT_DOMAIN+topic, 0);
+                Log.e(DEBUG_TAG, "Nondurable subscription: " + MQTT_DOMAIN+topic);
+
             }
         } catch (MqttException e) {
             e.printStackTrace();
