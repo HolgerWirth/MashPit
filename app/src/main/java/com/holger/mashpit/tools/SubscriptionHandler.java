@@ -79,4 +79,12 @@ public class SubscriptionHandler {
     {
         return subscriptions.contains(topic);
     }
+
+    public List<String> getRetainedSubscription()
+    {
+        List<String> retained = new ArrayList<>();
+        retained.add("/SE/+/conf/#");
+        retained.add("/SE/+/status");
+        return(retained);
+    }
 }
