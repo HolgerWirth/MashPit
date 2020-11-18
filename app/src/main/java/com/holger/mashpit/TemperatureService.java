@@ -98,6 +98,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     SubscriptionHandler subsHandlerChart;
     SensorStickyEvent stickyData;
 
+    private PowerManager.WakeLock wakeLock;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -126,6 +128,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             switch (action) {
                 case Constants.ACTION.STARTFOREGROUND_ACTION:
                     Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
+
+                    Log.i(DEBUG_TAG, "Create WakeLock!");
+                    PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                    wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                            "MashPit::MQTTWakeLock");
+                    wakeLock.acquire();
+
                     Intent notificationIntent = new Intent(this, MainActivity.class);
                     notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
                     notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
@@ -232,6 +241,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                 case Constants.ACTION.STOPFOREGROUND_ACTION:
                     Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
+                    if(wakeLock!=null)
+                    {
+                        Log.i(DEBUG_TAG, "Remove WakeLock");
+                        wakeLock.release();
+                    }
                     unregisterBroadcastReceivers();
                     Wearable.getDataClient(this).removeListener(this);
                     disconnect();
@@ -288,6 +302,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        if(wakeLock!=null)
+        {
+            wakeLock.release();
+            Log.i(DEBUG_TAG, "Remove WakeLock");
+        }
         Log.i(DEBUG_TAG, "In onDestroy");
     }
 
@@ -365,21 +384,31 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         isConnecting = false;
     }
+
     private void checkConnection()
     {
         Log.i(DEBUG_TAG, "checkConnection()");
         statusEvent.setTopic("mqttstatus");
-        if(isConnected)
+
+        if(mClient==null)
         {
-            statusEvent.setMode("info");
-            statusEvent.setStatus("Connected to broker");
-            Log.i(DEBUG_TAG, "checkConnection()=true");
-        }
-        else
-        {
+            isConnected=false;
             statusEvent.setMode("error");
             statusEvent.setStatus("Can't connect to broker");
             Log.i(DEBUG_TAG, "checkConnection()=false");
+        }
+        else {
+            if (mClient.isConnected()) {
+                isConnected = true;
+                statusEvent.setMode("info");
+                statusEvent.setStatus("Connected to broker");
+                Log.i(DEBUG_TAG, "checkConnection()=true");
+            } else {
+                isConnected = false;
+                statusEvent.setMode("error");
+                statusEvent.setStatus("Can't connect to broker");
+                Log.i(DEBUG_TAG, "checkConnection()=false");
+            }
         }
         EventBus.getDefault().post(statusEvent);
     }
@@ -394,6 +423,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 Log.i(DEBUG_TAG, "reconnectIfNecessary(): try to connect");
             try {
                                 connect();
+                                refreshRetainedMessages();
                         } catch (MqttException e) {
                                 e.printStackTrace();
                         }
@@ -978,5 +1008,18 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             PreferenceHandler.saveArrayList(this, deltopics,"delTopics");
         }
         subsHandlerService.refreshSubscription();
+    }
+
+    private void refreshRetainedMessages() {
+        List<String> retainedTopics = subsHandlerService.getRetainedSubscription();
+
+        try {
+            for (String sub : retainedTopics) {
+                Log.i(DEBUG_TAG, "Refresh subscription: " + MQTT_DOMAIN + sub + " with qos: 0");
+                mClient.subscribe(MQTT_DOMAIN + sub, 0);
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 }
