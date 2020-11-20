@@ -348,6 +348,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+        snb.stopEvents();
         Log.i(DEBUG_TAG, "onStop()");
     }
 

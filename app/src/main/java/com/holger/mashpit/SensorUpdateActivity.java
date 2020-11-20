@@ -93,6 +93,7 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
 
         final CoordinatorLayout coordinatorLayout = findViewById(R.id.snb_content);
         snb = new SnackBar(coordinatorLayout);
+        snb.stopEvents();
 
         serverId.setText(getIntent().getStringExtra("server"));
         serverSystem.setText(getIntent().getStringExtra("system"));

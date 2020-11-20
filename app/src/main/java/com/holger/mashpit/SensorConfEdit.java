@@ -420,6 +420,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+        snb.stopEvents();
         Log.i(DEBUG_TAG, "onStop()");
     }
 

@@ -108,6 +108,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
         super.onStop();
         Log.i(DEBUG_TAG, "OnStop");
         EventBus.getDefault().unregister(this);
+        snb.stopEvents();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
