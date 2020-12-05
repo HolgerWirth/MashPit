@@ -14,7 +14,6 @@ import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
-import com.holger.mashpit.MashPitEventBusIndex;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -269,32 +268,28 @@ public class MainActivity extends AppCompatActivity {
                             selectTempChart(id);
                             return true;
                         }
-
-                        switch (id) {
-                            case android.R.id.home:
-                                mDrawerLayout.openDrawer(GravityCompat.START);
-                                return true;
-
-                            case R.id.nav_settings:
-                                Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
-                                startActivity(l);
-                                break;
-
-                            case R.id.nav_config:
-                                Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
-                                startActivity(m);
-                                break;
-
-                            case R.id.nav_sensorconfig:
-                                Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
-                                startActivity(n);
-                                break;
-
-                            case R.id.nav_temppager:
-                                Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
-                                startActivity(o);
-                                break;
-
+                        if(id==android.R.id.home)
+                        {
+                            mDrawerLayout.openDrawer(GravityCompat.START);
+                            return true;
+                        }
+                        if(id==R.id.nav_settings)
+                        {
+                            Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
+                            startActivity(l);
+                        }
+                        if(id==R.id.nav_config)
+                        {
+                            Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
+                            startActivity(m);
+                        }
+                        if(id==R.id.nav_sensorconfig) {
+                            Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                            startActivity(n);
+                        }
+                        if(id==R.id.nav_temppager) {
+                            Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
+                            startActivity(o);
                         }
                         return true;
                     }
@@ -421,20 +416,18 @@ public class MainActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "onOptionsItemSelected()");
 
         int id = item.getItemId();
-
-        switch (id) {
-
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-
-            case R.id.action_procsettings:
-                Log.i(DEBUG_TAG, "Settings selected");
-                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, ProcessSettings.class.getName() );
-                intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
-                startActivity(intent);
-                break;
+        if(id==android.R.id.home)
+        {
+            mDrawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        }
+        if(id==R.id.action_procsettings)
+        {
+            Log.i(DEBUG_TAG, "Settings selected");
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, ProcessSettings.class.getName() );
+            intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -451,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.i(DEBUG_TAG, "OnStart()...");
-        EventBus eventBus = EventBus.builder().addIndex(new MashPitEventBusIndex()).build();
+        EventBus.builder().addIndex(new MashPitEventBusIndex()).build();
         EventBus.getDefault().register(this);
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb=new SnackBar(coordinatorLayout);
