@@ -159,4 +159,6 @@
     <string name="chart_createChart">Create a new chart</string>
     <string name="chartDescTitle">Beschreibung:</string>
     <string name="chartNameTitle">Name</string>
+    <string name="MD5_error_text_1">ERROR: Zugriff auf Speicher nicht erlaubt!</string>
+    <string name="MD5_error_text_2"><![CDATA[\n\nBitte erlaube den Zugriff auf den Speicher für diese App unter \'App info -> Permissions\']]></string>
 </resources>

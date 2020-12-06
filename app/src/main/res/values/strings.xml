@@ -167,4 +167,6 @@
     <string name="chart_createChart">Create a new chart</string>
     <string name="chartDescTitle">Description:</string>
     <string name="chartNameTitle">Name</string>
+    <string name="MD5_error_text_1">ERROR: Storage permission not set!</string>
+    <string name="MD5_error_text_2"><![CDATA[\n\nPlease grant storage access permission for this app under \'App info -> Permissions\']]></string>
 </resources>

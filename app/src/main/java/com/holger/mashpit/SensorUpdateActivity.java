@@ -156,13 +156,28 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
             lastmodified.setSpan(new StyleSpan(Typeface.BOLD), 0, lastmodified.length(), 0);
             infoText.append("\nLast modified: ")
                     .append(lastmodified);
-            SpannableString md5sig = new SpannableString(MD5.calculateMD5(uploadFile));
-            md5sig.setSpan(new StyleSpan(Typeface.BOLD), 0, md5sig.length(), 0);
-            infoText.append("\nMD5 signature: ")
-                    .append(md5sig);
-            signatureMD5.setText(infoText);
-            signatureMD5.setEnabled(false);
-            uploadImage.setEnabled(true);
+            String calMD5 = MD5.calculateMD5(uploadFile);
+            if(calMD5!=null) {
+                SpannableString md5sig = new SpannableString(MD5.calculateMD5(uploadFile));
+                md5sig.setSpan(new StyleSpan(Typeface.BOLD), 0, md5sig.length(), 0);
+                infoText.append("\nMD5 signature: ")
+                        .append(md5sig);
+                signatureMD5.setText(infoText);
+                signatureMD5.setEnabled(false);
+                uploadImage.setEnabled(true);
+            }
+            else
+            {
+                uploadImage.setVisibility(View.GONE);
+                infoText= new SpannableStringBuilder();
+                String bold_error=getString(R.string.MD5_error_text_1);
+                SpannableString read_error = new SpannableString(bold_error);
+                read_error.setSpan(new StyleSpan(Typeface.BOLD), 0, read_error.length(), 0);
+                infoText.append(read_error);
+                infoText.append(getString(R.string.MD5_error_text_2));
+                signatureMD5.setText(infoText);
+                signatureMD5.setEnabled(false);
+            }
         }
     }
 
