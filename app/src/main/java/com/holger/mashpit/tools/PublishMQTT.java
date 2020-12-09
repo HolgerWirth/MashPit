@@ -1,8 +1,10 @@
 package com.holger.mashpit.tools;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -12,11 +14,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class PublishMQTT {
-    private MemoryPersistence persistence = new MemoryPersistence();
+    private final MemoryPersistence persistence = new MemoryPersistence();
     private static final String DEBUG_TAG = "PublishMQTT";
 
-    public boolean PublishStatus(Context context, String server, String topic, String send) {
-        return Publish(context, server, topic, send, "status");
+    public void PublishStatus(Context context, String server, String topic, String send) {
+        Publish(context, server, topic, send, "status");
     }
 
     public boolean PublishConf(Context context, String server, String topic, String send)
@@ -33,6 +35,7 @@ public class PublishMQTT {
             String MQTT_USER;
             String MQTT_BROKER;
             String MQTT_DOMAIN;
+            String DEVICE_ID_FORMAT = "TEX_%s";
 
             if(prefs.getBoolean("same_broker",false)) {
                 MQTT_BROKER = prefs.getString("send_broker_url", "192.168.1.20");
@@ -49,7 +52,8 @@ public class PublishMQTT {
                 MQTT_DOMAIN= prefs.getString("mashpit_domain","");
             }
 
-            String clientId=prefs.getString("device_id","");
+            @SuppressLint("HardwareIds") String clientId = String.format(DEVICE_ID_FORMAT,
+                    Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
 
             assert clientId != null;
             MqttClient sampleClient = new MqttClient("tcp://"+ MQTT_BROKER +":"+ MQTT_PORT, clientId, persistence);

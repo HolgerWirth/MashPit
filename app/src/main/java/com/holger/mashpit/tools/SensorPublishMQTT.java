@@ -1,9 +1,11 @@
 package com.holger.mashpit.tools;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -13,15 +15,16 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
-    private MemoryPersistence persistence = new MemoryPersistence();
+    private final MemoryPersistence persistence = new MemoryPersistence();
     private static final String DEBUG_TAG = "SensorPublishMQTT";
 
-    private int MQTT_PORT;
-    private String MQTT_PASSWORD;
-    private String MQTT_USER;
-    private String MQTT_BROKER;
-    private String MQTT_DOMAIN;
-    private String clientId;
+    private final int MQTT_PORT;
+    private final String MQTT_PASSWORD;
+    private final String MQTT_USER;
+    private final String MQTT_BROKER;
+    private final String MQTT_DOMAIN;
+    String DEVICE_ID_FORMAT = "TEX_%s";
+    private final String clientId;
 
     String topic;
     String send;
@@ -32,6 +35,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
 
     public OnPublishConfiguration mListener;
 
+    @SuppressLint("HardwareIds")
     public SensorPublishMQTT(Context context)
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -52,7 +56,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
         }
 
         mListener = (OnPublishConfiguration) context;
-        clientId=prefs.getString("device_id","");
+        clientId = String.format(DEVICE_ID_FORMAT, Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
     }
 
     public interface OnPublishConfiguration {
@@ -82,24 +86,22 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
         return mqttClient;
     }
 
-    public boolean PublishServerUpdate(String server, String send)
+    public void PublishServerUpdate(String server, String send)
     {
         this.send=send;
         this.topic="/SE/"+server+"/conf/update";
         this.retained=false;
         this.qos=2;
         execute();
-        return true;
     }
 
-    public boolean PublishServerStatus(String server, String send)
+    public void PublishServerStatus(String server, String send)
     {
         this.send=send;
         this.topic="/SE/"+server+"/conf/server";
         this.qos=2;
         this.retained=false;
         execute();
-        return true;
     }
 
     public void PublishSensorConf(String server, String sensor, String type, int interval, String send) {
