@@ -1,6 +1,8 @@
 package com.holger.mashpit.events;
 
 public class SensorEvent {
+        private String family;
+        private String dir;
         private String server;
         private String sensor;
         private int interval;
@@ -92,4 +94,10 @@ public class SensorEvent {
                 this.IP = IP;
         }
 
-}
+        public String getFamily() {return family;}
+
+        public void setFamily(String family) {this.family = family;}
+
+        public String getDir() {return dir;}
+
+        public void setDir(String dir) {this.dir = dir;}}

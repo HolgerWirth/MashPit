@@ -68,6 +68,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     private FloatingActionButton fabadd;
 
     private int resultCode=0;
+    CoordinatorLayout coordinatorLayout=null;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -77,8 +78,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
         translation=getApplicationContext().getResources().getString(R.string.uptimeformat);
 
-        final CoordinatorLayout coordinatorLayout = findViewById(R.id.snb_content);
-        snb = new SnackBar(coordinatorLayout);
+        coordinatorLayout = findViewById(R.id.snb_content);
         Log.i(DEBUG_TAG, "OnCreate");
 
 
@@ -292,11 +292,16 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         String mySensor = "";
         int t = (-1);
         for (int i = 0; i < dbresult.size(); i++) {
-            if (!(dbresult.get(i).sensor.equals(mySensor))) {
+            if(dbresult.get(i).family.equals("MCP"))
+            {
+                continue;
+            }
+            String key=dbresult.get(i).dir+"-"+dbresult.get(i).sensor;
+            if (!(key.equals(mySensor))) {
                 t++;
                 upresult.add(dbresult.get(i));
                 upresult.get(t).interval = 1;
-                mySensor = dbresult.get(i).sensor;
+                mySensor = key;
             } else {
                 upresult.get(t).interval++;
                 if (dbresult.get(i).active) {
@@ -341,6 +346,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        snb = new SnackBar(coordinatorLayout);
         Log.i(DEBUG_TAG, "onStart()");
     }
 

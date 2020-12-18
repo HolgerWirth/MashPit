@@ -20,7 +20,7 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
 
     private static final String DEBUG_TAG = "SensorDevAdapter";
     private Context context;
-    private List<Sensors> devList;
+    private final List<Sensors> devList;
     private List<String> sensor_list;
     private boolean online=false;
 
@@ -104,7 +104,7 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
         return devList.size();
     }
 
-    class SensorDevViewHolder extends RecyclerView.ViewHolder {
+    static class SensorDevViewHolder extends RecyclerView.ViewHolder {
         TextView devName;
         TextView devStatus;
         TextView devType;

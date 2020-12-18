@@ -31,6 +31,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
     SensorStatusAdapter sa;
     Intent sintent;
     List<SensorEvent> result = new ArrayList<>();
+    CoordinatorLayout coordinatorLayout=null;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -49,8 +50,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensorstatus);
 
-        final CoordinatorLayout coordinatorLayout = findViewById(R.id.sensorstatus_content);
-        snb = new SnackBar(coordinatorLayout);
+        coordinatorLayout = findViewById(R.id.sensorstatus_content);
         Log.i(DEBUG_TAG, "OnCreate");
 
         final RecyclerView sensorstatusList = findViewById(R.id.sensorstatusList);
@@ -70,7 +70,6 @@ public class SensorStatusListActivity extends AppCompatActivity {
             }
         });
 
-        result.addAll(updateServerList());
         sa = new SensorStatusAdapter(result);
 
         ItemClickSupport.addTo(sensorstatusList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
@@ -101,6 +100,10 @@ public class SensorStatusListActivity extends AppCompatActivity {
         super.onStart();
         Log.i(DEBUG_TAG, "OnStart");
         EventBus.getDefault().register(this);
+        snb = new SnackBar(coordinatorLayout);
+        result.clear();
+        result.addAll(updateServerList());
+        sa.notifyDataSetChanged();
     }
 
     @Override

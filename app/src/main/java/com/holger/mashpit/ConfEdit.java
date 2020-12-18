@@ -312,13 +312,7 @@ public class ConfEdit extends AppCompatActivity {
         else {
             intent.putExtra("confActive",false);
         }
-        if(minmax.isChecked())
-        {
-            intent.putExtra("confMinMax", true);
-        }
-        else {
-            intent.putExtra("confMinMax", false);
-        }
+        intent.putExtra("confMinMax", minmax.isChecked());
         intent.putExtra("confTopic", ((EditText) findViewById(R.id.confTopic)).getText().toString());
         intent.putExtra("confTemp", ((EditText) findViewById(R.id.confTemp)).getText().toString());
         intent.putExtra("confTime", ((EditText) findViewById(R.id.confTime)).getText().toString());

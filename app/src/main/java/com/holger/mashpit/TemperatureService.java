@@ -75,22 +75,15 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private static final String NOTIFICATION_CHANNEL_ID = "MashPitChannel_1";
 
-    private MqttDefaultFilePersistence mDataStore=null;
+    private final MqttDefaultFilePersistence mDataStore=null;
 
     private MqttClient mClient;                                        // Mqtt Client
 
     private Boolean isConnected=false;
     private Boolean isConnecting=false;
-
     private NotificationCompat.Builder builder;
-    private StatusEvent statusEvent = new StatusEvent();
-
     private String MQTT_DOMAIN="";
 
-    private volatile boolean backgroundDataEnabled;
-    {
-        backgroundDataEnabled = true;
-    }
     private NetworkConnectionIntentReceiver networkConnectionMonitor;
     SharedPreferences prefs;
 
@@ -110,6 +103,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         stickyData = new SensorStickyEvent();
     }
 
+    @SuppressLint("WakelockTimeout")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
@@ -131,6 +125,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     Log.i(DEBUG_TAG, "Create WakeLock!");
                     PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                    assert powerManager != null;
                     wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                             "MashPit::MQTTWakeLock");
                     wakeLock.acquire();
@@ -264,6 +259,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     Log.i(DEBUG_TAG, "Clicked Connect");
                     try {
                         connect();
+                        refreshRetainedMessages();
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -324,6 +320,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         String MQTT_PASSWORD;
         String MQTT_URL_FORMAT = "tcp://%s:%d";
         String DEVICE_ID_FORMAT = "TE_%s";
+        StatusEvent statusEvent = new StatusEvent();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -387,6 +384,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private void checkConnection()
     {
+        StatusEvent statusEvent = new StatusEvent();
         Log.i(DEBUG_TAG, "checkConnection()");
         statusEvent.setTopic("mqttstatus");
 
@@ -520,11 +518,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
      */
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        boolean backgroundDataEnabled = true;
         return cm != null && cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected() && backgroundDataEnabled;
     }
 
     @Override
     public void connectionLost(Throwable arg0) {
+        StatusEvent statusEvent = new StatusEvent();
         if (!isConnecting) {
             Log.i(DEBUG_TAG, "Connection lost from broker! Reason: ", arg0);
             isConnected = false;
@@ -587,7 +587,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 submitSensorData(parts,mess);
                 return;
             }
-            handleSensorData(parts,mess);
+            handleSensorData(topic,mess);
             return;
         }
         if (parts[1].equals("MP")) {
@@ -682,11 +682,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     obj = new JSONObject(mess);
 
                     try {
-                        if (obj.getString("status").equals("0")) {
-                            mpstatusEvent.setActive(false);
-                        } else {
-                            mpstatusEvent.setActive(true);
-                        }
+                        mpstatusEvent.setActive(!obj.getString("status").equals("0"));
                         mpstatusEvent.setPID(obj.getString("PID"));
                         mpstatusEvent.setType(obj.getString("Type"));
 
@@ -736,16 +732,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         EventBus.getDefault().postSticky(stickyData);
     }
 
-    private void handleSensorData(String[] topic,String mess)
+    private void handleSensorData(String topic,String mess)
     {
-        switch(topic[3])
+        String[] parts = topic.split("/");
+        switch(parts[3])
         {
             case "conf":
                 handleSensorConf(topic,mess);
                 break;
 
             case "status":
-                handleSensorStatus(topic,mess);
+                handleSensorStatus(parts,mess);
                 break;
 
             default:
@@ -753,47 +750,79 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
     }
 
-    private void handleSensorConf(String[] topic,String mess)
+    private void handleSensorConf(String key,String mess)
     {
         JSONObject obj;
         SensorEvent sensorEvent = new SensorEvent();
+        String family;
+        String dir="IN";
+        String reg="";
+        String name="";
         int port=0;
         int sda=0;
         int scl=0;
         int alt=0;
+        int hyst=0;
+        int interval;
+        String type="";
 
-        if (topic[4].equals("update")) {
-            return;
-        }
+        String[] topic = key.split("/");
+        String server=topic[2];
+        String sensor;
 
-        if (topic[4].equals("server")) {
-            try {
-                obj = new JSONObject(mess);
-                if (obj.has("alias")) {
-                    new Update(SensorStatus.class)
-                            .set("alias=?", obj.getString("alias"))
-                            .where("server=? and active=1", topic[2])
-                            .execute();
-                    Log.i(DEBUG_TAG, "Sensor server alias updated!");
-                    return;
+        switch(topic[4]) {
+            case "update":
+                return;
 
+            case "server":
+                try {
+                    obj = new JSONObject(mess);
+                    if (obj.has("alias")) {
+                        new Update(SensorStatus.class)
+                                .set("alias=?", obj.getString("alias"))
+                                .where("server=? and active=1", topic[2])
+                                .execute();
+                        Log.i(DEBUG_TAG, "Sensor server alias updated!");
+                        return;
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        if(mess.isEmpty())
-        {
-            new Delete().from(Sensors.class)
-                    .where("server=?", topic[2])
-                    .and("sensor=?", topic[5])
-                    .and("interval=?", topic[6])
-                    .execute();
 
-            Log.i(DEBUG_TAG, "Configuration deleted!");
-            sensorEvent.setServer(topic[2]);
-            sensorEvent.setSensor(topic[5]);
-            sensorEvent.setInterval(Integer.parseInt(topic[6]));
+            case "GPIO":
+                family = "GPIO";
+                dir = topic[5];
+                interval = 0;
+                sensor=topic[6];
+                break;
+
+            case "MCP":
+                family = "MCP";
+                dir = topic[5];
+                interval = 0;
+                sensor=topic[6];
+                break;
+
+            default:
+                family="SE";
+                interval = Integer.parseInt(topic[6]);
+                sensor=topic[5];
+                break;
+        }
+
+        if(mess.isEmpty()) {
+                new Delete().from(Sensors.class)
+                        .where("topic=?", key)
+                        .execute();
+                Log.i(DEBUG_TAG, key+ "deleted!");
+
+            sensorEvent.setFamily(family);
+            sensorEvent.setDir(dir);
+            sensorEvent.setServer(server);
+            sensorEvent.setSensor(sensor);
+            sensorEvent.setInterval(interval);
+            sensorEvent.setName("");
             sensorEvent.setType(topic[4]);
             EventBus.getDefault().post(sensorEvent);
             return;
@@ -801,9 +830,33 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         try {
             obj = new JSONObject(mess);
+            if(obj.has("reg"))
+            {
+                reg=obj.getString("reg");
+            }
+            if(obj.has("evtype"))
+            {
+                type=obj.getString("evtype");
+            }
+            if(obj.has("type"))
+            {
+                type=obj.getString("type");
+            }
+            if(obj.has("hyst"))
+            {
+                hyst=obj.getInt("hyst");
+            }
             if(obj.has("PIN"))
             {
                 port=obj.getInt("PIN");
+            }
+            if(obj.has("pin"))
+            {
+                port=obj.getInt("pin");
+            }
+            if(obj.has("name"))
+            {
+                name=obj.getString("name");
             }
             if(obj.has("SDA"))
             {
@@ -820,26 +873,30 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
             boolean exists = new Select()
                     .from(Sensors.class)
-                    .where("server=?", topic[2])
-                    .and("sensor=?", topic[5])
-                    .and("interval=?", topic[6])
+                    .where("topic=?",key)
                     .exists();
+
             if (exists) {
                 new Update(Sensors.class)
-                        .set("active=?, name=?, port=?, sda=?, scl=?, alt=?", obj.getBoolean("active") ? 1 : 0, obj.getString("name"),port,sda,scl,alt)
-                        .where("server=? and sensor=? and interval=?", topic[2], topic[5], topic[6])
+                        .set("interval=?, active=?, name=?, port=?, hyst=?, sda=?, scl=?, alt=?", interval, obj.getBoolean("active") ? 1 : 0, name,port,hyst,sda,scl,alt)
+                        .where("topic=?",key)
                         .execute();
+                Log.i(DEBUG_TAG, key+" configuration updated!");
+
             } else {
-                Sensors sensors = new Sensors(topic[2], topic[5], false, obj.getBoolean("active"), "", obj.getString("type"), obj.getString("name"),
-                        Integer.parseInt(topic[6]), port,sda,scl,alt,"");
+                Sensors sensors = new Sensors(key,family,dir,server, sensor, obj.getBoolean("active"), "", type, name,
+                        interval, reg,port,hyst,sda,scl,alt,"");
                 sensors.save();
+                Log.i(DEBUG_TAG, key+" configuration inserted!");
             }
-            sensorEvent.setServer(topic[2]);
-            sensorEvent.setSensor(topic[5]);
-            sensorEvent.setInterval(Integer.parseInt(topic[6]));
+            sensorEvent.setFamily(family);
+            sensorEvent.setDir(dir);
+            sensorEvent.setServer(server);
+            sensorEvent.setSensor(sensor);
+            sensorEvent.setInterval(interval);
+            sensorEvent.setName(topic[6]);
             sensorEvent.setType(topic[4]);
             sensorEvent.setActive(obj.getBoolean("active"));
-            sensorEvent.setName(obj.getString("name"));
             EventBus.getDefault().post(sensorEvent);
 
         } catch (JSONException e) {
