@@ -16,7 +16,7 @@ import org.greenrobot.eventbus.Subscribe;
 public class SnackBar {
 
     private static final String DEBUG_TAG = "SnackBar";
-    private CoordinatorLayout coLayout;
+    private final CoordinatorLayout coLayout;
     private View.OnClickListener mOnClickListener;
 
     public SnackBar(CoordinatorLayout coordinatorLayout) {
@@ -39,7 +39,7 @@ public class SnackBar {
         Log.i(DEBUG_TAG, "Listener changed");
     }
 
-    private void displayError(int string_id) {
+    private void displayError() {
         Snackbar snackbar = Snackbar
                 .make(coLayout,"", Snackbar.LENGTH_INDEFINITE)
                 .setAction("RETRY",mOnClickListener);
@@ -50,7 +50,7 @@ public class SnackBar {
         // Changing action button text color
         View sbView = snackbar.getView();
 
-        snackbar.setText(string_id);
+        snackbar.setText(R.string.status_connect_NOK);
         TextView textView = sbView.findViewById(com.google.android.material.R.id.snackbar_text);
 
         textView.setTextColor(Color.YELLOW);
@@ -100,7 +100,7 @@ public class SnackBar {
             if (myEvent.getTopic().equals("mqttstatus")) {
                 Log.i(DEBUG_TAG, "StatusEvent arrived: " + myEvent.getTopic());
                 if(myEvent.getMode().equals("error")) {
-                        displayError(R.string.status_connect_NOK);
+                        displayError();
                 }
                 if(myEvent.getMode().equals("info")) {
                     displayInfo(R.string.status_connect_OK);
