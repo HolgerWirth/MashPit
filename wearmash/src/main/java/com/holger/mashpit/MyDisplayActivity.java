@@ -3,11 +3,11 @@ package com.holger.mashpit;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
-import android.support.wearable.activity.WearableActivity;
+import androidx.wear.ambient.AmbientModeSupport;
+
 import android.util.Log;
 import android.view.View;
 
@@ -30,17 +30,14 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.holger.share.Constants;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyDisplayActivity extends WearableActivity implements DataClient.OnDataChangedListener {
+public class MyDisplayActivity extends AppCompatActivity implements DataClient.OnDataChangedListener, AmbientModeSupport.AmbientCallbackProvider {
     float cAngle = 270f;
 
     private static final String DEBUG_TAG = "MyDisplayActivity";
-    private static final int MSG_UPDATE_SCREEN = 0;
 
-    private final Handler mActiveModeUpdateHandler = new ActiveModeUpdateHandler(this);
     List<View> pieCharts = new ArrayList<>();
     WearTempPagerAdapter pagerAdapter;
     boolean xinit = true;
@@ -66,7 +63,7 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
             xinit = true;
         }
 
-        setAmbientEnabled();
+        AmbientModeSupport.attach(this);
     }
 
     private PieChart createPiePage(String desc) {
@@ -233,30 +230,33 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         }
     }
 
+    private class MyAmbientCallback extends AmbientModeSupport.AmbientCallback {
         @Override
         public void onEnterAmbient(Bundle ambientDetails) {
-            super.onEnterAmbient(ambientDetails);
+            // Handle entering ambient mode
             Log.d(DEBUG_TAG, "onEnterAmbient()");
 
             /* Clears Handler queue (only needed for updates in active mode). */
-            mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
             initPieDataAmbient();
             sendData();
         }
 
         @Override
+        public void onExitAmbient() {
+            // Handle exiting ambient mode
+            super.onExitAmbient();
+            Log.d(DEBUG_TAG, "onExitAmbient()");
+            initPieData();
+        }
+
+        @Override
         public void onUpdateAmbient() {
+            // Update the content
             Log.d(DEBUG_TAG, "onUpdateAmbient()");
             super.onUpdateAmbient();
             sendData();
         }
-            /** Restores the UI to active (non-ambient) mode. */
-            @Override
-            public void onExitAmbient () {
-                super.onExitAmbient();
-                Log.d(DEBUG_TAG, "onExitAmbient()");
-                initPieData();
-            }
+    }
 
     @Override
     public void onResume() {
@@ -297,24 +297,8 @@ public class MyDisplayActivity extends WearableActivity implements DataClient.On
         }
     }
 
-    /** Handler separated into static class to avoid memory leaks. */
-    private static class ActiveModeUpdateHandler extends Handler {
-        private final WeakReference<MyDisplayActivity> mMainActivityWeakReference;
-
-        ActiveModeUpdateHandler(MyDisplayActivity reference) {
-            mMainActivityWeakReference = new WeakReference<>(reference);
-        }
-
-        @Override
-        public void handleMessage(Message message) {
-//            MyDisplayActivity mainActivity = mMainActivityWeakReference.get();
-            Log.d(DEBUG_TAG, "handleMessage()");
-
-//           if (mainActivity != null) {
-//                if (message.what == MSG_UPDATE_SCREEN) {
-//                    return;
-//                }
-//            }
-        }
+    @Override
+    public AmbientModeSupport.AmbientCallback getAmbientCallback() {
+        return new MyAmbientCallback();
     }
 }
