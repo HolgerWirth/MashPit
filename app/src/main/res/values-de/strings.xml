@@ -72,10 +72,10 @@
     <string name="mpstatServer">Server ID:</string>
     <string name="mpstatProcesses">Prozesse:</string>
     <string name="mpstatProcNameTitle">Prozess:</string>
-    <string name="mpstatProcStatusTitle">Aktiv:</string>
+    <string name="mpstatProcStatusTitle">Status:</string>
     <string name="mpstatProcStatus">Prozess ID:</string>
     <string name="mpstatProcPIDTitle">PID:</string>
-    <string name="mpstatProcTypeTitle">Adapter Typ:</string>
+    <string name="mpstatProcTypeTitle">Sensor:</string>
     <string name="mpstatProcActive">Aktiv:</string>
     <string name="MPProcActiveYes">&#160;&#160;&#160;JA&#160;&#160;&#160;</string>
     <string name="MPProcActiveNo">&#160;&#160;NEIN&#160;&#160;</string>
@@ -161,4 +161,5 @@
     <string name="chartNameTitle">Name</string>
     <string name="MD5_error_text_1">ERROR: Zugriff auf Speicher nicht erlaubt!</string>
     <string name="MD5_error_text_2"><![CDATA[\n\nBitte erlaube den Zugriff auf den Speicher für diese App unter \'App info -> Permissions\']]></string>
+    <string name="devlist_device_icon">Device icon</string>
 </resources>

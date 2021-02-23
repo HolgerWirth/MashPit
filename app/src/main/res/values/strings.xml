@@ -81,10 +81,10 @@
     <string name="mpstatProcesses">Processes:</string>
     <string name="mpstatProcActive">Active:</string>
     <string name="mpstatProcNameTitle">Process:</string>
-    <string name="mpstatProcStatusTitle">Active:</string>
+    <string name="mpstatProcStatusTitle">Status:</string>
     <string name="mpstatProcStatus">Process ID:</string>
     <string name="mpstatProcPIDTitle">PID:</string>
-    <string name="mpstatProcTypeTitle">Adapter Type:</string>
+    <string name="mpstatProcTypeTitle">Sensor:</string>
     <string name="MPProcActiveYes">&#160;&#160;YES&#160;&#160;&#160;</string>
     <string name="MPProcActiveNo">&#160;&#160;&#160;NO&#160;&#160;&#160;</string>
     <string name="SensorOnline">&#160;&#160;ONLINE&#160;&#160;&#160;</string>
@@ -169,4 +169,5 @@
     <string name="chartNameTitle">Name</string>
     <string name="MD5_error_text_1">ERROR: Storage permission not set!</string>
     <string name="MD5_error_text_2"><![CDATA[\n\nPlease grant storage access permission for this app under \'App info -> Permissions\']]></string>
+    <string name="devlist_device_icon">Device icon</string>
 </resources>
