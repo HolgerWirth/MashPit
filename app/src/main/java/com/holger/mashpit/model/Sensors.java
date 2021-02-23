@@ -18,6 +18,8 @@ public class Sensors extends Model implements Serializable {
     public String server;
     @Column(name = "sensor",index=true)
     public String sensor;
+    @Column(name = "event", index=true)
+    public String event;
     @Column(name = "active")
     public boolean active;
     @Column(name = "alias")
@@ -49,13 +51,14 @@ public class Sensors extends Model implements Serializable {
         super();
     }
 
-    public Sensors(String topic, String family, String dir, String server, String sensor, boolean active, String alias, String type, String name,int interval, String reg, int port, int hyst, int sda,int scl,int alt,String address) {
+    public Sensors(String topic, String family, String dir, String server, String sensor, String event, boolean active, String alias, String type, String name,int interval, String reg, int port, int hyst, int sda,int scl,int alt,String address) {
         super();
         this.topic = topic;
         this.family=family;
         this.dir=dir;
         this.server=server;
         this.sensor=sensor;
+        this.event=event;
         this.active=active;
         this.alias=alias;
         this.type=type;

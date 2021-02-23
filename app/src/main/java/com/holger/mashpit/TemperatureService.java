@@ -765,6 +765,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         int hyst=0;
         int interval;
         String type="";
+        String event="";
+        String mcp="";
 
         String[] topic = key.split("/");
         String server=topic[2];
@@ -791,23 +793,26 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 }
 
             case "GPIO":
-                family = "GPIO";
+                family = "EV";
                 dir = topic[5];
                 interval = 0;
-                sensor=topic[6];
+                sensor="GPIO";
+                event=topic[6];
                 break;
 
             case "MCP":
-                family = "MCP";
+                family = "EV";
                 dir = topic[5];
                 interval = 0;
                 sensor=topic[6];
+                event=topic[6];
                 break;
 
             default:
                 family="SE";
                 interval = Integer.parseInt(topic[6]);
                 sensor=topic[5];
+                event="";
                 break;
         }
 
@@ -821,6 +826,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setDir(dir);
             sensorEvent.setServer(server);
             sensorEvent.setSensor(sensor);
+            sensorEvent.setEvent(event);
             sensorEvent.setInterval(interval);
             sensorEvent.setName("");
             sensorEvent.setType(topic[4]);
@@ -870,6 +876,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             {
                 alt=obj.getInt("ALT");
             }
+            if(obj.has("MCP"))
+            {
+                sensor=obj.getString("MCP");
+            }
 
             boolean exists = new Select()
                     .from(Sensors.class)
@@ -878,13 +888,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
             if (exists) {
                 new Update(Sensors.class)
-                        .set("interval=?, active=?, name=?, port=?, hyst=?, sda=?, scl=?, alt=?", interval, obj.getBoolean("active") ? 1 : 0, name,port,hyst,sda,scl,alt)
+                        .set("interval=?, active=?, name=?, port=?, hyst=?, sda=?, scl=?, alt=?, sensor=?, reg=?", interval, obj.getBoolean("active") ? 1 : 0, name,port,hyst,sda,scl,alt,sensor,reg)
                         .where("topic=?",key)
                         .execute();
                 Log.i(DEBUG_TAG, key+" configuration updated!");
 
             } else {
-                Sensors sensors = new Sensors(key,family,dir,server, sensor, obj.getBoolean("active"), "", type, name,
+                Sensors sensors = new Sensors(key,family,dir,server, sensor, event, obj.getBoolean("active"), "", type, name,
                         interval, reg,port,hyst,sda,scl,alt,"");
                 sensors.save();
                 Log.i(DEBUG_TAG, key+" configuration inserted!");
@@ -892,6 +902,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setFamily(family);
             sensorEvent.setDir(dir);
             sensorEvent.setServer(server);
+            sensorEvent.setEvent(event);
             sensorEvent.setSensor(sensor);
             sensorEvent.setInterval(interval);
             sensorEvent.setName(topic[6]);
