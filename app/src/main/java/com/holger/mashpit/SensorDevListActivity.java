@@ -161,7 +161,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         fabGPIO.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the DHT FAB");
+                Log.i(DEBUG_TAG, "Clicked the GPIO FAB");
                 speeddial.setVisibility(LinearLayout.GONE);
                 iscollapsed=false;
                 Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
@@ -222,7 +222,11 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         sensorName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                if (iscollapsed) {
+                    speeddial.setVisibility(LinearLayout.GONE);
+                    iscollapsed = false;
+                }
+                fabadd.hide();
             }
 
             @Override
@@ -255,9 +259,20 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
                 Intent l;
                 Sensors sensors = sa.getItem(position);
-
                 l = new Intent(getApplicationContext(), SensorConfEdit.class);
+
+                if(sensors.type.equals("mcp23017"))
+                {
+                    l = new Intent(getApplicationContext(), SensorEventListActivity.class);
+                }
+                if(sensors.sensor.equals("GPIO"))
+                {
+                    l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
+                    l.putExtra("hw","GPIO");
+                }
+
                 l.putExtra("ACTION", "edit");
+                l.putExtra("family",sensors.family);
                 l.putExtra("sensor", sensors.sensor);
                 l.putExtra("type",sensors.type);
                 l.putExtra("name",sensors.name);
@@ -267,6 +282,11 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
                 l.putExtra("SDA",sensors.sda);
                 l.putExtra("SCL",sensors.scl);
                 l.putExtra("ALT",sensors.alt);
+                l.putExtra("mcpid",sensors.interval);
+                l.putExtra("event",sensors.event);
+                l.putExtra("dir",sensors.dir);
+                l.putExtra("hyst",sensors.hyst);
+
                 startActivityForResult(l, 0);
             }
         });
@@ -292,15 +312,19 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         String mySensor = "";
         int t = (-1);
         for (int i = 0; i < dbresult.size(); i++) {
-            if(dbresult.get(i).family.equals("MCP"))
+            if(dbresult.get(i).family.equals("EV"))
             {
+                if(dbresult.get(i).sensor.equals("GPIO")) {
+                    t++;
+                    upresult.add(dbresult.get(i));
+                }
                 continue;
             }
             String key=dbresult.get(i).dir+"-"+dbresult.get(i).sensor;
             if (!(key.equals(mySensor))) {
                 t++;
                 upresult.add(dbresult.get(i));
-                upresult.get(t).interval = 1;
+                upresult.get(t).interval = upresult.get(t).interval;
                 mySensor = key;
             } else {
                 upresult.get(t).interval++;
@@ -309,9 +333,14 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
                 }
             }
         }
-        List<String> defaultsensor = setSensors(sensors);
+
+       List<String> defaultsensor = setSensors(sensors);
         boolean found;
         for (int i = 0; i < defaultsensor.size(); i++) {
+            if(defaultsensor.get(i).equals("unknown"))
+            {
+                continue;
+            }
             found=false;
             for (int j = 0; j < upresult.size(); j++) {
                 if (defaultsensor.get(i).equals(upresult.get(j).sensor)) {
@@ -328,9 +357,11 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
                 xSensor.name = defaultsensor.get(i);
                 xSensor.server = server;
                 xSensor.type = getSensorType(defaultsensor.get(i));
+                xSensor.family=getSensorFamily(defaultsensor.get(i));
                 upresult.add(t, xSensor);
             }
         }
+
         return(upresult);
     }
 
@@ -360,21 +391,21 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getSensorStatusEvent(SensorEvent sensorEvent) {
-        Log.i(DEBUG_TAG, "SensorEvent arrived for server: "+sensorEvent.getServer()+" sensor:" + sensorEvent.getSensor());
-        resultCode=1;
-        if(server.equals(sensorEvent.getServer())) {
-            if(!sensorEvent.getSensor().isEmpty()) {
-                sensors = sensorEvent.getSensor();
-                result.clear();
-                result.addAll(refreshSensorList());
-                sa.notifyDataSetChanged();
+        Log.i(DEBUG_TAG, "SensorEvent arrived for server: " + sensorEvent.getServer() + " sensor:" + sensorEvent.getSensor());
+        resultCode = 1;
+        if (server.equals(sensorEvent.getServer())) {
+            sensors = sensorEvent.getSensor();
+            result.clear();
+            result.addAll(refreshSensorList());
+            sa.notifyDataSetChanged();
+            if (!sensorEvent.getSensor().equals("GPIO")) {
+                sensorName.setText(sensorEvent.getName());
+                sensorName.setEnabled(sensorEvent.isActive());
+                serverSystem.setText(sensorEvent.getSystem());
+                serverVersion.setText(sensorEvent.getVersion());
+                TS = sensorEvent.getTS();
             }
-            sensorName.setText(sensorEvent.getName());
-            sensorName.setEnabled(sensorEvent.isActive());
-            serverSystem.setText(sensorEvent.getSystem());
-            serverVersion.setText(sensorEvent.getVersion());
-            TS=sensorEvent.getTS();
-            if(countdown!=null) {
+            if (countdown != null) {
                 countdown.cancel();
             }
             startTimer(TS);
@@ -404,6 +435,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         if(TS==0)
         {
             TS_field.setText(R.string.SensorOffline);
+            serverVersion.setEnabled(false);
             return;
         }
         countdown = new CountDownTimer(1800000, 1000) {
@@ -454,6 +486,36 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
             case "bh1750":
                 return ("bh1750");
+
+            case "ads1115":
+                return ("ads1115");
+
+            case "mcp23017":
+                return ("mcp23017");
+        }
+        return("");
+    }
+
+    private static String getSensorFamily(String autodetect)
+    {
+        String[] type=autodetect.split("-");
+        switch(type[0]) {
+            case "28":
+
+            case "bme280":
+
+            case "bh1750":
+
+            case "mcp23017":
+
+            case "ads1115":
+                return ("SE");
+
+            case "oled":
+                return ("DISP");
+
+            case "unknown":
+                return ("unknown");
         }
         return("");
     }

@@ -1,25 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/devcard_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    card_view:cardCornerRadius="4dp"
+    android:layout_margin="8dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    android:layout_margin="8dp">
+    card_view:cardCornerRadius="4dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp">
+
+            <ImageView
+                android:id="@+id/device_icon"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:contentDescription="@string/devlist_device_icon"
+                android:src="@drawable/ic_event_out_icon" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/devTypeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="80dp"
             android:layout_marginTop="5dp"
             android:text="@string/mpstatProcTypeTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
@@ -28,19 +43,29 @@
             android:id="@+id/devType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="160dp"
             android:layout_marginTop="5dp"
-            android:textStyle="bold"
             android:text="@string/mpstatProcTypeTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/devEventGPIO"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="280dp"
+            android:layout_marginTop="5dp"
+            android:text=""
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="5dp"
             android:layout_below="@id/devTypeTitle"
+            android:layout_marginStart="80dp"
+            android:layout_marginTop="5dp"
             android:text="@string/devNameTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
@@ -48,34 +73,46 @@
             android:id="@+id/devName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="5dp"
-            android:textStyle="bold"
             android:layout_below="@id/devTypeTitle"
+            android:layout_marginStart="160dp"
+            android:layout_marginTop="5dp"
             android:text="@string/devNameTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/devEventType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/devTypeTitle"
+            android:layout_marginStart="280dp"
+            android:layout_marginTop="5dp"
+            android:text=""
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:textStyle="bold" />
+
 
         <TextView
             android:id="@+id/devStatusTitle"
-            android:layout_below="@id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginBottom="5dp"
+            android:layout_below="@id/devNameTitle"
+            android:layout_marginStart="80dp"
             android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:text="@string/mpstatProcStatusTitle"
             android:textSize="@dimen/abc_text_size_medium_material" />
 
         <TextView
             android:id="@+id/devStatus"
-            android:layout_below="@id/devNameTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginBottom="5dp"
+            android:layout_below="@id/devNameTitle"
+            android:layout_marginStart="160dp"
             android:layout_marginTop="5dp"
-            android:textStyle="bold"
+            android:layout_marginBottom="5dp"
             android:text="@string/mpstatProcStatusTitle"
-            android:textSize="@dimen/abc_text_size_medium_material" />
+            android:textSize="@dimen/abc_text_size_medium_material"
+            android:textStyle="bold" />
     </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+</androidx.cardview.widget.CardView>
