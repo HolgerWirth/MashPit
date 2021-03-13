@@ -170,4 +170,12 @@
     <string name="MD5_error_text_1">ERROR: Storage permission not set!</string>
     <string name="MD5_error_text_2"><![CDATA[\n\nPlease grant storage access permission for this app under \'App info -> Permissions\']]></string>
     <string name="devlist_device_icon">Device icon</string>
+    <string name="eventTypeTitle">Event Type</string>
+    <string name="eventDirTitle">Direction</string>
+    <string name="EventNameTitle">Event Name</string>
+    <string name="eventValueTitle">Value</string>
+    <string name="EvenRegTitle">Register</string>
+    <string name="eventHystTitle">Hysterese</string>
+    <string name="new_output_event">New Outbound Event</string>
+    <string name="new_input_event">New Inbound Event</string>
 </resources>

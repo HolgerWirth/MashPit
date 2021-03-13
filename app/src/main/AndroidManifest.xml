@@ -84,6 +84,8 @@
         <activity android:name=".SensorUpdateActivity" />
         <activity android:name=".ChartEditActivity" />
         <activity android:name=".ChartListActivity" />
+        <activity android:name=".SensorEventListActivity" />
+        <activity android:name=".SensorEventEditActvity" />
     </application>
 
 </manifest>
