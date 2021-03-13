@@ -876,9 +876,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             {
                 alt=obj.getInt("ALT");
             }
-            if(obj.has("MCP"))
+            if(obj.has("mcp"))
             {
-                sensor=obj.getString("MCP");
+                sensor=obj.getString("mcp");
             }
 
             boolean exists = new Select()
