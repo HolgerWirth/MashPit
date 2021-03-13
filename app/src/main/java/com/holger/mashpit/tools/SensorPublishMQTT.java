@@ -121,6 +121,14 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
         execute();
     }
 
+    public void PublishEventConf(String server, String dir, String hw, String eventname, String send) {
+        this.send=send;
+        this.topic="/SE/"+server+"/conf/"+hw+"/"+dir+"/"+eventname;
+        this.qos=2;
+        this.retained=true;
+        execute();
+    }
+
     public void publishMessage() {
         try {
             MqttClient mqttClient = ConnectMQTT();
