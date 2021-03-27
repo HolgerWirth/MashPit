@@ -365,7 +365,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             statusEvent.setTopic("mqttstatus");
             statusEvent.setMode("error");
             statusEvent.setStatus("Can't connect to broker");
-            EventBus.getDefault().post(statusEvent);
+            if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
+                EventBus.getDefault().post(statusEvent);
+            }
             if (mClient == null) {
                 disconnect();
             }
@@ -377,8 +379,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         statusEvent.setTopic("mqttstatus");
         statusEvent.setMode("info");
         statusEvent.setStatus("Connected to broker");
-        EventBus.getDefault().post(statusEvent);
-
+        if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
+            EventBus.getDefault().post(statusEvent);
+        }
         isConnecting = false;
     }
 
@@ -408,7 +411,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 Log.i(DEBUG_TAG, "checkConnection()=false");
             }
         }
-        EventBus.getDefault().post(statusEvent);
+        if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
+            EventBus.getDefault().post(statusEvent);
+        }
     }
 
     /**
@@ -518,8 +523,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
      */
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        boolean backgroundDataEnabled = true;
-        return cm != null && cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected() && backgroundDataEnabled;
+        return cm != null && cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected();
     }
 
     @Override
@@ -531,8 +535,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             statusEvent.setTopic("mqttstatus");
             statusEvent.setMode("error");
             statusEvent.setStatus("Connection lost!");
-            EventBus.getDefault().post(statusEvent);
-
+            if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
+                EventBus.getDefault().post(statusEvent);
+            }
             if (mClient != null) {
 
                 try {
@@ -603,7 +608,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     proc.save();
                     Log.i(DEBUG_TAG, "Process updated");
                 }
-                EventBus.getDefault().post(processEvent);
+                if (EventBus.getDefault().hasSubscriberForEvent(ProcessEvent.class)) {
+                    EventBus.getDefault().post(processEvent);
+                }
             }
 
             if (parts[3].equals("conf")) {
@@ -638,7 +645,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         mpstatusEvent.setMPServer(parts[2]);
                         mpstatusEvent.setType("SRV");
                         mpstatusEvent.setStatusTopic("MashPit");
-                        EventBus.getDefault().post(mpstatusEvent);
+                        if (EventBus.getDefault().hasSubscriberForEvent(MPStatusEvent.class)) {
+                            EventBus.getDefault().post(mpstatusEvent);
+                        }
                     } else {
                         exists = new Select()
                                 .from(Config.class)
@@ -675,7 +684,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             .and("MPServer = ?", parts[2])
                             .execute();
                     mpstatusEvent.setPID("DEL");
-                    EventBus.getDefault().post(mpstatusEvent);
+                    if (EventBus.getDefault().hasSubscriberForEvent(MPStatusEvent.class)) {
+                        EventBus.getDefault().post(mpstatusEvent);
+                    }
                     Log.i(DEBUG_TAG, "Status deleted!");
                 }
                 else {
@@ -701,7 +712,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                             MPStatus mpstatus = new MPStatus(mpstatusEvent.getStatusTopic(), mpstatusEvent.getMPServer(), mpstatusEvent.isActive(), mpstatusEvent.getPID(), mpstatusEvent.getType());
                             mpstatus.save();
                         }
-                        EventBus.getDefault().post(mpstatusEvent);
+                        if (EventBus.getDefault().hasSubscriberForEvent(MPStatusEvent.class)) {
+                            EventBus.getDefault().post(mpstatusEvent);
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -717,7 +730,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         sensorData.setInterval(Integer.parseInt(parts[5]));
         sensorData.setType(parts[3]);
         sensorData.setData(mess);
-        EventBus.getDefault().post(sensorData);
+        if (EventBus.getDefault().hasSubscriberForEvent(SensorDataEvent.class)) {
+            EventBus.getDefault().post(sensorData);
+        }
 
         if (subsHandlerService.checkSubscription(sensorData.getTopicString())) {
             Log.i(DEBUG_TAG, "Notification updated");
@@ -765,12 +780,13 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         int hyst=0;
         int interval;
         String type="";
-        String event="";
-        String mcp="";
+        String event;
 
         String[] topic = key.split("/");
         String server=topic[2];
         String sensor;
+
+
 
         switch(topic[4]) {
             case "update":
@@ -808,6 +824,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 event=topic[6];
                 break;
 
+            case "ADS":
+                family = "SE";
+                dir = "IN";
+                interval = Integer.parseInt(topic[6]);
+                String[] sensor_parts = topic[5].split("-");
+                port = Integer.parseInt(sensor_parts[2]);
+                sensor=topic[5];
+                type=sensor_parts[0];
+                event="";
+                break;
+
             default:
                 family="SE";
                 interval = Integer.parseInt(topic[6]);
@@ -830,7 +857,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setInterval(interval);
             sensorEvent.setName("");
             sensorEvent.setType(topic[4]);
-            EventBus.getDefault().post(sensorEvent);
+            if (EventBus.getDefault().hasSubscriberForEvent(SensorEvent.class)) {
+                EventBus.getDefault().post(sensorEvent);
+            }
             return;
         }
 
@@ -888,14 +917,14 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
             if (exists) {
                 new Update(Sensors.class)
-                        .set("interval=?, active=?, name=?, port=?, hyst=?, sda=?, scl=?, alt=?, sensor=?, reg=?", interval, obj.getBoolean("active") ? 1 : 0, name,port,hyst,sda,scl,alt,sensor,reg)
+                        .set("interval=?, active=?, name=?, port=?, hyst=?, sda=?, scl=?, alt=?, sensor=?, reg=?, params=?", interval, obj.getBoolean("active") ? 1 : 0, name,port,hyst,sda,scl,alt,sensor,reg,mess)
                         .where("topic=?",key)
                         .execute();
                 Log.i(DEBUG_TAG, key+" configuration updated!");
 
             } else {
                 Sensors sensors = new Sensors(key,family,dir,server, sensor, event, obj.getBoolean("active"), "", type, name,
-                        interval, reg,port,hyst,sda,scl,alt,"");
+                        interval, reg,port,hyst,sda,scl,alt,"",mess);
                 sensors.save();
                 Log.i(DEBUG_TAG, key+" configuration inserted!");
             }
@@ -908,7 +937,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             sensorEvent.setName(topic[6]);
             sensorEvent.setType(topic[4]);
             sensorEvent.setActive(obj.getBoolean("active"));
-            EventBus.getDefault().post(sensorEvent);
+            if (EventBus.getDefault().hasSubscriberForEvent(SensorEvent.class)) {
+                EventBus.getDefault().post(sensorEvent);
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -927,7 +958,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             Log.i(DEBUG_TAG, "Sensor status deleted!");
             sensorEvent.setServer(topic[2]);
             sensorEvent.setActive(false);
-            EventBus.getDefault().post(sensorEvent);
+            if (EventBus.getDefault().hasSubscriberForEvent(SensorEvent.class)) {
+                EventBus.getDefault().post(sensorEvent);
+            }
             return;
         }
 
@@ -989,7 +1022,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                 sensorEvent.setSensor(sensors.toString());
             }
-            EventBus.getDefault().post(sensorEvent);
+            if (EventBus.getDefault().hasSubscriberForEvent(SensorEvent.class)) {
+                EventBus.getDefault().post(sensorEvent);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
