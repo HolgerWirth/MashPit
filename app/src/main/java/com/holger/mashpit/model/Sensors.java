@@ -44,6 +44,8 @@ public class Sensors extends Model implements Serializable {
     public int alt;
     @Column(name = "address")
     public String address;
+    @Column(name = "params")
+    public String params;
 
     public Sensors() {
         // Notice how super() has been called to perform default initialization
@@ -51,7 +53,7 @@ public class Sensors extends Model implements Serializable {
         super();
     }
 
-    public Sensors(String topic, String family, String dir, String server, String sensor, String event, boolean active, String alias, String type, String name,int interval, String reg, int port, int hyst, int sda,int scl,int alt,String address) {
+    public Sensors(String topic, String family, String dir, String server, String sensor, String event, boolean active, String alias, String type, String name,int interval, String reg, int port, int hyst, int sda,int scl,int alt,String address,String params) {
         super();
         this.topic = topic;
         this.family=family;
@@ -71,5 +73,6 @@ public class Sensors extends Model implements Serializable {
         this.scl = scl;
         this.alt = alt;
         this.address=address;
+        this.params=params;
     }
 }
