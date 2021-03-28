@@ -39,7 +39,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -367,8 +366,20 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
     private List<String> setSensors(String sensors)
     {
+        List<String> defsensors = new ArrayList<>();
         if(!sensors.isEmpty()) {
-            return (Arrays.asList(sensors.split("/")));
+            String[] defsensorslist=sensors.split("/");
+            for (String s : defsensorslist) {
+                String[] defdev = s.split("-");
+                if (defdev[0].equals("ads1115")) {
+                    for (int k = 0; k < 4; k++) {
+                        defsensors.add(s+"-" + k);
+                    }
+                } else {
+                    defsensors.add(s);
+                }
+            }
+            return (defsensors);
         }
         return Collections.emptyList();
     }
