@@ -7,6 +7,7 @@
     android:title="Subscreen">
 
     <SwitchPreferenceCompat
+        android:defaultValue="false"
         app:iconSpaceReserved="false"
         android:key="broker_same"
         android:summaryOff="Use the same broker for publishing"
@@ -33,6 +34,12 @@
         android:key="send_broker_port"
         android:summary="1883"
         android:title="@string/prefs_mqtt_port" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:dependency="broker_same"
+        android:key="send_broker_ssl"
+        android:title="Secure connection"
+        app:iconSpaceReserved="false" />
     <EditTextPreference
         app:iconSpaceReserved="false"
         android:defaultValue=" "

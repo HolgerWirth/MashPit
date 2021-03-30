@@ -56,7 +56,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,6 +65,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Locale;
 
+import com.holger.mashpit.tools.MySSlSocketFactory;
 import com.holger.mashpit.tools.PreferenceHandler;
 import com.holger.mashpit.tools.SubscriptionHandler;
 import com.holger.share.Constants;
@@ -74,8 +75,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private static final String DEBUG_TAG = "TemperatureService";
 
     private static final String NOTIFICATION_CHANNEL_ID = "MashPitChannel_1";
-
-    private final MqttDefaultFilePersistence mDataStore=null;
 
     private MqttClient mClient;                                        // Mqtt Client
 
@@ -92,6 +91,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     SensorStickyEvent stickyData;
 
     private PowerManager.WakeLock wakeLock;
+    private final MySSlSocketFactory factory = new MySSlSocketFactory(this);
+    private boolean restart=false;
 
     @Override
     public void onCreate() {
@@ -107,6 +108,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
+        Log.i(DEBUG_TAG, "onStartCommand: Action received: "+intent.getAction());
         if(intent==null)
         {
                 Log.i(DEBUG_TAG, "onStartCommand: received null intent");
@@ -122,6 +124,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             switch (action) {
                 case Constants.ACTION.STARTFOREGROUND_ACTION:
                     Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
+                    restart=false;
 
                     Log.i(DEBUG_TAG, "Create WakeLock!");
                     PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -233,9 +236,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                         e.printStackTrace();
                     }
                     break;
-
+                case Constants.ACTION.RESTART_ACTION:
+                    Log.i(DEBUG_TAG, "Received Restart Intent");
+                    restart=true;
                 case Constants.ACTION.STOPFOREGROUND_ACTION:
-                    Log.i(DEBUG_TAG, "Received Stop Foreground Intent");
+                    Log.i(DEBUG_TAG, "Received Stop Foreground Intent with restart="+restart);
                     if(wakeLock!=null)
                     {
                         Log.i(DEBUG_TAG, "Remove WakeLock");
@@ -298,12 +303,24 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        Log.i(DEBUG_TAG, "onDestroy");
         if(wakeLock!=null)
         {
-            wakeLock.release();
             Log.i(DEBUG_TAG, "Remove WakeLock");
+            try {
+                wakeLock.release();
+            }
+            catch (Throwable th) {
+                Log.i(DEBUG_TAG, "Can't release wakelock, already released?");
+
+            }
         }
-        Log.i(DEBUG_TAG, "In onDestroy");
+        if(restart)
+        {
+            Intent serviceIntent = new Intent(this, TemperatureService.class);
+            serviceIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+            startService(serviceIntent);
+        }
     }
 
     @Override
@@ -319,7 +336,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         String MQTT_USER;
         String MQTT_PASSWORD;
         String MQTT_URL_FORMAT = "tcp://%s:%d";
+        String MQTT_SSL_URL_FORMAT = "ssl://%s:%d";
         String DEVICE_ID_FORMAT = "TE_%s";
+        boolean mqtt_ssl=false;
         StatusEvent statusEvent = new StatusEvent();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -329,20 +348,29 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         MQTT_PORT= Integer.parseInt(prefs.getString("broker_port","1884"));
         MQTT_USER = prefs.getString("broker_user","");
         MQTT_PASSWORD = prefs.getString("broker_password","");
-
+        String url = String.format(Locale.US, MQTT_URL_FORMAT, MQTT_BROKER, MQTT_PORT);
         Log.i(DEBUG_TAG, "Preferences read: MQTT Server: "+MQTT_BROKER+" Port: "+MQTT_PORT);
 
-        String url = String.format(Locale.US, MQTT_URL_FORMAT, MQTT_BROKER, MQTT_PORT);
-        Log.i(DEBUG_TAG,"Connecting with URL: " + url);
+        if(prefs.getBoolean("broker_ssl",false))
+        {
+            mqtt_ssl=true;
+        }
 
         @SuppressLint("HardwareIds") String mDeviceId = String.format(DEVICE_ID_FORMAT,
                 Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
         Log.i(DEBUG_TAG,"Devcice ID: " + mDeviceId);
 
         isConnecting=true;
+        if(mqtt_ssl) {
+            url = String.format(Locale.US, MQTT_SSL_URL_FORMAT, MQTT_BROKER, MQTT_PORT);
+        }
+        Log.i(DEBUG_TAG,"Connecting with URL: " + url);
 
         MqttConnectOptions mOpts = new MqttConnectOptions();
 //        mOpts.setKeepAliveInterval(0);
+        if(mqtt_ssl) {
+            mOpts.setSocketFactory(factory.getSslSocketFactory(null));
+        }
         mOpts.setConnectionTimeout(2);
         mOpts.setCleanSession(false);
         if(!MQTT_USER.isEmpty()) {
@@ -350,7 +378,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             mOpts.setPassword(MQTT_PASSWORD.toCharArray());
         }
 
-        mClient = new MqttClient(url,mDeviceId,mDataStore);
+        mClient = new MqttClient(url,mDeviceId,new MemoryPersistence());
         mClient.setCallback(this);
 
         try {

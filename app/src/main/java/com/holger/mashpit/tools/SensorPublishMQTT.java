@@ -18,6 +18,8 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     private final MemoryPersistence persistence = new MemoryPersistence();
     private static final String DEBUG_TAG = "SensorPublishMQTT";
 
+    private final boolean MQTT_SSL;
+    private String MQTT_PROTOCOL="tcp://";
     private final int MQTT_PORT;
     private final String MQTT_PASSWORD;
     private final String MQTT_USER;
@@ -25,6 +27,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     private final String MQTT_DOMAIN;
     String DEVICE_ID_FORMAT = "TEX_%s";
     private final String clientId;
+    private final MySSlSocketFactory factory;
 
     String topic;
     String send;
@@ -40,12 +43,13 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        if(prefs.getBoolean("same_broker",false)) {
+        if(prefs.getBoolean("broker_same",false)) {
             MQTT_BROKER = prefs.getString("send_broker_url", "192.168.1.20");
             MQTT_PORT = Integer.parseInt(prefs.getString("send_broker_port", "1884"));
             MQTT_USER =prefs.getString("send_broker_user", "");
             MQTT_PASSWORD =prefs.getString("send_broker_password", "");
             MQTT_DOMAIN = prefs.getString("send_mashpit_domain","");
+            MQTT_SSL = prefs.getBoolean("send_broker_ssl",false);
         }
         else {
             MQTT_BROKER = prefs.getString("broker_url", "192.168.1.20");
@@ -53,10 +57,13 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
             MQTT_USER =prefs.getString("broker_user", "");
             MQTT_PASSWORD =prefs.getString("broker_password", "");
             MQTT_DOMAIN= prefs.getString("mashpit_domain","");
+            MQTT_SSL = prefs.getBoolean("broker_ssl",false);
         }
 
         mListener = (OnPublishConfiguration) context;
         clientId = String.format(DEVICE_ID_FORMAT, Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+        factory = new MySSlSocketFactory(context);
+
     }
 
     public interface OnPublishConfiguration {
@@ -67,10 +74,17 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     {
         MqttClient mqttClient = null;
         try {
-            mqttClient = new MqttClient("tcp://" + MQTT_BROKER + ":" + MQTT_PORT, clientId, persistence);
+            if(MQTT_SSL)
+            {
+                MQTT_PROTOCOL="ssl://";
+            }
+            mqttClient = new MqttClient(MQTT_PROTOCOL + MQTT_BROKER + ":" + MQTT_PORT, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
-            assert MQTT_USER != null;
+            if(MQTT_SSL) {
+                connOpts.setSocketFactory(factory.getSslSocketFactory(null));
+            }
+                assert MQTT_USER != null;
             if (!MQTT_USER.isEmpty()) {
                 connOpts.setUserName(MQTT_USER);
                 assert MQTT_PASSWORD != null;

@@ -170,4 +170,5 @@
     <string name="eventHystTitle">Hysterese</string>
     <string name="new_output_event">New Outbound Event</string>
     <string name="new_input_event">New Input Event</string>
+    <string name="broker_ca">Broker CA</string>
 </resources>

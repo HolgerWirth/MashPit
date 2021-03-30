@@ -30,35 +30,48 @@ public class PublishMQTT {
         try {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
+            String MQTT_PROTOCOL="tcp://";
             int MQTT_PORT;
             String MQTT_PASSWORD;
             String MQTT_USER;
             String MQTT_BROKER;
             String MQTT_DOMAIN;
+            boolean MQTT_SSL = false;
             String DEVICE_ID_FORMAT = "TEX_%s";
+            final MySSlSocketFactory factory = new MySSlSocketFactory(context);
+
 
             if(prefs.getBoolean("same_broker",false)) {
                 MQTT_BROKER = prefs.getString("send_broker_url", "192.168.1.20");
-                MQTT_PORT = Integer.parseInt(prefs.getString("send_broker_port", "1884"));
+                MQTT_PORT = Integer.parseInt(prefs.getString("send_broker_port", "1883"));
                 MQTT_USER =prefs.getString("send_broker_user", "");
                 MQTT_PASSWORD =prefs.getString("send_broker_password", "");
                 MQTT_DOMAIN = prefs.getString("send_mashpit_domain","");
+                MQTT_SSL = prefs.getBoolean("send_broker_ssl",false);
             }
             else {
                 MQTT_BROKER = prefs.getString("broker_url", "192.168.1.20");
-                MQTT_PORT = Integer.parseInt(prefs.getString("broker_port", "1884"));
+                MQTT_PORT = Integer.parseInt(prefs.getString("broker_port", "1883"));
                 MQTT_USER =prefs.getString("broker_user", "");
                 MQTT_PASSWORD =prefs.getString("broker_password", "");
                 MQTT_DOMAIN= prefs.getString("mashpit_domain","");
+                MQTT_SSL = prefs.getBoolean("broker_ssl",false);
             }
 
+            if(MQTT_SSL)
+            {
+                MQTT_PROTOCOL="ssl://";
+            }
             @SuppressLint("HardwareIds") String clientId = String.format(DEVICE_ID_FORMAT,
                     Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
 
             assert clientId != null;
-            MqttClient sampleClient = new MqttClient("tcp://"+ MQTT_BROKER +":"+ MQTT_PORT, clientId, persistence);
+            MqttClient sampleClient = new MqttClient(MQTT_PROTOCOL+ MQTT_BROKER +":"+ MQTT_PORT, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
+            if(MQTT_SSL) {
+                connOpts.setSocketFactory(factory.getSslSocketFactory(null));
+            }
             assert MQTT_USER != null;
             if(!MQTT_USER.isEmpty()) {
                 connOpts.setUserName(MQTT_USER);
