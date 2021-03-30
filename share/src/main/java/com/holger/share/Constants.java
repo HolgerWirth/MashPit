@@ -11,7 +11,7 @@ public class Constants {
         String SUBSCRIBE_ACTION = "com.holger.mashpit.action.subscribe";
         String UNSUBSCRIBE_ACTION = "com.holger.mashpit.action.unsubscribe";
         String CHECK_ACTION = "com.holger.mashpit.action.check";
-
+        String RESTART_ACTION = "com.holger.mashpit.action.restart";
     }
 
    public interface WEAR {
