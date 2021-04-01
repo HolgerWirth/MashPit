@@ -1,8 +1,6 @@
 package com.holger.mashpit.prefs;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
@@ -15,15 +13,10 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.holger.mashpit.R;
-import com.holger.mashpit.TemperatureService;
-import com.holger.share.Constants;
-
 
 public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String DEBUG_TAG = "MQTTSettingsPub";
-    private boolean changed = false;
     private Context context;
 
     @Override
@@ -43,7 +36,7 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
                     @Override
                     public void onBindEditText(@NonNull final EditText editText) {
                         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                        password.setSummaryProvider(new Preference.SummaryProvider() {
+                        password.setSummaryProvider(new Preference.SummaryProvider<Preference>() {
                             @Override
                             public CharSequence provideSummary(Preference preference) {
                                 return setAsterisks(editText.getText().toString().length());
@@ -56,6 +49,7 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
         broker_port.setSummary(p.getString("send_broker_port","1883"));
         domain.setSummary(p.getString("send_mashpit_domain",""));
         username.setSummary(p.getString("send_broker_user",""));
+        password.setSummary(setAsterisks(password.getText().length()));
         Log.i(DEBUG_TAG, "onCreatePreferences()");
     }
 

@@ -57,6 +57,7 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
         broker_port.setSummary(p.getString("broker_port","1883"));
         domain.setSummary(p.getString("mashpit_domain",""));
         username.setSummary(p.getString("broker_user",""));
+        password.setSummary(setAsterisks(password.getText().length()));
         Log.i(DEBUG_TAG, "onCreatePreferences()");
     }
 
