@@ -22,6 +22,8 @@ import com.holger.mashpit.R;
 import com.holger.mashpit.TemperatureService;
 import com.holger.share.Constants;
 
+import java.util.Objects;
+
 public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String DEBUG_TAG = "MQTTSettingsSub";
     private boolean changed = false;
@@ -39,6 +41,7 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
         Preference username = findPreference("broker_user");
         final EditTextPreference password = findPreference("broker_password");
 
+        assert password != null;
         password.setOnBindEditTextListener(
                 new EditTextPreference.OnBindEditTextListener() {
                     @Override
@@ -53,11 +56,21 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
                     }
                 });
 
+        assert broker_url != null;
         broker_url.setSummary(p.getString("broker_url",""));
+        assert broker_port != null;
         broker_port.setSummary(p.getString("broker_port","1883"));
+        assert domain != null;
         domain.setSummary(p.getString("mashpit_domain",""));
+        assert username != null;
         username.setSummary(p.getString("broker_user",""));
-        password.setSummary(setAsterisks(password.getText().length()));
+        try {
+            password.setSummary(setAsterisks(password.getText().length()));
+        }
+        catch (Exception exp)
+        {
+            Log.i(DEBUG_TAG,"Password not set!");
+        }
         Log.i(DEBUG_TAG, "onCreatePreferences()");
     }
 
@@ -124,7 +137,7 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
             changed=true;
         }
         try {
-            findPreference(key).setSummary(p.getString(key, ""));
+            Objects.requireNonNull(findPreference(key)).setSummary(p.getString(key, ""));
         }
         catch (Exception e)
         {

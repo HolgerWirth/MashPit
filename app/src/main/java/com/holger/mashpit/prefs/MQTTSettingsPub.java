@@ -15,6 +15,8 @@ import androidx.preference.PreferenceManager;
 
 import com.holger.mashpit.R;
 
+import java.util.Objects;
+
 public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String DEBUG_TAG = "MQTTSettingsPub";
     private Context context;
@@ -31,6 +33,7 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
         Preference username = findPreference("send_broker_user");
         final EditTextPreference password = findPreference("send_broker_password");
 
+        assert password != null;
         password.setOnBindEditTextListener(
                 new EditTextPreference.OnBindEditTextListener() {
                     @Override
@@ -45,11 +48,20 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
                     }
                 });
 
+        assert broker_url != null;
         broker_url.setSummary(p.getString("send_broker_url",""));
+        assert broker_port != null;
         broker_port.setSummary(p.getString("send_broker_port","1883"));
+        assert domain != null;
         domain.setSummary(p.getString("send_mashpit_domain",""));
+        assert username != null;
         username.setSummary(p.getString("send_broker_user",""));
-        password.setSummary(setAsterisks(password.getText().length()));
+        try {
+            password.setSummary(setAsterisks(password.getText().length()));
+        }
+        catch (Exception exp) {
+            Log.i(DEBUG_TAG,"Password not set!");
+        }
         Log.i(DEBUG_TAG, "onCreatePreferences()");
     }
 
@@ -81,7 +93,7 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
-            findPreference(key).setSummary(p.getString(key, ""));
+            Objects.requireNonNull(findPreference(key)).setSummary(p.getString(key, ""));
         }
         catch (Exception e)
         {
