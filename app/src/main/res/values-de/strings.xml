@@ -171,4 +171,12 @@
     <string name="new_output_event">New Outbound Event</string>
     <string name="new_input_event">New Input Event</string>
     <string name="broker_ca">Broker CA</string>
+    <string name="Subchanged_text">Die Änderungen sind erst nach einem Restart aktiv</string>
+    <string name="Subchanged_alert_title">Service Restart</string>
+    <string name="Subchanged_button">OK, Los</string>
+    <string name="Subchanged_cancel">Nein, noch nicht</string>
+    <string name="NotSaved_title">Achtung!</string>
+    <string name="NotSaved_text">Die Einstellungen wurden nicht gespeichert! Willst du wirklich abbrechen?</string>
+    <string name="NotSaved_button">Ja</string>
+    <string name="NotSaved_cancel">Nein</string>
 </resources>

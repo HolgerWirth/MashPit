@@ -44,14 +44,9 @@ class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.ChartListVi
     public void onBindViewHolder(@NonNull ChartListViewHolder chartListViewHolder, int i) {
         Charts chart = this.chartList.get(i);
         chartListViewHolder.name.setText(chart.name);
-        chartListViewHolder.name.setTag(chart.id);
+        chartListViewHolder.name.setTag(chart.name);
         chartListViewHolder.desc.setText(chart.description);
-        chartListViewHolder.deleteButton.setVisibility(View.GONE);
-
-        if(chart.todelete==0)
-        {
-            chartListViewHolder.deleteButton.setVisibility(View.VISIBLE);
-        }
+        chartListViewHolder.deleteButton.setVisibility(View.VISIBLE);
     }
 
     @NonNull
@@ -82,14 +77,14 @@ class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.ChartListVi
                 public void onClick(View view) {
                     Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
                     deleteButton.setPressed(true);
-                    deleteChartCallback.onChartDeleted((long) name.getTag());
+                    deleteChartCallback.onChartDeleted((String) name.getTag());
                 }
             });
         }
     }
 
     public interface DeleteChartCallback {
-        void onChartDeleted(long position);
+        void onChartDeleted(String name);
     }
 
     void setOnItemClickListener(ChartListAdapter.DeleteChartCallback callback){

@@ -20,7 +20,7 @@ public class SensorDataEvent
 
     public String getTopicString()
     {
-        return(getServer()+"/"+getSensor()+"/"+getInterval());
+        return("/SE/"+getServer()+"/temp/"+getSensor()+"/"+getInterval());
 
     }
 

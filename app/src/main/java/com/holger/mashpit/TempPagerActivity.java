@@ -87,7 +87,7 @@ public class TempPagerActivity extends AppCompatActivity {
             MashPit.createSubMenu(menu, getApplicationContext());
         }
 
-        subscriptionHandler = new SubscriptionHandler(action);
+        subscriptionHandler = new SubscriptionHandler();
 
         ViewPager pager = findViewById(R.id.pagerview);
         pagerAdapter = new TempPagerAdapter(pieCharts);
@@ -220,7 +220,7 @@ public class TempPagerActivity extends AppCompatActivity {
         View pieChart;
         for(SensorDataEvent myEvent : stickyEvent.sticky) {
             String alias = subscriptionHandler.getSensorAlias(myEvent.getServer(), myEvent.getSensor());
-            if (subscriptionHandler.checkSubscription(myEvent.getTopicString())) {
+            if (subscriptionHandler.checkSubscription(myEvent.getTopicString(),"Pager")) {
                 Log.i(DEBUG_TAG, "SensorDataEvent arrived: " + myEvent.getTopicString());
                 boolean found = false;
                 for (int i = 0; i < pieCharts.size(); i++) {
@@ -260,7 +260,6 @@ public class TempPagerActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
         snb = new SnackBar(coordinatorLayout);
-        subscriptionHandler.refreshSubscription();
 
         snb.setmOnClickListener(
                 mOnClickListener = new View.OnClickListener() {

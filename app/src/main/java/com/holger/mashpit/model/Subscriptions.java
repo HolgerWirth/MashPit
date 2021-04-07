@@ -6,10 +6,10 @@ import com.activeandroid.annotation.Table;
 
 import java.io.Serializable;
 
-@Table(name = "Subscriptions", id = "clientId")
+@Table(name = "Subscriptions")
 public class Subscriptions extends Model implements Serializable {
-    @Column(name = "id")
-    public long id;
+    @Column(name = "topic", index = true)
+    public String topic;
     @Column(name="action", index = true)
     public String action;
     @Column(name="name", index = true)
@@ -22,18 +22,25 @@ public class Subscriptions extends Model implements Serializable {
     public int interval;
     @Column(name = "durable")
     public int durable;
+    @Column(name = "deleted")
+    public boolean deleted;
+
+    public String aliasServer;
+    public String aliasSensor;
 
     public Subscriptions() {
         super();
     }
 
-    public Subscriptions(String action,String name,String server, String sensor, int interval, int durable)
+    public Subscriptions(String topic, String action,String name,String server, String sensor, int interval, int durable, boolean deleted)
     {
+        this.topic = topic;
         this.action = action;
         this.name = name;
         this.server = server;
         this.sensor = sensor;
         this.interval = interval;
         this.durable = durable;
+        this.deleted = deleted;
     }
 }

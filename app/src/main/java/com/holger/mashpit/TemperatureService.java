@@ -86,8 +86,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private NetworkConnectionIntentReceiver networkConnectionMonitor;
     SharedPreferences prefs;
 
-    SubscriptionHandler subsHandlerService;
-    SubscriptionHandler subsHandlerChart;
+    SubscriptionHandler subsHandler;
     SensorStickyEvent stickyData;
 
     private PowerManager.WakeLock wakeLock;
@@ -99,8 +98,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         super.onCreate();
         Log.i(DEBUG_TAG, "onCreate()...");
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        subsHandlerService = new SubscriptionHandler("Service");
-        subsHandlerChart = new SubscriptionHandler("Chart");
+        subsHandler = new SubscriptionHandler();
         stickyData = new SensorStickyEvent();
     }
 
@@ -190,33 +188,25 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     }
 
                     new Delete()
-                            .from(MPServer.class)
-                            .execute();
-                    new Delete()
                             .from(Sensors.class)
                             .execute();
 
-                    List<String> delTopics = PreferenceHandler.getArrayList(this, "delTopics");
-                    boolean failedDel = false;
+                    List<String> delTopics = subsHandler.getDeletedSubscriptions();
                     for (String sub : delTopics) {
                         try {
                             Log.i(DEBUG_TAG, "Unsubscribe: " + MQTT_DOMAIN + sub);
                             mClient.unsubscribe(MQTT_DOMAIN + sub);
                         } catch (MqttException e) {
-                            failedDel=true;
                             e.printStackTrace();
+                            break;
                         }
-                    }
-                    if(!failedDel)
-                    {
-                        PreferenceHandler.removePreference(this,"delTopics");
+                        subsHandler.deleteSubsription(sub);
                     }
 
-                    List<String> topics = subsHandlerService.getAllSubscription(false);
-                    List<String> topics_durable = subsHandlerService.getAllSubscription(true);
+                    List<String> topics = subsHandler.getAllSubscription(false);
+                    List<String> topics_durable = subsHandler.getAllSubscription(true);
                     topics.add("/SE/"+"+/"+"conf/#");
                     topics.add("/SE/"+"+/"+"status");
-//                    topics.add("/MP/#");
 
                     try {
                         for (String sub : topics) {
@@ -586,8 +576,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     private void updateNotification(SensorDataEvent event) {
         Log.i(DEBUG_TAG, "updateNotification");
         builder.setColor(Color.BLACK);
-        String server = subsHandlerService.getServerAlias(event.getServer());
-        String sensor = subsHandlerService.getSensorAlias(event.getServer(),event.getSensor());
+        String server = subsHandler.getServerAlias(event.getServer());
+        String sensor = subsHandler.getSensorAlias(event.getServer(),event.getSensor());
         builder.setContentTitle(event.getData("Temp") + "°");
         builder.setContentText(new StringBuilder().append(server).append(" / ").append(sensor).append("  ").append(event.getTimestamp()));
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -762,12 +752,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             EventBus.getDefault().post(sensorData);
         }
 
-        if (subsHandlerService.checkSubscription(sensorData.getTopicString())) {
+        if (subsHandler.checkSubscription(sensorData.getTopicString(),"Service")) {
             Log.i(DEBUG_TAG, "Notification updated");
             updateNotification(sensorData);
         }
 
-        if (subsHandlerChart.checkSubscription(sensorData.getTopicString())) {
+        if (subsHandler.checkSubscription(sensorData.getTopicString(),"Chart")) {
             Log.i(DEBUG_TAG, "Chart data saved!");
         }
 
@@ -1125,7 +1115,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         } catch (MqttException e) {
             e.printStackTrace();
         }
-        subsHandlerService.refreshSubscription();
     }
 
     private void unsubscribeTopic(String topic)
@@ -1138,11 +1127,10 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             deltopics.add(topic);
             PreferenceHandler.saveArrayList(this, deltopics,"delTopics");
         }
-        subsHandlerService.refreshSubscription();
     }
 
     private void refreshRetainedMessages() {
-        List<String> retainedTopics = subsHandlerService.getRetainedSubscription();
+        List<String> retainedTopics = subsHandler.getRetainedSubscription();
 
         try {
             for (String sub : retainedTopics) {

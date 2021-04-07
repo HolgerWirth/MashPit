@@ -6,11 +6,13 @@ import android.os.Bundle;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.activeandroid.query.Update;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.Charts;
 import com.holger.mashpit.model.Subscriptions;
 import com.holger.mashpit.tools.ItemClickSupport;
+import com.holger.share.Constants;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -86,15 +88,10 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     }
 
     private List<Charts> refreshCharts() {
-        List<Charts> dbresult;
-        List<Subscriptions> subresult;
         List<Charts> charts = new ArrayList<>();
-        dbresult = new Select().from(Charts.class).orderBy("name ASC").execute();
+        List<Charts> dbresult = new Select().from(Charts.class).orderBy("name ASC").execute();
         for (Charts chart : dbresult) {
             chart.id = chart.getId();
-            subresult=new Select().from(Subscriptions.class).where("action=?","Chart")
-                    .and("name=?",chart.name).execute();
-            chart.todelete=subresult.size();
             charts.add(chart);
         }
         return charts;
@@ -113,17 +110,37 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     }
 
         @Override
-    public void onChartDeleted(final long position) {
-        Log.i(DEBUG_TAG, "Clicked on delete on position: "+position);
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-
+    public void onChartDeleted(final String name) {
+        Log.i(DEBUG_TAG, "Clicked on delete on chart: "+name);
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new Delete().from(Charts.class).where("clientId = ?", position).execute();
+                new Delete().from(Charts.class).where("name = ?", name).execute();
+                if(new Select().from(Subscriptions.class).where("action = ?","Chart").and("name = ?",name).and("deleted = ?",0).exists())
+                {
+                    new Update(Subscriptions.class)
+                            .set("deleted = ?", 1)
+                            .where("action = ? and name = ?", "Chart", name)
+                            .execute();
+
+                    builder.setTitle(getString(R.string.Subchanged_alert_title));
+                    builder.setMessage(getString(R.string.Subchanged_text));
+                    builder.setPositiveButton(getString(R.string.Subchanged_button), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.i(DEBUG_TAG, "Reconnect pressed!");
+                            Log.i(DEBUG_TAG, "Stop service!");
+                            Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
+                            serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
+                            getApplicationContext().startService(serviceIntent);
+                        }
+                    });
+                    builder.setNegativeButton(getString(R.string.Subchanged_cancel), null);
+                    builder.show();
+                }
                 charts=refreshCharts();
                 sa.refreshCharts(charts);
                 sa.notifyDataSetChanged();
@@ -131,5 +148,6 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
         builder.show();
+
     }
 }

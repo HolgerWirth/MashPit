@@ -179,4 +179,12 @@
     <string name="new_output_event">New Outbound Event</string>
     <string name="new_input_event">New Inbound Event</string>
     <string name="broker_ca">Broker CA</string>
+    <string name="Subchanged_text">The service must be restarted to apply the changes</string>
+    <string name="Subchanged_alert_title">Service Restart</string>
+    <string name="Subchanged_button">OK, Restart</string>
+    <string name="Subchanged_cancel">No, Not Yet</string>
+    <string name="NotSaved_title">Warning!</string>
+    <string name="NotSaved_text">The configuration was not saved. Do you really want to exit?</string>
+    <string name="NotSaved_button">Yes</string>
+    <string name="NotSaved_cancel">No</string>
 </resources>

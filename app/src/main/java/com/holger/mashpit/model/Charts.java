@@ -24,7 +24,6 @@ public class Charts extends Model implements Serializable {
     public int min;
     @Column(name = "keep")
     public int keep;
-    public int todelete;
 
     public Charts() {
         // Notice how super() has been called to perform default initialization

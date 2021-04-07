@@ -3,6 +3,7 @@ package com.holger.mashpit.tools;
 import android.database.Cursor;
 
 import com.activeandroid.Cache;
+import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.holger.mashpit.model.SensorStatus;
 import com.holger.mashpit.model.Sensors;
@@ -12,23 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SubscriptionHandler {
-    private List<String> subscriptions;
-    private String action;
-
-    public SubscriptionHandler(String action)
-    {
-        this.action=action;
-        refreshSubscription();
-    }
-
-    public void refreshSubscription()
-    {
-        subscriptions = new ArrayList<>();
-        List<Subscriptions> dbresult = new Select().from(Subscriptions.class).where("action=?",action).orderBy("server ASC").execute();
-        for (Subscriptions sub : dbresult) {
-            subscriptions.add(sub.server+"/"+sub.sensor+"/"+sub.interval);
-        }
-    }
 
     public String getServerAlias(String server) {
         SensorStatus sensorStatus = new Select().from(SensorStatus.class).where("server=?", server).executeSingle();
@@ -50,24 +34,43 @@ public class SubscriptionHandler {
         }
         return sensors.name;
     }
-    public List<String> getAllSubscription(boolean durable) {
+
+    public void deleteSubsription(String topic)
+    {
+        new Delete().from(Subscriptions.class).where("topic = ?", topic).and("deleted = ?",1).execute();
+    }
+
+    public List<String> getDeletedSubscriptions()
+    {
         List<String> sub_all = new ArrayList<>();
-        final String sql="select server,sensor,interval, sum(durable) from Subscriptions group by server,sensor,interval";
+        final String sql="select topic,sum(durable) from Subscriptions where deleted = 1 group by topic";
         final Cursor resultCursor = Cache.openDatabase().rawQuery(sql, null);
         while (resultCursor.moveToNext()) {
             Subscriptions sub = new Subscriptions();
-            sub.server=resultCursor.getString(0);
-            sub.sensor=resultCursor.getString(1);
-            sub.interval=resultCursor.getInt(2);
-            sub.durable=resultCursor.getInt(3);
+            sub.topic = resultCursor.getString(0);
+            sub.durable = resultCursor.getInt(1);
+            sub_all.add(sub.topic);
+        }
+        resultCursor.close();
+        return sub_all;
+    }
+
+    public List<String> getAllSubscription(boolean durable) {
+        List<String> sub_all = new ArrayList<>();
+        final String sql="select topic,sum(durable) from Subscriptions where deleted = 0 group by topic";
+        final Cursor resultCursor = Cache.openDatabase().rawQuery(sql, null);
+        while (resultCursor.moveToNext()) {
+            Subscriptions sub = new Subscriptions();
+            sub.topic=resultCursor.getString(0);
+            sub.durable=resultCursor.getInt(1);
             if(durable) {
-                if (sub.durable == 1) {
-                    sub_all.add("/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval);
+                if (sub.durable > 0) {
+                    sub_all.add(sub.topic);
                 }
             }
             else {
                 if (sub.durable == 0) {
-                    sub_all.add("/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval);
+                    sub_all.add(sub.topic);
                 }
             }
         }
@@ -75,9 +78,11 @@ public class SubscriptionHandler {
         return sub_all;
     }
 
-    public boolean checkSubscription(String topic)
+    public boolean checkSubscription(String topic,String action)
     {
-        return subscriptions.contains(topic);
+        return new Select().from(Subscriptions.class).where("action=?",action)
+                .and("topic = ?",topic)
+                .and("deleted = ?",0).exists();
     }
 
     public List<String> getRetainedSubscription()

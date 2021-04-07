@@ -44,8 +44,16 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
         Subscriptions sub = this.subscriberList.get(i);
         String interval = Integer.toString(sub.interval);
         subscriberViewHolder.server.setText(sub.server);
-        subscriberViewHolder.server.setTag(sub.id);
+        if(!sub.aliasServer.isEmpty())
+        {
+            subscriberViewHolder.server.setText(sub.aliasServer);
+        }
+        subscriberViewHolder.server.setTag(sub.topic);
         subscriberViewHolder.sensor.setText(sub.sensor);
+        if(!sub.aliasSensor.isEmpty())
+        {
+            subscriberViewHolder.sensor.setText(sub.aliasSensor);
+        }
         subscriberViewHolder.interval.setText(interval);
     }
 
@@ -79,14 +87,14 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
                 public void onClick(View view) {
                     Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
                     deleteButton.setPressed(true);
-                    deleteSubscriptionCallback.onSubscriptionDeleted((long) server.getTag());
+                    deleteSubscriptionCallback.onSubscriptionDeleted((String)server.getTag());
                 }
             });
         }
     }
 
     public interface DeleteSubscriptionCallback {
-        void onSubscriptionDeleted(long position);
+        void onSubscriptionDeleted(String position);
     }
 
     void setOnItemClickListener(SubscriberAdapter.DeleteSubscriptionCallback callback){

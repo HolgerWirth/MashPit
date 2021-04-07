@@ -4,14 +4,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.activeandroid.query.Update;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.SensorStatus;
 import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.model.Subscriptions;
-import com.holger.mashpit.tools.SubscriptionHandler;
 import com.holger.share.Constants;
 
 import androidx.appcompat.app.ActionBar;
@@ -32,7 +31,7 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     SubscriberAdapter sa;
     String action = "TEST";
     boolean durable;
-    SubscriptionHandler subscriptionHandler;
+    boolean subListChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +51,7 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         assert ab != null;
         ab.setTitle("Sensor Data");
 
+        subListChanged=false;
         action=getIntent().getStringExtra("ACTION");
         durable = getIntent().getBooleanExtra("DURABLE",false);
         if(action==null)
@@ -59,7 +59,6 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
             action="TEST";
         }
 
-        subscriptionHandler = new SubscriptionHandler(action);
         Log.i(DEBUG_TAG, "SubscriberActivity started with: " + action + " and durable="+durable);
 
         final FloatingActionButton addButton = findViewById(R.id.subscriberfabadd);
@@ -90,34 +89,33 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     }
 
     private List<Subscriptions> refreshSubscriber() {
-        List<Subscriptions> dbresult;
-        List<Subscriptions> subscriptions = new ArrayList<>();
         String serverId="";
-        dbresult = new Select().from(Subscriptions.class).where("action=?",action).orderBy("server ASC").execute();
+        List<Subscriptions> dbresult;
+        List<Subscriptions> tempSub = new ArrayList<>();
+        dbresult = new Select().from(Subscriptions.class).where("action=?",action).and("deleted=?",0).orderBy("server ASC").execute();
         for (Subscriptions sub : dbresult) {
-            sub.id=sub.getId();
-            List<SensorStatus> sensorStatuses = new Select().from(SensorStatus.class).where("server=?",sub.server).orderBy("server ASC").execute();
-            for (SensorStatus sensor : sensorStatuses) {
-                if (sub.server.equals(sensor.server)) {
-                    serverId=sensor.server;
-                    if (!sensor.alias.isEmpty()) {
-                        sub.server = sensor.alias;
+            if(!sub.deleted) {
+                List<SensorStatus> sensorStatuses = new Select().from(SensorStatus.class).where("server=?", sub.server).orderBy("server ASC").execute();
+                for (SensorStatus sensor : sensorStatuses) {
+                    if (sub.server.equals(sensor.server)) {
+                        serverId = sensor.server;
+                        if (!sensor.alias.isEmpty()) {
+                            sub.aliasServer = sensor.alias;
+                        }
+                        break;
+                    }
+                }
+                List<Sensors> sensorNames = new Select().from(Sensors.class).where("server=?", serverId).and("sensor=?", sub.sensor).execute();
+                for (Sensors sensorName : sensorNames) {
+                    if (!sensorName.name.isEmpty()) {
+                        sub.aliasSensor = sensorName.name;
                     }
                     break;
                 }
+                tempSub.add(sub);
             }
-            List<Sensors> sensorNames = new Select().from(Sensors.class).where("server=?",serverId).and("sensor=?",sub.sensor).execute();
-            for(Sensors sensorName : sensorNames)
-            {
-                if(!sensorName.name.isEmpty())
-                {
-                    sub.sensor=sensorName.name;
-                }
-                break;
-            }
-            subscriptions.add(sub);
         }
-        return subscriptions;
+        return tempSub;
     }
 
     @Override
@@ -131,40 +129,33 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
             String topic = "/SE/"+server+"/temp/"+sensor+"/"+interval;
             Log.i(DEBUG_TAG, "New subscription added: " + topic);
 
-            boolean exists = new Select().from(Subscriptions.class).where("action = ?", action)
-                    .and("server = ?", server)
-                    .and("sensor=?", sensor)
-                    .and("interval=?", interval).exists();
-
-            if (!exists) {
-                if(!(subscriptionHandler.getAllSubscription(durable).contains(topic)))
-                {
-                    Log.i(DEBUG_TAG, "New subscription!");
-                    Intent serviceIntent = new Intent(this, TemperatureService.class);
-                    serviceIntent.setAction(Constants.ACTION.SUBSCRIBE_ACTION);
-                    serviceIntent.putExtra("TOPIC",topic);
-                    serviceIntent.putExtra("DURABLE",durable);
-                    startService(serviceIntent);
-                }
+            List<Subscriptions> dbresult = new Select().from(Subscriptions.class).where("action = ?", action)
+                    .and("topic = ?", topic).execute();
+            if (dbresult.isEmpty()) {
                 Log.i(DEBUG_TAG, "Subscription inserted: " + action + ", " + server + ", " + sensor + ", " + interval);
-                Subscriptions subscriptions;
                 String name="";
-                if(durable) {
-                    subscriptions = new Subscriptions(action, name, server, sensor, interval, 1);
-                }
-                else
-                {
-                    subscriptions = new Subscriptions(action, name, server, sensor, interval, 0);
-                }
-                subscriptions.save();
+                new Subscriptions(topic,action, name, server, sensor, interval, durable ? 1 : 0,false).save();
+                subListChanged=true;
                 sa.refreshSubscribers(refreshSubscriber());
                 sa.notifyDataSetChanged();
+            }
+            else
+            {
+                Log.i(DEBUG_TAG, "Subscription exists (deleted): " + action +": "+topic);
+                if(dbresult.get(0).deleted)
+                {
+                    new Update(Subscriptions.class)
+                            .set("deleted = ?", 0)
+                            .where("action = ? and topic = ?", action,topic)
+                            .execute();
+                    subListChanged=true;
+                }
             }
         }
     }
 
     @Override
-    public void onSubscriptionDeleted(final long position) {
+    public void onSubscriptionDeleted(final String position) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
 
         builder.setTitle(R.string.sub_delete);
@@ -172,22 +163,40 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                subListChanged=true;
                 Subscriptions sub = new Select().from(Subscriptions.class).where("clientId = ?", position).executeSingle();
                 String topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
-
-                new Delete().from(Subscriptions.class).where("clientId = ?", position).execute();
+                new Update(Subscriptions.class)
+                        .set("deleted = ?", 1)
+                        .where("action = ? and topic = ?", action,topic)
+                        .execute();
                 sa.refreshSubscribers(refreshSubscriber());
                 sa.notifyDataSetChanged();
-
-                if (!(subscriptionHandler.getAllSubscription(durable).contains(topic))) {
-                    Intent serviceIntent = new Intent(SubscriberActivity.this, TemperatureService.class);
-                    serviceIntent.setAction(Constants.ACTION.UNSUBSCRIBE_ACTION);
-                    serviceIntent.putExtra("TOPIC", topic);
-                    startService(serviceIntent);
-                }
             }
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
         builder.show();
+    }
+
+    @Override
+    protected void onStop() {
+        if (subListChanged) {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+            builder.setTitle(getString(R.string.Subchanged_alert_title));
+            builder.setMessage(getString(R.string.Subchanged_text));
+            builder.setPositiveButton(getString(R.string.Subchanged_button), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.i(DEBUG_TAG, "Reconnect pressed!");
+                    Log.i(DEBUG_TAG, "Stop service!");
+                    Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
+                    serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
+                    getApplicationContext().startService(serviceIntent);
+                }
+            });
+            builder.setNegativeButton(getString(R.string.Subchanged_cancel), null);
+            builder.show();
+        }
+        super.onStop();
     }
 }
