@@ -2,15 +2,12 @@ package com.holger.mashpit.prefs;
 
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.Preference.SummaryProvider;
@@ -43,17 +40,9 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
 
         assert password != null;
         password.setOnBindEditTextListener(
-                new EditTextPreference.OnBindEditTextListener() {
-                    @Override
-                    public void onBindEditText(@NonNull final EditText editText) {
-                        editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                        password.setSummaryProvider(new SummaryProvider<Preference>() {
-                            @Override
-                            public CharSequence provideSummary(Preference preference) {
-                                return setAsterisks(editText.getText().toString().length());
-                            }
-                        });
-                    }
+                editText -> {
+                    editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    password.setSummaryProvider((SummaryProvider<Preference>) preference -> setAsterisks(editText.getText().toString().length()));
                 });
 
         assert broker_url != null;
@@ -96,15 +85,12 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(getString(R.string.MQTTchanged_alert_title));
             builder.setMessage(getString(R.string.MQTTchanged_text));
-            builder.setPositiveButton(getString(R.string.MQTTchanged_button), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(DEBUG_TAG, "Reconnect pressed!");
-                    Log.i(DEBUG_TAG, "Stop service!");
-                    Intent serviceIntent = new Intent(context, TemperatureService.class);
-                    serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
-                    context.startService(serviceIntent);
-                }
+            builder.setPositiveButton(getString(R.string.MQTTchanged_button), (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Reconnect pressed!");
+                Log.i(DEBUG_TAG, "Stop service!");
+                Intent serviceIntent = new Intent(context, TemperatureService.class);
+                serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
+                context.startService(serviceIntent);
             });
             builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
             builder.show();
@@ -137,7 +123,7 @@ public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedP
             changed=true;
         }
         try {
-            Objects.requireNonNull(findPreference(key)).setSummary(p.getString(key, ""));
+            findPreference(key).setSummary(p.getString(key, ""));
         }
         catch (Exception e)
         {

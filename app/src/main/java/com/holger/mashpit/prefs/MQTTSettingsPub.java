@@ -5,17 +5,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.holger.mashpit.R;
-
-import java.util.Objects;
 
 public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String DEBUG_TAG = "MQTTSettingsPub";
@@ -35,17 +31,9 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
 
         assert password != null;
         password.setOnBindEditTextListener(
-                new EditTextPreference.OnBindEditTextListener() {
-                    @Override
-                    public void onBindEditText(@NonNull final EditText editText) {
-                        editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                        password.setSummaryProvider(new Preference.SummaryProvider<Preference>() {
-                            @Override
-                            public CharSequence provideSummary(Preference preference) {
-                                return setAsterisks(editText.getText().toString().length());
-                            }
-                        });
-                    }
+                editText -> {
+                    editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    password.setSummaryProvider((Preference.SummaryProvider<Preference>) preference -> setAsterisks(editText.getText().toString().length()));
                 });
 
         assert broker_url != null;
@@ -93,7 +81,7 @@ public class MQTTSettingsPub extends PreferenceFragmentCompat implements SharedP
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
-            Objects.requireNonNull(findPreference(key)).setSummary(p.getString(key, ""));
+            findPreference(key).setSummary(p.getString(key, ""));
         }
         catch (Exception e)
         {
