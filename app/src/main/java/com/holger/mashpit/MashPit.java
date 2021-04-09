@@ -11,6 +11,7 @@ import android.view.SubMenu;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Select;
 import com.holger.mashpit.model.Temperature;
+import com.holger.mashpit.tools.ObjectBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class MashPit extends com.activeandroid.app.Application {
 
         // Notice this initialization code here
         ActiveAndroid.initialize(this);
+        ObjectBox.init(this);
 
         mDeviceId = String.format("MP_%s", Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
 

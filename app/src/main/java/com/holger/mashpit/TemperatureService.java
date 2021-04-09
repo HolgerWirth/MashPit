@@ -43,6 +43,7 @@ import com.holger.mashpit.events.SensorDataEvent;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.events.SensorStickyEvent;
 import com.holger.mashpit.events.StatusEvent;
+import com.holger.mashpit.model.ChartData;
 import com.holger.mashpit.model.Config;
 import com.holger.mashpit.model.MPServer;
 import com.holger.mashpit.model.MPStatus;
@@ -62,13 +63,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import com.holger.mashpit.tools.MySSlSocketFactory;
+import com.holger.mashpit.tools.ObjectBox;
 import com.holger.mashpit.tools.PreferenceHandler;
 import com.holger.mashpit.tools.SubscriptionHandler;
 import com.holger.share.Constants;
+
+import io.objectbox.Box;
 
 public class TemperatureService extends Service implements MqttCallback,DataClient.OnDataChangedListener {
 
@@ -168,14 +173,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
                             builder.build());
-
-                    /*
-                    if(!EventBus.getDefault().isRegistered(this)) {
-                        Log.i(DEBUG_TAG, "EventBus register");
-                        EventBus.getDefault().register(this);
-                    }
-
-                     */
 
                     registerBroadcastReceivers();
                     Wearable.getDataClient(this).addListener(this);
@@ -758,9 +755,34 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         }
 
         if (subsHandler.checkSubscription(sensorData.getTopicString(),"Chart")) {
-            Log.i(DEBUG_TAG, "Chart data saved!");
-        }
+            try {
+                Box<ChartData> dataBox = ObjectBox.get().boxFor(ChartData.class);
+                JSONObject obj = new JSONObject(mess);
+                JSONArray keys = obj.names ();
+                List<ChartData> chartData = new ArrayList<>();
 
+                long TS=obj.getLong("TS");
+                String topic="/"+parts[1]+"/"+parts[2]+"/"+parts[3]+"/"+parts[4]+"/"+parts[5];
+
+                for (int i = 0; i < (keys != null ? keys.length() : 0); i++) {
+                    ChartData myData= new ChartData();
+                    String key = keys.getString(i);
+                    String value = obj.getString(key);
+                    if(!(key.equals("TS")))
+                    {
+                        myData.TS=TS;
+                        myData.topic=topic;
+                        myData.value=value;
+                        myData.var=key;
+                        chartData.add(myData);
+                    }
+                }
+                dataBox.put(chartData);
+                Log.i(DEBUG_TAG, "ChartData count: "+dataBox.count());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         stickyData.addSticky(sensorData);
         EventBus.getDefault().postSticky(stickyData);
     }
