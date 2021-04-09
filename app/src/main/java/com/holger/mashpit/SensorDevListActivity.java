@@ -2,14 +2,12 @@ package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -93,12 +91,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
         Toolbar toolbar = findViewById(R.id.sensordev_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         server = getIntent().getStringExtra("server");
         system = getIntent().getStringExtra("system");
@@ -143,79 +136,62 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
         fabOK.hide();
 
-        fabadd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the FAB button");
-                if (iscollapsed) {
-                    speeddial.setVisibility(LinearLayout.GONE);
-                    iscollapsed = false;
-                } else {
-                    speeddial.setVisibility(LinearLayout.VISIBLE);
-                    iscollapsed = true;
-                }
-            }
-        });
-
-        fabGPIO.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the GPIO FAB");
+        fabadd.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB button");
+            if (iscollapsed) {
                 speeddial.setVisibility(LinearLayout.GONE);
-                iscollapsed=false;
-                Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
-                l.putExtra("ACTION", "insert");
-                l.putExtra("sensor", "");
-                l.putExtra("type", "gpio");
-                l.putExtra("server",server);
-                l.putExtra("name","");
-                l.putExtra("GPIO",0);
-                l.putExtra("address","0");
-                startActivityForResult(l, 0);
+                iscollapsed = false;
+            } else {
+                speeddial.setVisibility(LinearLayout.VISIBLE);
+                iscollapsed = true;
             }
         });
 
-        fabOK.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                alertDialog.setTitle(getString(R.string.pubConfig));
-                alertDialog.setMessage(getString(R.string.confPublishAlert, alias));
-                alertDialog.setIcon(R.drawable.ic_launcher);
-
-                alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on Cancel!");
-                    }
-                });
-
-                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                        JSONObject obj = new JSONObject();
-                        try {
-                            obj.put("alias", alias);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                        pubMQTT.PublishServerStatus(server, obj.toString());
-                    }
-                });
-                alertDialog.show();
-            }
+        fabGPIO.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the GPIO FAB");
+            speeddial.setVisibility(LinearLayout.GONE);
+            iscollapsed=false;
+            Intent l = new Intent(getApplicationContext(), SensorConfEdit.class);
+            l.putExtra("ACTION", "insert");
+            l.putExtra("sensor", "");
+            l.putExtra("type", "gpio");
+            l.putExtra("server",server);
+            l.putExtra("name","");
+            l.putExtra("GPIO",0);
+            l.putExtra("address","0");
+            startActivityForResult(l, 0);
         });
 
-        serverVersion.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on serverVersion");
-                Intent l = new Intent(getApplicationContext(), SensorUpdateActivity.class);
-                l.putExtra("server", server);
-                l.putExtra("system", system);
-                l.putExtra("IP", IP);
-                l.putExtra("alias",alias);
-                startActivityForResult(l, 0);
-            }
+        fabOK.setOnClickListener(view -> {
+
+            alertDialog.setTitle(getString(R.string.pubConfig));
+            alertDialog.setMessage(getString(R.string.confPublishAlert, alias));
+            alertDialog.setIcon(R.drawable.ic_launcher);
+
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on Cancel!"));
+
+            alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+                JSONObject obj = new JSONObject();
+                try {
+                    obj.put("alias", alias);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                pubMQTT.PublishServerStatus(server, obj.toString());
+            });
+            alertDialog.show();
+        });
+
+        serverVersion.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on serverVersion");
+            Intent l = new Intent(getApplicationContext(), SensorUpdateActivity.class);
+            l.putExtra("server", server);
+            l.putExtra("system", system);
+            l.putExtra("IP", IP);
+            l.putExtra("alias",alias);
+            startActivityForResult(l, 0);
         });
 
         sensorName.addTextChangedListener(new TextWatcher() {
@@ -251,52 +227,46 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         sa = new SensorDevAdapter(result);
         startTimer(TS);
 
-        ItemClickSupport.addTo(sensordevList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                Log.i(DEBUG_TAG, "Clicked!");
+        ItemClickSupport.addTo(sensordevList).setOnItemClickListener((recyclerView, position, v) -> {
+            Log.i(DEBUG_TAG, "Clicked!");
 
-                Intent l;
-                Sensors sensors = sa.getItem(position);
-                l = new Intent(getApplicationContext(), SensorConfEdit.class);
+            Intent l;
+            Sensors sensors = sa.getItem(position);
+            l = new Intent(getApplicationContext(), SensorConfEdit.class);
 
-                if(sensors.type.equals("mcp23017"))
-                {
-                    l = new Intent(getApplicationContext(), SensorEventListActivity.class);
-                }
-                if(sensors.sensor.equals("GPIO"))
-                {
-                    l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
-                    l.putExtra("hw","GPIO");
-                }
-
-                l.putExtra("ACTION", "edit");
-                l.putExtra("family",sensors.family);
-                l.putExtra("sensor", sensors.sensor);
-                l.putExtra("type",sensors.type);
-                l.putExtra("name",sensors.name);
-                l.putExtra("server",sensors.server);
-                l.putExtra("active",sensors.active);
-                l.putExtra("GPIO",sensors.port);
-                l.putExtra("SDA",sensors.sda);
-                l.putExtra("SCL",sensors.scl);
-                l.putExtra("ALT",sensors.alt);
-                l.putExtra("mcpid",sensors.interval);
-                l.putExtra("event",sensors.event);
-                l.putExtra("dir",sensors.dir);
-                l.putExtra("hyst",sensors.hyst);
-
-                startActivityForResult(l, 0);
+            if(sensors.type.equals("mcp23017"))
+            {
+                l = new Intent(getApplicationContext(), SensorEventListActivity.class);
             }
+            if(sensors.sensor.equals("GPIO"))
+            {
+                l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
+                l.putExtra("hw","GPIO");
+            }
+
+            l.putExtra("ACTION", "edit");
+            l.putExtra("family",sensors.family);
+            l.putExtra("sensor", sensors.sensor);
+            l.putExtra("type",sensors.type);
+            l.putExtra("name",sensors.name);
+            l.putExtra("server",sensors.server);
+            l.putExtra("active",sensors.active);
+            l.putExtra("GPIO",sensors.port);
+            l.putExtra("SDA",sensors.sda);
+            l.putExtra("SCL",sensors.scl);
+            l.putExtra("ALT",sensors.alt);
+            l.putExtra("mcpid",sensors.interval);
+            l.putExtra("event",sensors.event);
+            l.putExtra("dir",sensors.dir);
+            l.putExtra("hyst",sensors.hyst);
+
+            startActivityForResult(l, 0);
         });
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                overridePendingTransition(0, 0);
-                setResult(resultCode, null);
-                finish();
-            }
+        toolbar.setNavigationOnClickListener(v -> {
+            overridePendingTransition(0, 0);
+            setResult(resultCode, null);
+            finish();
         });
 
         sa.setSensors(sensors);

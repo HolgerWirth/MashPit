@@ -72,14 +72,11 @@ class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.ChartListVi
             mCardView = v.findViewById(R.id.chardlistcard_view);
             deleteButton=v.findViewById(R.id.chartDeleteButton);
 
-           deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
-                    deleteButton.setPressed(true);
-                    deleteChartCallback.onChartDeleted((String) name.getTag());
-                }
-            });
+           deleteButton.setOnClickListener(view -> {
+               Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
+               deleteButton.setPressed(true);
+               deleteChartCallback.onChartDeleted((String) name.getTag());
+           });
         }
     }
 

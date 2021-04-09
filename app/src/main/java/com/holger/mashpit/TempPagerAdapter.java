@@ -8,9 +8,7 @@ import android.view.ViewGroup;
 import java.util.List;
 
 public class TempPagerAdapter extends PagerAdapter {
-    private static final String DEBUG_TAG = "TempPagerAdapter";
-
-    private List<View> views;
+    private final List<View> views;
 
     TempPagerAdapter(List<View> views) {
         this.views = views;

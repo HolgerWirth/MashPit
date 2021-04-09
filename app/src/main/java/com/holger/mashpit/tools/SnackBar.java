@@ -22,12 +22,7 @@ public class SnackBar {
     public SnackBar(CoordinatorLayout coordinatorLayout) {
         EventBus.getDefault().register(this);
 
-        mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Button clicked");
-            }
-        };
+        mOnClickListener = v -> Log.i(DEBUG_TAG, "Button clicked");
 
         Log.i(DEBUG_TAG, "SnackBar initialized");
         coLayout=coordinatorLayout;

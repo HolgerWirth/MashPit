@@ -50,7 +50,7 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
             sensorDevViewHolder.devStatus.setBackgroundResource(android.R.color.holo_red_light);
         }
 
-        int resID = 0;
+        int resID;
         if(devStatus.family.equals("SE")) {
             switch (devStatus.type) {
                 case ("ds18b20"):
@@ -181,13 +181,10 @@ class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevVi
             devEventType = v.findViewById(R.id.devEventType);
             devCardView = v.findViewById(R.id.devcard_view);
 
-           v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: onClick()");
-                    devCardView.setPressed(true);
-                }
-            });
+           v.setOnClickListener(view -> {
+               Log.i(DEBUG_TAG, "ViewHolder: onClick()");
+               devCardView.setPressed(true);
+           });
 
         }
     }

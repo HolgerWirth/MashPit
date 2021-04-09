@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
 import com.activeandroid.query.Select;
@@ -53,36 +52,27 @@ public class SelectSensorActivity extends AppCompatActivity {
         cancelButton.show();
         actionButton.hide();
 
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB: Done");
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra("server", selDevice);
-                returnIntent.putExtra("sensor", selSensor);
-                returnIntent.putExtra("interval", selInterval);
-                setResult(1, returnIntent);
-                finish();
-            }
+        actionButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB: Done");
+            Intent returnIntent = new Intent();
+            returnIntent.putExtra("server", selDevice);
+            returnIntent.putExtra("sensor", selSensor);
+            returnIntent.putExtra("interval", selInterval);
+            setResult(1, returnIntent);
+            finish();
         });
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
-                setResult(0);
-                finish();
-            }
+        cancelButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
+            setResult(0);
+            finish();
         });
 
         Toolbar toolbar = findViewById(R.id.sensoredit_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setResult(0);
-                onBackPressed();
-            }
+        toolbar.setNavigationOnClickListener(v -> {
+            setResult(0);
+            onBackPressed();
         });
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
@@ -170,18 +160,15 @@ public class SelectSensorActivity extends AppCompatActivity {
                     getResources().getDisplayMetrics()
             );
             mChip.setPadding(paddingDp, 0, paddingDp, 0);
-            mChip.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    if (b) {
-                        Log.i(DEBUG_TAG, "Chip selected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
-                        ChipSelected(compoundButton.getTag().toString(), compoundButton.getText().toString());
-                    } else {
-                        Log.i(DEBUG_TAG, "Chip unselected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
-                        ChipUnselected(compoundButton.getTag().toString(), compoundButton.getText().toString());
-                    }
-
+            mChip.setOnCheckedChangeListener((compoundButton, b) -> {
+                if (b) {
+                    Log.i(DEBUG_TAG, "Chip selected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
+                    ChipSelected(compoundButton.getTag().toString(), compoundButton.getText().toString());
+                } else {
+                    Log.i(DEBUG_TAG, "Chip unselected: Group: " + compoundButton.getTag() + " Chip pressed: " + compoundButton.getText());
+                    ChipUnselected(compoundButton.getTag().toString(), compoundButton.getText().toString());
                 }
+
             });
             chipsPrograms.addView(mChip);
         }

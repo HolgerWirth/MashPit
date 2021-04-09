@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
@@ -51,7 +50,6 @@ public class TempPagerActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     float cAngle = 270f;
 
-    String action = "Pager";
     SubscriptionHandler subscriptionHandler;
 
     SnackBar snb;
@@ -100,50 +98,47 @@ public class TempPagerActivity extends AppCompatActivity {
 
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        mDrawerLayout.closeDrawers();
-                        MashPit.menu_action = true;
+                menuItem -> {
+                    menuItem.setChecked(true);
+                    mDrawerLayout.closeDrawers();
+                    MashPit.menu_action = true;
 
-                        Log.i(DEBUG_TAG, "setupDrawerContent()");
+                    Log.i(DEBUG_TAG, "setupDrawerContent()");
 
-                        int id = menuItem.getItemId();
-                        if (id < 100) {
-                            selectTempChart(id);
-                            return true;
-                        }
-
-                        switch (id) {
-                            case android.R.id.home:
-                                mDrawerLayout.openDrawer(GravityCompat.START);
-                                return true;
-
-                            case R.id.nav_settings:
-                                Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
-                                startActivity(l);
-                                break;
-
-                            case R.id.nav_config:
-                                Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
-                                startActivity(m);
-                                break;
-
-                            case R.id.nav_sensorconfig:
-                                Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
-                                startActivity(n);
-                                break;
-
-                            case R.id.nav_process:
-                                Log.i(DEBUG_TAG, "Process selected!");
-                                Intent o = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(o);
-                                finish();
-                                break;
-                        }
+                    int id = menuItem.getItemId();
+                    if (id < 100) {
+                        selectTempChart(id);
                         return true;
                     }
+
+                    switch (id) {
+                        case android.R.id.home:
+                            mDrawerLayout.openDrawer(GravityCompat.START);
+                            return true;
+
+                        case R.id.nav_settings:
+                            Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
+                            startActivity(l);
+                            break;
+
+                        case R.id.nav_config:
+                            Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
+                            startActivity(m);
+                            break;
+
+                        case R.id.nav_sensorconfig:
+                            Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                            startActivity(n);
+                            break;
+
+                        case R.id.nav_process:
+                            Log.i(DEBUG_TAG, "Process selected!");
+                            Intent o = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(o);
+                            finish();
+                            break;
+                    }
+                    return true;
                 });
     }
 
@@ -262,14 +257,11 @@ public class TempPagerActivity extends AppCompatActivity {
         snb = new SnackBar(coordinatorLayout);
 
         snb.setmOnClickListener(
-                mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.i(DEBUG_TAG, "Retry service");
-                        Intent startIntent = new Intent(TempPagerActivity.this, TemperatureService.class);
-                        startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
-                        startService(startIntent);
-                    }
+                mOnClickListener = v -> {
+                    Log.i(DEBUG_TAG, "Retry service");
+                    Intent startIntent = new Intent(TempPagerActivity.this, TemperatureService.class);
+                    startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
+                    startService(startIntent);
                 });
 
     }

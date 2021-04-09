@@ -2,12 +2,10 @@ package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -126,12 +124,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
         Toolbar toolbar = findViewById(R.id.sensoredit_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
         ab.setTitle(name);
@@ -288,117 +281,101 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         addButton.show();
         actionButton.hide();
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                overridePendingTransition(0, 0);
-                setResult(resultCode, null);
-                finish();
-            }
+        toolbar.setNavigationOnClickListener(v -> {
+            overridePendingTransition(0, 0);
+            setResult(resultCode, null);
+            finish();
         });
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked on add FAB!");
-                Sensors newInterval = new Sensors();
-                newInterval.server = server;
-                newInterval.type = type;
-                newInterval.name = name;
-                newInterval.active = false;
-                newInterval.interval = 0;
-                newInterval.sensor = sensor;
-                newInterval.port=GPIO;
-                sensors.add(0, newInterval);
-                intervalInsert = true;
-                sa.notifyItemInserted(0);
-                addButton.hide();
-                cancelButton.show();
-                actionButton.hide();
-            }
+        addButton.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked on add FAB!");
+            Sensors newInterval = new Sensors();
+            newInterval.server = server;
+            newInterval.type = type;
+            newInterval.name = name;
+            newInterval.active = false;
+            newInterval.interval = 0;
+            newInterval.sensor = sensor;
+            newInterval.port=GPIO;
+            sensors.add(0, newInterval);
+            intervalInsert = true;
+            sa.notifyItemInserted(0);
+            addButton.hide();
+            cancelButton.show();
+            actionButton.hide();
         });
 
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB: Done");
-                if(type.equals("dht11"))
-                {
-                    if(action.equals("insert")) {
-                        if (GPIO == 0) {
-                            gpio.setError(getString(R.string.devGPIOWarning));
-                            return;
-                        }
-                        if (SensorGPIOExists(server, GPIO)) {
-                            gpio.setError(getString(R.string.devGPIOExists));
-                            return;
-                        }
+        actionButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB: Done");
+            if(type.equals("dht11"))
+            {
+                if(action.equals("insert")) {
+                    if (GPIO == 0) {
+                        gpio.setError(getString(R.string.devGPIOWarning));
+                        return;
+                    }
+                    if (SensorGPIOExists(server, GPIO)) {
+                        gpio.setError(getString(R.string.devGPIOExists));
+                        return;
                     }
                 }
-                alertDialog.setTitle(getString(R.string.pubConfig));
-                alertDialog.setMessage(getString(R.string.confPublishAlert, name));
-                alertDialog.setIcon(R.drawable.ic_launcher);
+            }
+            alertDialog.setTitle(getString(R.string.pubConfig));
+            alertDialog.setMessage(getString(R.string.confPublishAlert, name));
+            alertDialog.setIcon(R.drawable.ic_launcher);
 
-                alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - Cancel");
-                        sa.setIntervalList(refreshIntervalList(sensor));
-                        sa.notifyDataSetChanged();
-                    }
-                });
-
-                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                        if(intervalInsert) {
-                            Log.i(DEBUG_TAG, "New interval added!");
-                            sa.getItem(0).name = name;
-                            sa.getItem(0).port = GPIO;
-                            sa.getItem(0).alt = ALT;
-                            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0));
-                        }
-                        else {
-                            Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
-                            for (int i = 0; i < sa.getItemCount(); i++) {
-                                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                                if (!(name.equals(sa.getItem(i).name))) {
-                                    Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
-                                    sa.getItem(i).name = name;
-                                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
-                                }
-                            }
-                        }
-                        sensors.remove(0);
-                        sa.notifyItemRemoved(0);
-                        intervalList.setAdapter(sa);
-                        intervalInsert = false;
-                        cancelButton.hide();
-                        actionButton.hide();
-                        addButton.show();
-                        resultCode = 1;
-                    }
-                });
-                alertDialog.show();
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on OK! - Cancel");
+                sa.setIntervalList(refreshIntervalList(sensor));
                 sa.notifyDataSetChanged();
-            }
+            });
+
+            alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+                if(intervalInsert) {
+                    Log.i(DEBUG_TAG, "New interval added!");
+                    sa.getItem(0).name = name;
+                    sa.getItem(0).port = GPIO;
+                    sa.getItem(0).alt = ALT;
+                    SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0));
+                }
+                else {
+                    Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
+                    for (int i = 0; i < sa.getItemCount(); i++) {
+                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                        if (!(name.equals(sa.getItem(i).name))) {
+                            Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
+                            sa.getItem(i).name = name;
+                            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
+                        }
+                    }
+                }
+                sensors.remove(0);
+                sa.notifyItemRemoved(0);
+                intervalList.setAdapter(sa);
+                intervalInsert = false;
+                cancelButton.hide();
+                actionButton.hide();
+                addButton.show();
+                resultCode = 1;
+            });
+            alertDialog.show();
+            sa.notifyDataSetChanged();
         });
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
-                if (intervalInsert) {
-                    sensors.remove(0);
-                    sa.notifyItemRemoved(0);
-                    cancelButton.hide();
-                    actionButton.hide();
-                    addButton.show();
-                    intervalInsert = false;
-                } else {
-                    setResult(resultCode,null);
-                    finish();
-                }
+        cancelButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
+            if (intervalInsert) {
+                sensors.remove(0);
+                sa.notifyItemRemoved(0);
+                cancelButton.hide();
+                actionButton.hide();
+                addButton.show();
+                intervalInsert = false;
+            } else {
+                setResult(resultCode,null);
+                finish();
             }
         });
     }
@@ -441,19 +418,13 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         alertDialog.setMessage(getString(R.string.confdelIntervalAlert,Integer.toString(sensors.get(position).interval), name));
         alertDialog.setIcon(R.drawable.ic_launcher);
 
-        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(DEBUG_TAG, "Clicked on Delete! - Cancel");
-            }
-        });
+        alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on Delete! - Cancel"));
 
-        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(DEBUG_TAG, "Clicked on Delete! - OK");
+        alertDialog.setPositiveButton("OK", (dialog, which) -> {
+            Log.i(DEBUG_TAG, "Clicked on Delete! - OK");
 
-                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, position);
-            }
+            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, position);
         });
         alertDialog.show();
     }
@@ -477,21 +448,17 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         if (!intervalInsert) {
             alertDialog.setTitle(getString(R.string.pubConfig));
             alertDialog.setMessage(getString(R.string.confPublishAlert, name));
-            alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(DEBUG_TAG, "Clicked on Publish! - Cancel");
-                    sa.setIntervalList(refreshIntervalList(sensor));
-                    sa.notifyDataSetChanged();
-                }
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on Publish! - Cancel");
+                sa.setIntervalList(refreshIntervalList(sensor));
+                sa.notifyDataSetChanged();
             });
 
-            alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(DEBUG_TAG, "Clicked on Publish! - OK");
+            alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on Publish! - OK");
 
-                    SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position));
-                }
+                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position));
             });
 
             alertDialog.show();

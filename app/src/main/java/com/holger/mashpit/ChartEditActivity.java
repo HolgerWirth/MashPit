@@ -6,13 +6,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 import com.activeandroid.query.Select;
@@ -57,12 +55,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
 
         Toolbar toolbar = findViewById(R.id.chartedit_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         fabadd = findViewById(R.id.chartsubfabadd);
         fabOK = findViewById(R.id.editButton);
@@ -115,104 +108,87 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             }
         });
 
-        fabadd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
-                Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
-                startActivityForResult(l, 0);
-            }
+        fabadd.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
+            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+            startActivityForResult(l, 0);
         });
 
-        fabOK.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the FAB 'OK' button");
-                if (editAction.equals("insert")) {
-                    setResult(1, null);
-                    new Charts(chartname.getText().toString(), chartdesc.getText().toString(), "", "", 0, 0, 30).save();
-                    for (Subscriptions sub : topicList) {
-                        if (!sub.deleted) {
-                            String topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
-                            new Subscriptions(topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
-                            subListChanged=true;
-                            unsaved=false;
-                        }
+        fabOK.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB 'OK' button");
+            if (editAction.equals("insert")) {
+                setResult(1, null);
+                new Charts(chartname.getText().toString(), chartdesc.getText().toString(), "", "", 0, 0, 30).save();
+                for (Subscriptions sub : topicList) {
+                    if (!sub.deleted) {
+                        String topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
+                        new Subscriptions(topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
+                        subListChanged=true;
+                        unsaved=false;
                     }
                 }
-                if (editAction.equals("edit")) {
-                    setResult(1, null);
-                    if (!chartdesc.getText().toString().equals(desc)) {
-                        new Update(Charts.class)
-                                .set("description = ?", chartdesc.getText().toString())
-                                .where("name = ?", name)
-                                .execute();
-                    }
-                    if (subListChanged) {
-                        for (Subscriptions sub : topicList) {
-                            if (sub.deleted) {
-                                if (sub.getId() != null) {
+            }
+            if (editAction.equals("edit")) {
+                setResult(1, null);
+                if (!chartdesc.getText().toString().equals(desc)) {
+                    new Update(Charts.class)
+                            .set("description = ?", chartdesc.getText().toString())
+                            .where("name = ?", name)
+                            .execute();
+                }
+                if (subListChanged) {
+                    for (Subscriptions sub : topicList) {
+                        if (sub.deleted) {
+                            if (sub.getId() != null) {
+                                new Update(Subscriptions.class)
+                                        .set("deleted = ?", 1)
+                                        .where("action = ? and name = ? and topic = ?", sub.action, sub.name, sub.topic)
+                                        .execute();
+                            }
+                        } else {
+                            if (sub.getId() == null) {
+                                boolean exist = new Select().from(Subscriptions.class).where("action=?", action)
+                                        .and("name = ?", name)
+                                        .and("deleted=?", 1)
+                                        .orderBy("server ASC").exists();
+                                if (exist) {
                                     new Update(Subscriptions.class)
-                                            .set("deleted = ?", 1)
-                                            .where("action = ? and name = ? and topic = ?", sub.action, sub.name, sub.topic)
+                                            .set("deleted = ?", 0)
+                                            .where("action = ? and name = ? and topic = ? and deleted = ?", sub.action, sub.name, sub.topic, 1)
                                             .execute();
-                                }
-                            } else {
-                                if (sub.getId() == null) {
-                                    boolean exist = new Select().from(Subscriptions.class).where("action=?", action)
-                                            .and("name = ?", name)
-                                            .and("deleted=?", 1)
-                                            .orderBy("server ASC").exists();
-                                    if (exist) {
-                                        new Update(Subscriptions.class)
-                                                .set("deleted = ?", 0)
-                                                .where("action = ? and name = ? and topic = ? and deleted = ?", sub.action, sub.name, sub.topic, 1)
-                                                .execute();
-                                    } else {
-                                        new Subscriptions(sub.topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
-                                    }
+                                } else {
+                                    new Subscriptions(sub.topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
                                 }
                             }
                         }
                     }
                 }
-                if(subListChanged) {
-                    builder.setTitle(getString(R.string.Subchanged_alert_title));
-                    builder.setMessage(getString(R.string.Subchanged_text));
-                    builder.setPositiveButton(getString(R.string.Subchanged_button), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.i(DEBUG_TAG, "Reconnect pressed!");
-                            Log.i(DEBUG_TAG, "Stop service!");
-                            Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
-                            serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
-                            getApplicationContext().startService(serviceIntent);
-                            finish();
-                        }
-                    });
-                    builder.setNegativeButton(getString(R.string.Subchanged_cancel), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    });
-                    builder.show();
-                }
-                else
-                {
-                    finish();
-                }
-                unsaved=false;
             }
+            if(subListChanged) {
+                builder.setTitle(getString(R.string.Subchanged_alert_title));
+                builder.setMessage(getString(R.string.Subchanged_text));
+                builder.setPositiveButton(getString(R.string.Subchanged_button), (dialog, which) -> {
+                    Log.i(DEBUG_TAG, "Reconnect pressed!");
+                    Log.i(DEBUG_TAG, "Stop service!");
+                    Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
+                    serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
+                    getApplicationContext().startService(serviceIntent);
+                    finish();
+                });
+                builder.setNegativeButton(getString(R.string.Subchanged_cancel), (dialog, which) -> finish());
+                builder.show();
+            }
+            else
+            {
+                finish();
+            }
+            unsaved=false;
         });
 
-        fabcancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the FAB 'Cancel' button");
-                setResult(0, null);
-                onBackPressed();
-            }
+        fabcancel.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB 'Cancel' button");
+            setResult(0, null);
+            onBackPressed();
         });
 
         final ActionBar ab = getSupportActionBar();
@@ -335,22 +311,19 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         Log.i(DEBUG_TAG, "Subscription deleted on position: " + topic);
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
-        builder.setPositiveButton(getString(R.string.delete_key), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                subListChanged = true;
-                List<Subscriptions> tempSub = new ArrayList<>();
-                for (Subscriptions sub : topicList) {
-                    if (!sub.topic.equals(topic)) {
-                        tempSub.add(sub);
-                    } else {
-                        sub.deleted = true;
-                    }
+        builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
+            subListChanged = true;
+            List<Subscriptions> tempSub = new ArrayList<>();
+            for (Subscriptions sub : topicList) {
+                if (!sub.topic.equals(topic)) {
+                    tempSub.add(sub);
+                } else {
+                    sub.deleted = true;
                 }
-                sa.refreshSubscribers(tempSub);
-                sa.notifyDataSetChanged();
-                fabOK.show();
             }
+            sa.refreshSubscribers(tempSub);
+            sa.notifyDataSetChanged();
+            fabOK.show();
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
         builder.show();
@@ -362,12 +335,9 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         if (unsaved || !(chartdesc.getText().toString().equals(desc))) {
             builder.setTitle(getString(R.string.NotSaved_title));
             builder.setMessage(getString(R.string.NotSaved_text));
-            builder.setNegativeButton(getString(R.string.NotSaved_button), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(DEBUG_TAG, "OK pressed!");
-                    ChartEditActivity.super.onBackPressed();
-                }
+            builder.setNegativeButton(getString(R.string.NotSaved_button), (dialog, which) -> {
+                Log.i(DEBUG_TAG, "OK pressed!");
+                ChartEditActivity.super.onBackPressed();
             });
             builder.setPositiveButton(getString(R.string.NotSaved_cancel),null);
             builder.show();

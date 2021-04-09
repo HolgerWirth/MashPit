@@ -2,13 +2,11 @@ package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -94,53 +92,44 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
 
         fabOK.hide();
 
-        fabadd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "Clicked the FAB button");
-                if (iscollapsed) {
-                    speeddial.setVisibility(LinearLayout.GONE);
-                    iscollapsed = false;
-                } else {
-                    speeddial.setVisibility(LinearLayout.VISIBLE);
-                    iscollapsed = true;
-                }
+        fabadd.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB button");
+            if (iscollapsed) {
+                speeddial.setVisibility(LinearLayout.GONE);
+                iscollapsed = false;
+            } else {
+                speeddial.setVisibility(LinearLayout.VISIBLE);
+                iscollapsed = true;
             }
         });
 
-        faboutput.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB Output");
-                Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
-                l.putExtra("ACTION", "new");
-                l.putExtra("family",family);
-                l.putExtra("sensor", sensor);
-                l.putExtra("name",name);
-                l.putExtra("server",server);
-                l.putExtra("dir","OUT");
-                l.putExtra("hw","MCP");
-                startActivityForResult(l, 0);
-                speeddial.setVisibility(LinearLayout.GONE);
-            }
+        faboutput.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB Output");
+            Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
+            l.putExtra("ACTION", "new");
+            l.putExtra("family",family);
+            l.putExtra("sensor", sensor);
+            l.putExtra("name",name);
+            l.putExtra("server",server);
+            l.putExtra("dir","OUT");
+            l.putExtra("hw","MCP");
+            startActivityForResult(l, 0);
+            speeddial.setVisibility(LinearLayout.GONE);
         });
 
-        fabinput.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB Input");
-                Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
-                l.putExtra("ACTION", "new");
-                l.putExtra("family",family);
-                l.putExtra("sensor", sensor);
-                l.putExtra("type",type);
-                l.putExtra("name",name);
-                l.putExtra("server",server);
-                l.putExtra("dir","IN");
-                l.putExtra("hw","MCP");
-                startActivityForResult(l, 0);
-                speeddial.setVisibility(LinearLayout.GONE);
-            }
+        fabinput.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB Input");
+            Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
+            l.putExtra("ACTION", "new");
+            l.putExtra("family",family);
+            l.putExtra("sensor", sensor);
+            l.putExtra("type",type);
+            l.putExtra("name",name);
+            l.putExtra("server",server);
+            l.putExtra("dir","IN");
+            l.putExtra("hw","MCP");
+            startActivityForResult(l, 0);
+            speeddial.setVisibility(LinearLayout.GONE);
         });
 
         final EditText sensorId = findViewById(R.id.sensorId);
@@ -150,12 +139,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
 
         Toolbar toolbar = findViewById(R.id.sensoredit_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
         ab.setTitle(name);
@@ -205,64 +189,51 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
 
         fabadd.show();
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                overridePendingTransition(0, 0);
-                setResult(resultCode, null);
-                finish();
-            }
+        toolbar.setNavigationOnClickListener(v -> {
+            overridePendingTransition(0, 0);
+            setResult(resultCode, null);
+            finish();
         });
 
-        fabOK.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                alertDialog.setTitle(getString(R.string.pubConfig));
-                alertDialog.setMessage(getString(R.string.confPublishAlert, name));
-                alertDialog.setIcon(R.drawable.ic_launcher);
+        fabOK.setOnClickListener(view -> {
+            alertDialog.setTitle(getString(R.string.pubConfig));
+            alertDialog.setMessage(getString(R.string.confPublishAlert, name));
+            alertDialog.setIcon(R.drawable.ic_launcher);
 
-                alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on Cancel!");
-                        sensorName.setText(oldName);
-                    }
-                });
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on Cancel!");
+                sensorName.setText(oldName);
+            });
 
-                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                        pubMQTT.PublishSensorConf(server, sensor, type, mcpid, createJSONConfig());
-                    }
-                });
-                alertDialog.show();
-            }
+            alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                pubMQTT.PublishSensorConf(server, sensor, type, mcpid, createJSONConfig());
+            });
+            alertDialog.show();
         });
 
-        ItemClickSupport.addTo(eventList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                Log.i(DEBUG_TAG, "Clicked!");
+        ItemClickSupport.addTo(eventList).setOnItemClickListener((recyclerView, position, v) -> {
+            Log.i(DEBUG_TAG, "Clicked!");
 
-                Sensors sensors = sa.getItem(position);
-                Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
+            Sensors sensors = sa.getItem(position);
+            Intent l = new Intent(getApplicationContext(), SensorEventEditActvity.class);
 
-                l.putExtra("ACTION", "edit");
-                l.putExtra("family",sensors.family);
-                l.putExtra("sensor", sensors.sensor);
-                l.putExtra("type",sensors.type);
-                l.putExtra("name",name);
-                l.putExtra("event",sensors.event);
-                l.putExtra("server",sensors.server);
-                l.putExtra("active",sensors.active);
-                l.putExtra("GPIO",sensors.port);
-                l.putExtra("dir",sensors.dir);
-                l.putExtra("reg",sensors.reg);
-                l.putExtra("hyst",sensors.hyst);
-                l.putExtra("hw","MCP");
-                startActivityForResult(l, 0);
-                speeddial.setVisibility(LinearLayout.GONE);
-            }
+            l.putExtra("ACTION", "edit");
+            l.putExtra("family",sensors.family);
+            l.putExtra("sensor", sensors.sensor);
+            l.putExtra("type",sensors.type);
+            l.putExtra("name",name);
+            l.putExtra("event",sensors.event);
+            l.putExtra("server",sensors.server);
+            l.putExtra("active",sensors.active);
+            l.putExtra("GPIO",sensors.port);
+            l.putExtra("dir",sensors.dir);
+            l.putExtra("reg",sensors.reg);
+            l.putExtra("hyst",sensors.hyst);
+            l.putExtra("hw","MCP");
+            startActivityForResult(l, 0);
+            speeddial.setVisibility(LinearLayout.GONE);
         });
     }
 

@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 
 public class TempFormatter extends ValueFormatter {
 
-    private DecimalFormat mFormat;
+    private final DecimalFormat mFormat;
 
     public TempFormatter() {
         mFormat = new DecimalFormat("0.0");

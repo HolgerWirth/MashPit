@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.google.android.material.navigation.NavigationView;
@@ -253,46 +252,43 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        mDrawerLayout.closeDrawers();
-                        MashPit.menu_action=true;
+                menuItem -> {
+                    menuItem.setChecked(true);
+                    mDrawerLayout.closeDrawers();
+                    MashPit.menu_action=true;
 
-                        Log.i(DEBUG_TAG, "setupDrawerContent()");
+                    Log.i(DEBUG_TAG, "setupDrawerContent()");
 
-                        int id = menuItem.getItemId();
-                        if(id<100)
-                        {
-                            selectTempChart(id);
-                            return true;
-                        }
-                        if(id==android.R.id.home)
-                        {
-                            mDrawerLayout.openDrawer(GravityCompat.START);
-                            return true;
-                        }
-                        if(id==R.id.nav_settings)
-                        {
-                            Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
-                            startActivity(l);
-                        }
-                        if(id==R.id.nav_config)
-                        {
-                            Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
-                            startActivity(m);
-                        }
-                        if(id==R.id.nav_sensorconfig) {
-                            Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
-                            startActivity(n);
-                        }
-                        if(id==R.id.nav_temppager) {
-                            Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
-                            startActivity(o);
-                        }
+                    int id = menuItem.getItemId();
+                    if(id<100)
+                    {
+                        selectTempChart(id);
                         return true;
                     }
+                    if(id==android.R.id.home)
+                    {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                        return true;
+                    }
+                    if(id==R.id.nav_settings)
+                    {
+                        Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
+                        startActivity(l);
+                    }
+                    if(id==R.id.nav_config)
+                    {
+                        Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
+                        startActivity(m);
+                    }
+                    if(id==R.id.nav_sensorconfig) {
+                        Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                        startActivity(n);
+                    }
+                    if(id==R.id.nav_temppager) {
+                        Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
+                        startActivity(o);
+                    }
+                    return true;
                 });
     }
 
@@ -335,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-            Set<String> prefdefaults = prefs.getStringSet("process_topics", new HashSet<String>());
+            Set<String> prefdefaults = prefs.getStringSet("process_topics", new HashSet<>());
             if (prefdefaults.contains(myEvent.getSensor() + "/" + myEvent.getInterval())) {
                 currTemp = myEvent.getEvent();
                 updatePieData(currTemp);
@@ -450,14 +446,11 @@ public class MainActivity extends AppCompatActivity {
         snb=new SnackBar(coordinatorLayout);
 
         snb.setmOnClickListener(
-                mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.i(DEBUG_TAG, "Retry service");
-                        Intent startIntent = new Intent(MainActivity.this, TemperatureService.class);
-                        startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
-                        startService(startIntent);
-                    }
+                mOnClickListener = v -> {
+                    Log.i(DEBUG_TAG, "Retry service");
+                    Intent startIntent = new Intent(MainActivity.this, TemperatureService.class);
+                    startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
+                    startService(startIntent);
                 });
 
     }

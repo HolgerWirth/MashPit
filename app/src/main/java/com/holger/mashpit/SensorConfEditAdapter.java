@@ -128,13 +128,10 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
 
             sensorInterval.setVisibility(View.GONE);
 
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "IntervalDeleteButton: onClick()");
-                    deleteButton.setPressed(true);
-                    listener.onIntervalDeleted((int) sensorIntervalView.getTag());
-                }
+            deleteButton.setOnClickListener(view -> {
+                Log.i(DEBUG_TAG, "IntervalDeleteButton: onClick()");
+                deleteButton.setPressed(true);
+                listener.onIntervalDeleted((int) sensorIntervalView.getTag());
             });
 
             sensorInterval.addTextChangedListener(new TextWatcher() {
@@ -168,13 +165,10 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
                 }
             });
 
-            sensorIntervalActive.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "New interval: onClick() Switch");
-                    sensors.active=sensorIntervalActive.isChecked();
-                    listener.onIntervalActivated((int) sensorIntervalView.getTag(), sensorIntervalActive.isChecked());
-                }
+            sensorIntervalActive.setOnClickListener(view -> {
+                Log.i(DEBUG_TAG, "New interval: onClick() Switch");
+                sensors.active=sensorIntervalActive.isChecked();
+                listener.onIntervalActivated((int) sensorIntervalView.getTag(), sensorIntervalActive.isChecked());
             });
         }
     }

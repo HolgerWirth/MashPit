@@ -2,13 +2,11 @@ package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -19,12 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
-import com.activeandroid.query.Select;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.android.material.textfield.TextInputLayout;
-import com.holger.mashpit.model.Sensors;
 import com.holger.mashpit.tools.SensorPublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
 
@@ -90,8 +85,6 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
         actionButton = findViewById(R.id.editButton);
         final FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
         deleteButton = findViewById(R.id.deleteButton);
-
-        TextInputLayout regField = findViewById(R.id.eventRegField);
 
         eventChanged=false;
         Resources res = context.getResources();
@@ -206,27 +199,19 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
 
         Toolbar toolbar = findViewById(R.id.eventedit_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
         ab.setTitle(abTitle);
 
         Log.i(DEBUG_TAG, "Started with action: " + action + " and type: " + type);
 
-        eventActive.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(DEBUG_TAG, "onClick() eventActive");
-                active=eventActive.isChecked();
-                deleteButton.hide();
-                eventChanged=true;
-                actionButton.show();
-            }
+        eventActive.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "onClick() eventActive");
+            active=eventActive.isChecked();
+            deleteButton.hide();
+            eventChanged=true;
+            actionButton.show();
         });
 
         eventName.addTextChangedListener(new TextWatcher() {
@@ -290,81 +275,57 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
             }
         });
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                overridePendingTransition(0, 0);
-                setResult(0, null);
-                finish();
-            }
+        toolbar.setNavigationOnClickListener(v -> {
+            overridePendingTransition(0, 0);
+            setResult(0, null);
+            finish();
         });
 
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on Done");
-                if (eventChanged) {
-                    hyst= Integer.parseInt(String.valueOf(eventHyst.getText()));
-                    GPIO = Integer.parseInt(String.valueOf(eventValue.getText()));
-                    alertDialog.setTitle(getString(R.string.pubConfig));
-                    alertDialog.setMessage(getString(R.string.confPublishAlert, event));
-                    alertDialog.setIcon(R.drawable.ic_launcher);
-
-                    alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.i(DEBUG_TAG, "Clicked on OK! - Cancel");
-                        }
-                    });
-
-                    alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                            pubMQTT.PublishEventConf(server, dir, hw, event, createJSONConfig());
-                            setResult(1, null);
-                            finish();
-                        }
-                    });
-                    alertDialog.show();
-                }
-            }
-        });
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on Delete");
+        actionButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on Done");
+            if (eventChanged) {
+                hyst= Integer.parseInt(String.valueOf(eventHyst.getText()));
+                GPIO = Integer.parseInt(String.valueOf(eventValue.getText()));
                 alertDialog.setTitle(getString(R.string.pubConfig));
                 alertDialog.setMessage(getString(R.string.confPublishAlert, event));
                 alertDialog.setIcon(R.drawable.ic_launcher);
 
-                alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - Cancel");
-                    }
-                });
+                alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on OK! - Cancel"));
 
-                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                        SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                        pubMQTT.PublishEventConf(server, dir, hw, event,"");
-                        setResult(1, null);
-                        finish();
-                    }
+                alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                    Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+                    SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                    pubMQTT.PublishEventConf(server, dir, hw, event, createJSONConfig());
+                    setResult(1, null);
+                    finish();
                 });
                 alertDialog.show();
             }
         });
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
-                    setResult(0,null);
-                    finish();
-                }
+        deleteButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on Delete");
+            alertDialog.setTitle(getString(R.string.pubConfig));
+            alertDialog.setMessage(getString(R.string.confPublishAlert, event));
+            alertDialog.setIcon(R.drawable.ic_launcher);
+
+            alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on OK! - Cancel"));
+
+            alertDialog.setPositiveButton("OK", (dialog, which) -> {
+                Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+                pubMQTT.PublishEventConf(server, dir, hw, event,"");
+                setResult(1, null);
+                finish();
+            });
+            alertDialog.show();
         });
+
+        cancelButton.setOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Clicked on FAB: Cancel");
+                setResult(0,null);
+                finish();
+            });
     }
 
     @Override
@@ -378,15 +339,6 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
         super.onStop();
         snb.stopEvents();
         Log.i(DEBUG_TAG, "onStop()");
-    }
-
-    private boolean SensorGPIOExists(String server,int gpio)
-    {
-        return new Select()
-                .from(Sensors.class)
-                .where("server=?", server)
-                .and("port=?", gpio)
-                .exists();
     }
 
     private String createJSONConfig()

@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 
 public class RastFormatter extends ValueFormatter {
 
-    private DecimalFormat mFormat;
+    private final DecimalFormat mFormat;
 
     public RastFormatter() {
         mFormat = new DecimalFormat("0");

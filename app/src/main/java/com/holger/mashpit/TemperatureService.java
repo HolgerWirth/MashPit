@@ -26,8 +26,6 @@ import android.util.Log;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.query.Update;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
@@ -1107,18 +1105,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
         dataItemTask
-                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
-                    @Override
-                    public void onSuccess(DataItem dataItem) {
-                        Log.d(DEBUG_TAG, "Sending message was successful: " + dataItem);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(DEBUG_TAG, "Sending message failed: " + e);
-                    }
-                });
+                .addOnSuccessListener(dataItem -> Log.d(DEBUG_TAG, "Sending message was successful: " + dataItem))
+                .addOnFailureListener(e -> Log.e(DEBUG_TAG, "Sending message failed: " + e));
     }
 
     private void subscribeTopic(String topic, boolean durable)

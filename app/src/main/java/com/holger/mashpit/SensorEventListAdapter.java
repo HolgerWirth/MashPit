@@ -1,7 +1,6 @@
 package com.holger.mashpit;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,11 +14,6 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.holger.mashpit.model.Sensors;
-import com.holger.mashpit.tools.SensorPublishMQTT;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.List;
 
 class SensorEventListAdapter extends RecyclerView.Adapter<SensorEventListAdapter.SensorMCPViewHolder> {
@@ -129,13 +123,10 @@ class SensorEventListAdapter extends RecyclerView.Adapter<SensorEventListAdapter
             devEventType = v.findViewById(R.id.devEventType);
             devCardView = v.findViewById(R.id.devcard_view);
 
-           v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: onClick()");
-                    devCardView.setPressed(true);
-                }
-            });
+           v.setOnClickListener(view -> {
+               Log.i(DEBUG_TAG, "ViewHolder: onClick()");
+               devCardView.setPressed(true);
+           });
 
         }
     }

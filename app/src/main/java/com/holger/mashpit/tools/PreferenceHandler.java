@@ -55,12 +55,4 @@ public class PreferenceHandler {
         }
         return topics;
     }
-
-    public static void removePreference(Context context, String key)
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.remove(key);
-        editor.apply();
-    }
 }

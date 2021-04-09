@@ -7,7 +7,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.os.ConfigurationCompat;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -61,12 +60,7 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
 
         Toolbar toolbar = findViewById(R.id.sensordev_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         TextView serverId = findViewById(R.id.serverId);
         TextView serverSystem = findViewById(R.id.serverSystem);
@@ -99,19 +93,9 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
         serverSystem.setText(getIntent().getStringExtra("system"));
         serverIP.setText(getIntent().getStringExtra("IP"));
 
-        selectImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBrowse(view);
-            }
-        });
+        selectImage.setOnClickListener(this::onBrowse);
 
-        uploadImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startUpdate();
-            }
-        });
+        uploadImage.setOnClickListener(view -> startUpdate());
     }
 
     public void onBrowse(View view) {
@@ -205,24 +189,17 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
         alertDialog.setTitle(getString(R.string.pubConfig));
         alertDialog.setMessage(getString(R.string.updateFTPAlert));
         alertDialog.setIcon(R.drawable.ic_launcher);
-        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(DEBUG_TAG, "Clicked on Cancel!");
+        alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on Cancel!"));
+        alertDialog.setPositiveButton("OK", (dialog, which) -> {
+            Log.i(DEBUG_TAG, "Clicked on OK! - OK");
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("FTPPWD", generatedString);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
-        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(DEBUG_TAG, "Clicked on OK! - OK");
-                JSONObject obj = new JSONObject();
-                try {
-                    obj.put("FTPPWD", generatedString);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                pubMQTT.PublishServerUpdate(server, obj.toString());
-            }
-
+            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+            pubMQTT.PublishServerUpdate(server, obj.toString());
         });
         alertDialog.show();
     }
@@ -241,13 +218,9 @@ public class SensorUpdateActivity extends AppCompatActivity implements FTPUpdate
             alertDialog.setMessage(getString(R.string.updateFTPsuccess, alias));
         }
         alertDialog.setIcon(R.drawable.ic_launcher);
-        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Log.i(DEBUG_TAG, "FTP success: Clicked on OK! - OK");
-                onBackPressed();
-            }
+        alertDialog.setPositiveButton("OK", (dialogInterface, i) -> {
+            Log.i(DEBUG_TAG, "FTP success: Clicked on OK! - OK");
+            onBackPressed();
         });
         alertDialog.show();
     }

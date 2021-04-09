@@ -19,7 +19,7 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
 
     private static final String DEBUG_TAG = "SensorStatusAdapter";
     private Context context;
-    private List<SensorEvent> statusList;
+    private final List<SensorEvent> statusList;
 
     SensorStatusAdapter(List<SensorEvent> statusList) {
         this.statusList = statusList;
@@ -75,7 +75,7 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
         return statusList.get(position);
     }
 
-    class SensorStatusViewHolder extends RecyclerView.ViewHolder {
+    static class SensorStatusViewHolder extends RecyclerView.ViewHolder {
         TextView sensorServer;
         TextView sensorStatus;
         CardView mCardView;
@@ -87,13 +87,10 @@ class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.Senso
 
             mCardView = v.findViewById(R.id.sensorstatuscard_view);
 
-           v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: onClick()");
-                    mCardView.setPressed(true);
-                }
-            });
+           v.setOnClickListener(view -> {
+               Log.i(DEBUG_TAG, "ViewHolder: onClick()");
+               mCardView.setPressed(true);
+           });
         }
     }
 }

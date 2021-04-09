@@ -36,7 +36,7 @@ public class PublishMQTT {
             String MQTT_USER;
             String MQTT_BROKER;
             String MQTT_DOMAIN;
-            boolean MQTT_SSL = false;
+            boolean MQTT_SSL;
             String DEVICE_ID_FORMAT = "TEX_%s";
             final MySSlSocketFactory factory = new MySSlSocketFactory(context);
 
@@ -65,7 +65,6 @@ public class PublishMQTT {
             @SuppressLint("HardwareIds") String clientId = String.format(DEVICE_ID_FORMAT,
                     Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
 
-            assert clientId != null;
             MqttClient sampleClient = new MqttClient(MQTT_PROTOCOL+ MQTT_BROKER +":"+ MQTT_PORT, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);

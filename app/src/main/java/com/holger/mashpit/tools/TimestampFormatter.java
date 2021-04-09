@@ -8,11 +8,11 @@ import java.util.Locale;
 
 public class TimestampFormatter extends ValueFormatter {
 
-    private long unixTime = System.currentTimeMillis() / 1000L;
-    private long mTime = unixTime - (24 * 60 * 60);
+    private final long unixTime = System.currentTimeMillis() / 1000L;
+    private final long mTime = unixTime - (24 * 60 * 60);
 
-    private SimpleDateFormat sformat = new SimpleDateFormat("HH:mm",Locale.GERMANY);
-    private SimpleDateFormat lformat = new SimpleDateFormat("dd.MM. HH:mm", Locale.GERMANY);
+    private final SimpleDateFormat sformat = new SimpleDateFormat("HH:mm",Locale.GERMANY);
+    private final SimpleDateFormat lformat = new SimpleDateFormat("dd.MM. HH:mm", Locale.GERMANY);
 
     @Override
     public String getFormattedValue(float value) {

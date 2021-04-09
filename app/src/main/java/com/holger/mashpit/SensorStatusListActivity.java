@@ -3,7 +3,6 @@ package com.holger.mashpit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,33 +62,25 @@ public class SensorStatusListActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.sensorstatus_toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         sa = new SensorStatusAdapter(result);
 
-        ItemClickSupport.addTo(sensorstatusList).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                Log.i(DEBUG_TAG, "Clicked!");
+        ItemClickSupport.addTo(sensorstatusList).setOnItemClickListener((recyclerView, position, v) -> {
+            Log.i(DEBUG_TAG, "Clicked!");
 
-                sintent = new Intent(getApplicationContext(), SensorDevListActivity.class);
-                sintent.putExtra("ACTION", "list");
-                sintent.putExtra("server", result.get(position).getServer());
-                sintent.putExtra("alias", result.get(position).getName());
-                sintent.putExtra("sensors",result.get(position).getSensor());
-                sintent.putExtra("online",result.get(position).isActive());
-                sintent.putExtra("system",result.get(position).getSystem());
-                sintent.putExtra("version",result.get(position).getVersion());
-                sintent.putExtra("IP",result.get(position).getIP());
-                sintent.putExtra("TS",result.get(position).getTS());
+            sintent = new Intent(getApplicationContext(), SensorDevListActivity.class);
+            sintent.putExtra("ACTION", "list");
+            sintent.putExtra("server", result.get(position).getServer());
+            sintent.putExtra("alias", result.get(position).getName());
+            sintent.putExtra("sensors",result.get(position).getSensor());
+            sintent.putExtra("online",result.get(position).isActive());
+            sintent.putExtra("system",result.get(position).getSystem());
+            sintent.putExtra("version",result.get(position).getVersion());
+            sintent.putExtra("IP",result.get(position).getIP());
+            sintent.putExtra("TS",result.get(position).getTS());
 
-                startActivityForResult(sintent, 0);
-            }
+            startActivityForResult(sintent, 0);
         });
 
         sensorstatusList.setAdapter(sa);
