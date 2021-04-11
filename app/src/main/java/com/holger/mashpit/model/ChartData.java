@@ -11,5 +11,5 @@ public class ChartData {
     public String topic;
     public long TS;
     public String var;
-    public String value;
+    public float value;
 }

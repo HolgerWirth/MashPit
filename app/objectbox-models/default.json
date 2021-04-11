@@ -33,7 +33,8 @@
         {
           "id": "5:8702062683770794500",
           "name": "value",
-          "type": 9
+          "type": 7,
+          "flags": 4
         }
       ],
       "relations": []
