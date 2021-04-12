@@ -2,35 +2,24 @@ package com.holger.mashpit;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Handler;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import com.google.android.material.navigation.NavigationView;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.activeandroid.query.Delete;
-import com.activeandroid.query.Select;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
@@ -41,9 +30,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.holger.mashpit.model.Temperature;
-import com.holger.mashpit.prefs.SettingsActivity;
-import com.holger.mashpit.prefs.ChartSettings;
+import com.holger.mashpit.model.ChartData;
+import com.holger.mashpit.model.ChartData_;
+import com.holger.mashpit.tools.ObjectBox;
 import com.holger.mashpit.tools.SnackBar;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
@@ -54,23 +43,23 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.objectbox.Box;
+import io.objectbox.query.QueryBuilder;
+
 public class TempChartActivity extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "TempChartActivity" ;
-    private List<Temperature> temps = null;
-    private static String TempMode = "";
+    private List<ChartData> temps = null;
+    private String[] topic;
     private ProgressBar progress;
-    private DrawerLayout mDrawerLayout;
     Handler handler = new Handler();
     SnackBar snb;
     View.OnClickListener mOnClickListener;
-    boolean doubleBackToExitPressedOnce = false;
-    SharedPreferences prefs;
     float tempMin;
     float tempMax;
     ChartDataAdapter cda;
-    NavigationView navigationView;
     TempChartData tempdata;
+    Box<ChartData> dataBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,57 +67,36 @@ public class TempChartActivity extends AppCompatActivity {
 
         Log.i(DEBUG_TAG, "OnCreate");
 
+        setContentView(R.layout.activity_temp_chart);
+
+        dataBox = ObjectBox.get().boxFor(ChartData.class);
+
         tempdata = TempChartData.getInstance();
         tempdata.clearData();
 
-        setContentView(R.layout.activity_temp_chart);
-
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
-
-        final ActionBar ab = getSupportActionBar();
-        assert ab != null;
-        ab.setHomeAsUpIndicator(R.drawable.ic_drawer);
-        ab.setDisplayHomeAsUpEnabled(true);
-
-        mDrawerLayout = findViewById(R.id.drawerLayout);
-
-        navigationView = findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            setupDrawerContent(navigationView);
-        }
-
-        final Menu menu;
-        if (navigationView != null) {
-            menu = navigationView.getMenu();
-            MashPit.createSubMenu(menu,getApplicationContext());
-        }
+        Toolbar toolbar = findViewById(R.id.chart_toolbar);
 
         Intent intent = getIntent();
-        TempMode = intent.getStringExtra("MODE");
-        Log.i(DEBUG_TAG, "Modus: "+TempMode);
+        topic = intent.getStringArrayExtra("topics");
+        toolbar.setTitle(intent.getStringExtra("title"));
+        Log.i(DEBUG_TAG, "Topic: "+topic);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        tempMin= MashPit.prefGetMin(prefs,TempMode);
-        tempMax= MashPit.prefGetMax(prefs,TempMode);
-        ab.setTitle(MashPit.prefGetName(prefs,TempMode));
+        tempMin = 5;
+        tempMax = 50;
 
         progress = findViewById(R.id.progressBar1);
-
         startLoadingData();
-
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
+
         snb= new SnackBar(coordinatorLayout);
         snb.setmOnClickListener(
-                mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.i(DEBUG_TAG, "Reconnect service");
-                        Intent startIntent = new Intent(TempChartActivity.this, TemperatureService.class);
-                        startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
-                        startService(startIntent);
-                    }
+                mOnClickListener = v -> {
+                    Log.i(DEBUG_TAG, "Reconnect service");
+                    Intent startIntent = new Intent(TempChartActivity.this, TemperatureService.class);
+                    startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
+                    startService(startIntent);
                 });
     }
     @Override
@@ -144,6 +112,7 @@ public class TempChartActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+/*
     @Override
     protected void onPause() {
         tempMin= MashPit.prefGetMin(prefs,TempMode);
@@ -181,105 +150,31 @@ public class TempChartActivity extends AppCompatActivity {
             }
         }
     }
+*/
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_tempchart, menu);
-        return true;
-    }
-
-        public void startLoadingData() {
+    public void startLoadingData() {
         // do something long
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                new Delete().from(Temperature.class).where("timeStamp < ?",getDeleteTimestamp()).and("mode=?",TempMode).execute();
-                temps = queryData();
-                generateData();
-                progress.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            progress.setProgress(1);
-                        }
-                    });
+        Runnable runnable = () -> {
+            deleteData();
+            temps = queryData();
+            generateData();
+            progress.post(() -> progress.setProgress(1));
 
-                handler.post(new Runnable(){
-                    public void run() {
-                        progress.setVisibility(View.GONE);
-                        ListView lv = findViewById(R.id.listView1);
-                        Log.i(DEBUG_TAG, "Creating list");
-                        cda = new ChartDataAdapter(getApplicationContext(), tempdata.getData());
-                        if (lv != null) {
-                            lv.setAdapter(cda);
-                            lv.setClickable(true);
-                        }
-                     }
-                });
-            }
+            handler.post(() -> {
+                progress.setVisibility(View.GONE);
+                ListView lv = findViewById(R.id.chartListView);
+                Log.i(DEBUG_TAG, "Creating list");
+                cda = new ChartDataAdapter(this,tempdata.getData());
+                if (lv != null) {
+                    lv.setAdapter(cda);
+                    lv.setClickable(true);
+                }
+            });
         };
         new Thread(runnable).start();
     }
 
-    private void setupDrawerContent(NavigationView navigationView) {
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        mDrawerLayout.closeDrawers();
-                        MashPit.menu_action=true;
-
-                        int id = menuItem.getItemId();
-
-                        if(id<100)
-                        {
-                            tempdata.clearData();
-                            selectTempChart(id);
-                            return true;
-                        }
-
-                        switch (id) {
-
-                            case android.R.id.home:
-                                mDrawerLayout.openDrawer(GravityCompat.START);
-                                return true;
-
-                            case R.id.nav_process:
-                                Log.i(DEBUG_TAG, "Process selected!");
-                                Intent m = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(m);
-                                finish();
-                                break;
-
-                            case R.id.nav_settings:
-                                // Launch settings activity
-                                Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
-                                startActivity(l);
-                                break;
-
-                            case R.id.nav_config:
-                                Intent n = new Intent(getApplicationContext(), MPStatusListActivity.class);
-                                startActivity(n);
-                                break;
-
-                            case R.id.nav_sensorconfig:
-                                Intent p = new Intent(getApplicationContext(), SensorStatusListActivity.class);
-                                startActivity(p);
-                                break;
-
-                            case R.id.nav_temppager:
-                                Intent o = new Intent(getApplicationContext(), TempPagerActivity.class);
-                                startActivity(o);
-                                finish();
-                                break;
-
-                        }
-                        return true;
-                    }
-                });
-    }
-
+    /*
     private void selectTempChart(int resid)
     {
         Temperature temp = MashPit.TempModes.get(resid);
@@ -289,32 +184,7 @@ public class TempChartActivity extends AppCompatActivity {
         startActivity(k);
         finish();
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
-
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-
-            case R.id.action_tempsettings:
-                Log.i(DEBUG_TAG, "Settings selected");
-                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, ChartSettings.class.getName() );
-                intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
-                intent.putExtra("EXTRA_MODE",TempMode);
-                startActivity(intent);
-                break;
-
-         }
-        return super.onOptionsItemSelected(item);
-    }
+*/
 
     private void generateData() {
 
@@ -357,21 +227,21 @@ public class TempChartActivity extends AppCompatActivity {
 
         Log.i(DEBUG_TAG, "generateData "+temps.size());
 
-        for (Temperature temperature : temps) {
-            float entry=round(temperature.Temp,1);
+        for (ChartData chartData : temps) {
+            float entry=round(chartData.value,1);
 
-            if (!(sensors.contains(temperature.Name))) {
-                Log.i(DEBUG_TAG,"Found sensor: "+temperature.Name);
-                sensors.add(temperature.Name);
+            if (!(sensors.contains(chartData.var))) {
+                Log.i(DEBUG_TAG,"Found var: "+chartData.var);
+                sensors.add(chartData.var);
                 for(int i=0;i<LINES;i++) {
-                    yVals[i].add(new ArrayList<Entry>());
+                    yVals[i].add(new ArrayList<>());
                 }
             }
-            int sensindex = sensors.indexOf(temperature.Name);
+            int sensindex = sensors.indexOf(chartData.var);
 
             for(int i=0;i<LINES;i++) {
-                if (temperature.timeStamp > ts[i]) {
-                    yVals[i].get(sensindex).add(new Entry((float)temperature.timeStamp,entry));
+                if (chartData.TS > ts[i]) {
+                    yVals[i].get(sensindex).add(new Entry((float)chartData.TS,entry));
                     count[i]++;
                 }
             }
@@ -379,7 +249,7 @@ public class TempChartActivity extends AppCompatActivity {
         LineDataSet xset;
         for(int k=0;k<LINES;k++) {
             for (int j=0;j<sensors.size();j++) {
-                    xset=new LineDataSet(yVals[k].get(j), MashPit.prefGetSensorName(prefs, TempMode, j, sensors.get(j)));
+                    xset=new LineDataSet(yVals[k].get(j),sensors.get(j));
                     xset.setValueFormatter(new TempFormatter());
                     xset.setValueTextSize(9f);
 //                    xset.setDrawCubic(true);
@@ -408,27 +278,22 @@ public class TempChartActivity extends AppCompatActivity {
         return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
     }
 
-    public static List<Temperature> queryData() {
-        if(TempMode.isEmpty()) {
-            Log.i(DEBUG_TAG, "queryData: TempMode is empty");
+    public List<ChartData> queryData() {
+        dataBox = ObjectBox.get().boxFor(ChartData.class);
+        QueryBuilder<ChartData> builder = dataBox.query();
+        builder.equal(ChartData_.topic, topic[0])
+                .greater(ChartData_.TS, getFromTimestamp(30 * 24))
+                .order(ChartData_.TS);
+        return (builder.build().find());
+    }
 
-            return new Select()
-                    .from(Temperature.class)
-                    .where("timeStamp > ?", getFromTimestamp(30 * 24))
-                    .orderBy("timeStamp ASC")
-                    .execute();
-        }
-        else
-        {
-            Log.i(DEBUG_TAG, "queryData: TempMode = "+TempMode);
-            long ts=getFromTimestamp(30 * 24);
-            return new Select()
-                    .from(Temperature.class)
-                    .where("timeStamp > ?", ts)
-                    .and("mode = ?",TempMode)
-                    .orderBy("timeStamp ASC")
-                    .execute();
-        }
+    private void deleteData()
+    {
+        dataBox = ObjectBox.get().boxFor(ChartData.class);
+        QueryBuilder<ChartData> builder = dataBox.query();
+        builder.equal(ChartData_.topic, topic[0])
+                .less(ChartData_.TS, getDeleteTimestamp());
+        builder.build().remove();
     }
 
     public static long getFromTimestamp(int hours)
@@ -439,7 +304,7 @@ public class TempChartActivity extends AppCompatActivity {
 
     public long getDeleteTimestamp()
     {
-        int deldays = MashPit.prefGetDel(prefs,TempMode);
+        int deldays = 30;
         long unixTime = System.currentTimeMillis() / 1000L;
         return unixTime - (deldays * 24 * 60 * 60);
     }
@@ -478,8 +343,8 @@ public class TempChartActivity extends AppCompatActivity {
 //            leftAxis.addLimitLine(ll1);
 //            leftAxis.addLimitLine(ll2);
 
-            leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
-            leftAxis.setAxisMinimum(MashPit.prefGetMin(prefs,TempMode));
+            leftAxis.setAxisMaximum(tempMax);
+            leftAxis.setAxisMinimum(tempMin);
 
 // set the formatter
             holder.chart.getAxisRight().setEnabled(false);
@@ -520,7 +385,7 @@ public class TempChartActivity extends AppCompatActivity {
 
                 @Override
                 public void onChartSingleTapped(MotionEvent me) {
-                    selectLineChart(TempMode,position);
+//                    selectLineChart(TempMode,position);
                 }
 
                 @Override
@@ -565,25 +430,5 @@ public class TempChartActivity extends AppCompatActivity {
         k.putExtra("POS",pos);
         k.putExtra("MODE", linemode);
         startActivity(k);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            MashPit.menu_action=false;
-            super.onBackPressed();
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, R.string.click_back, Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
-            }
-        }, 2000);
     }
 }
