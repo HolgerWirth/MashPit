@@ -770,7 +770,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     {
                         myData.TS=TS;
                         myData.topic=topic;
-                        myData.value=value;
+                        myData.value=Float.parseFloat(value);
                         myData.var=key;
                         chartData.add(myData);
                     }
