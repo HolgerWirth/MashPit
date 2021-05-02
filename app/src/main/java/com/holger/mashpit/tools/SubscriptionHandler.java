@@ -85,6 +85,12 @@ public class SubscriptionHandler {
                 .and("deleted = ?",0).exists();
     }
 
+    public boolean checkSubscription(String topic)
+    {
+        return new Select().from(Subscriptions.class).where("topic = ?",topic)
+                .and("deleted = ?",0).exists();
+    }
+
     public List<String> getRetainedSubscription()
     {
         List<String> retained = new ArrayList<>();

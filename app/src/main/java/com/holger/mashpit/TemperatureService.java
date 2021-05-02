@@ -110,6 +110,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
         Log.i(DEBUG_TAG, "onStartCommand: Action received: "+intent.getAction());
+/*
         if(intent==null)
         {
                 Log.i(DEBUG_TAG, "onStartCommand: received null intent");
@@ -120,7 +121,9 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 action = intent.getAction();
                 Log.i(DEBUG_TAG, "onStartCommand: Received action of " + action);
         }
+*/
 
+        action = intent.getAction();
         if (action != null) {
             switch (action) {
                 case Constants.ACTION.STARTFOREGROUND_ACTION:
@@ -743,6 +746,18 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         sensorData.setInterval(Integer.parseInt(parts[5]));
         sensorData.setType(parts[3]);
         sensorData.setData(mess);
+
+        if(!subsHandler.checkSubscription(sensorData.getTopicString()))
+        {
+            Log.i(DEBUG_TAG, "No subscription for: "+sensorData.getTopicString());
+            try {
+                mClient.unsubscribe(MQTT_DOMAIN+sensorData.getTopicString());
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
         if (EventBus.getDefault().hasSubscriberForEvent(SensorDataEvent.class)) {
             EventBus.getDefault().post(sensorData);
         }
