@@ -23,11 +23,12 @@ public class MashPit extends Application {
         super.onCreate();
 
         ObjectBox.init(this);
-
+/*
         if (BuildConfig.DEBUG) {
             boolean started = new AndroidObjectBrowser(ObjectBox.get()).start(this);
             Log.i(DEBUG_TAG, "Object Browser Started: " + started);
         }
+*/
         mDeviceId = String.format("MP_%s", Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
         Log.i(DEBUG_TAG, "Initialized!");
     }
