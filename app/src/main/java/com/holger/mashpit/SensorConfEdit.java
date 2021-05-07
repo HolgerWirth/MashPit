@@ -17,11 +17,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.activeandroid.query.Select;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.model.Sensors;
+import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.tools.SensorPublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
 
@@ -57,12 +57,14 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     EditText altField = null;
     EditText typeField = null;
     AutoCompleteTextView typeDropdown;
+    SensorsHandler sensorsHandler;
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        sensorsHandler = new SensorsHandler();
         action = getIntent().getStringExtra("ACTION");
         sensor = getIntent().getStringExtra("sensor");
         type = getIntent().getStringExtra("type");
@@ -314,7 +316,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         gpio.setError(getString(R.string.devGPIOWarning));
                         return;
                     }
-                    if (SensorGPIOExists(server, GPIO)) {
+                    if (sensorsHandler.checkGPIO(server, GPIO)) {
                         gpio.setError(getString(R.string.devGPIOExists));
                         return;
                     }
@@ -403,11 +405,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
     private List<Sensors> refreshIntervalList(String sensor)
     {
-        List<Sensors> intervalList;
-        intervalList = new Select().from(Sensors.class).where("server = ?", server)
-                .and("sensor = ?", sensor)
-                .orderBy("interval ASC").execute();
-
+        List<Sensors> intervalList = sensorsHandler.getIntervals(server,sensor);
         return  intervalList;
     }
 
@@ -463,15 +461,6 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
             alertDialog.show();
         }
-    }
-
-    private boolean SensorGPIOExists(String server,int gpio)
-    {
-        return new Select()
-                .from(Sensors.class)
-                .where("server=?", server)
-                .and("port=?", gpio)
-                .exists();
     }
 
     private String createJSONConfig(int position)

@@ -31,8 +31,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.holger.mashpit.model.ChartData;
-import com.holger.mashpit.model.ChartData_;
-import com.holger.mashpit.tools.ObjectBox;
+import com.holger.mashpit.model.ChartDataHandler;
 import com.holger.mashpit.tools.SnackBar;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
@@ -41,10 +40,8 @@ import com.holger.share.Constants;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import io.objectbox.Box;
-import io.objectbox.query.QueryBuilder;
 
 public class TempChartActivity extends AppCompatActivity {
 
@@ -59,7 +56,7 @@ public class TempChartActivity extends AppCompatActivity {
     float tempMax;
     ChartDataAdapter cda;
     TempChartData tempdata;
-    Box<ChartData> dataBox;
+    ChartDataHandler chartDataHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +66,7 @@ public class TempChartActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_temp_chart);
 
-        dataBox = ObjectBox.get().boxFor(ChartData.class);
+        chartDataHandler = new ChartDataHandler();
 
         tempdata = TempChartData.getInstance();
         tempdata.clearData();
@@ -79,12 +76,11 @@ public class TempChartActivity extends AppCompatActivity {
         Intent intent = getIntent();
         topic = intent.getStringArrayExtra("topics");
         toolbar.setTitle(intent.getStringExtra("title"));
-        Log.i(DEBUG_TAG, "Topic: "+topic);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        tempMin = 5;
-        tempMax = 50;
+        tempMin = 0;
+        tempMax = 0;
 
         progress = findViewById(R.id.progressBar1);
         startLoadingData();
@@ -99,6 +95,7 @@ public class TempChartActivity extends AppCompatActivity {
                     startService(startIntent);
                 });
     }
+
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -155,8 +152,9 @@ public class TempChartActivity extends AppCompatActivity {
     public void startLoadingData() {
         // do something long
         Runnable runnable = () -> {
-            deleteData();
-            temps = queryData();
+            long delData = chartDataHandler.deleteChartData(topic,getDeleteTimestamp());
+            Log.i(DEBUG_TAG, "Deleted chart data: "+delData);
+            temps=chartDataHandler.queryChartData(topic,getFromTimestamp(30*60));
             generateData();
             progress.post(() -> progress.setProgress(1));
 
@@ -173,18 +171,6 @@ public class TempChartActivity extends AppCompatActivity {
         };
         new Thread(runnable).start();
     }
-
-    /*
-    private void selectTempChart(int resid)
-    {
-        Temperature temp = MashPit.TempModes.get(resid);
-        Log.i(DEBUG_TAG,"selectTempChart: "+temp.Mode);
-        Intent k = new Intent(getApplicationContext(), TempChartActivity.class);
-        k.putExtra("MODE", temp.Mode);
-        startActivity(k);
-        finish();
-    }
-*/
 
     private void generateData() {
 
@@ -215,6 +201,7 @@ public class TempChartActivity extends AppCompatActivity {
 
         ArrayList<Integer> linecolor = new ArrayList<>();
         ArrayList<String> sensors = new ArrayList<>();
+        ArrayList<String> topics = new ArrayList<>(Arrays.asList(topic));
 
         linecolor.add(Color.BLACK);
         linecolor.add(Color.RED);
@@ -229,23 +216,27 @@ public class TempChartActivity extends AppCompatActivity {
 
         for (ChartData chartData : temps) {
             float entry=round(chartData.value,1);
-
-            if (!(sensors.contains(chartData.var))) {
-                Log.i(DEBUG_TAG,"Found var: "+chartData.var);
-                sensors.add(chartData.var);
-                for(int i=0;i<LINES;i++) {
-                    yVals[i].add(new ArrayList<>());
-                }
+            String var = chartData.var+"-"+topics.indexOf(chartData.topic);
+            if(topics.indexOf(chartData.topic)==0)
+            {
+                var=chartData.var;
             }
-            int sensindex = sensors.indexOf(chartData.var);
+
+            if (!(sensors.contains(var))) {
+                Log.i(DEBUG_TAG,"Found var: "+var);
+                sensors.add(var);
+            }
+            int sensindex = sensors.indexOf(var);
 
             for(int i=0;i<LINES;i++) {
+                yVals[i].add(new ArrayList<>());
                 if (chartData.TS > ts[i]) {
                     yVals[i].get(sensindex).add(new Entry((float)chartData.TS,entry));
                     count[i]++;
                 }
             }
         }
+
         LineDataSet xset;
         for(int k=0;k<LINES;k++) {
             for (int j=0;j<sensors.size();j++) {
@@ -278,24 +269,6 @@ public class TempChartActivity extends AppCompatActivity {
         return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
     }
 
-    public List<ChartData> queryData() {
-        dataBox = ObjectBox.get().boxFor(ChartData.class);
-        QueryBuilder<ChartData> builder = dataBox.query();
-        builder.equal(ChartData_.topic, topic[0])
-                .greater(ChartData_.TS, getFromTimestamp(30 * 24))
-                .order(ChartData_.TS);
-        return (builder.build().find());
-    }
-
-    private void deleteData()
-    {
-        dataBox = ObjectBox.get().boxFor(ChartData.class);
-        QueryBuilder<ChartData> builder = dataBox.query();
-        builder.equal(ChartData_.topic, topic[0])
-                .less(ChartData_.TS, getDeleteTimestamp());
-        builder.build().remove();
-    }
-
     public static long getFromTimestamp(int hours)
     {
         long unixTime = System.currentTimeMillis() / 1000L;
@@ -321,6 +294,7 @@ public class TempChartActivity extends AppCompatActivity {
         public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
 
             LineData data = getItem(position);
+            double[] minmax;
 
             ViewHolder holder;
 
@@ -340,11 +314,15 @@ public class TempChartActivity extends AppCompatActivity {
             YAxis leftAxis = holder.chart.getAxisLeft();
             leftAxis.setValueFormatter(new TempFormatter());
             leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-//            leftAxis.addLimitLine(ll1);
-//            leftAxis.addLimitLine(ll2);
-
-            leftAxis.setAxisMaximum(tempMax);
-            leftAxis.setAxisMinimum(tempMin);
+            minmax=chartDataHandler.getMaxChartData(topic,getFromTimestamp(30 * 24));
+            if(tempMin==0)
+            {
+                leftAxis.setAxisMinimum((float)(minmax[0]-2.0));
+            }
+            if(tempMax==0)
+            {
+                leftAxis.setAxisMaximum((float)(minmax[1]+2.0));
+            }
 
 // set the formatter
             holder.chart.getAxisRight().setEnabled(false);
@@ -421,14 +399,5 @@ public class TempChartActivity extends AppCompatActivity {
 
             LineChart chart;
         }
-    }
-
-    private void selectLineChart(String linemode, int pos)
-    {
-        Log.i(DEBUG_TAG,"selectLineChart: "+pos);
-        Intent k = new Intent(getApplicationContext(), LineChartActivity.class);
-        k.putExtra("POS",pos);
-        k.putExtra("MODE", linemode);
-        startActivity(k);
     }
 }

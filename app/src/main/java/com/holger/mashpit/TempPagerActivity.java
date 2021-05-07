@@ -1,5 +1,6 @@
 package com.holger.mashpit;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -21,6 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 
 import com.github.mikephil.charting.charts.PieChart;
@@ -31,10 +33,12 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.holger.mashpit.events.SensorDataEvent;
 import com.holger.mashpit.events.SensorStickyEvent;
-import com.holger.mashpit.model.Temperature;
+import com.holger.mashpit.model.Charts;
+import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.prefs.SettingsActivity;
+import com.holger.mashpit.model.ChartsHandler;
 import com.holger.mashpit.tools.SnackBar;
-import com.holger.mashpit.tools.SubscriptionHandler;
+import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.share.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -50,12 +54,14 @@ public class TempPagerActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     float cAngle = 270f;
 
-    SubscriptionHandler subscriptionHandler;
+    SubscriptionsHandler subscriptionsHandler;
+    SensorsHandler sensorsHandler;
 
     SnackBar snb;
     View.OnClickListener mOnClickListener;
     TempPagerAdapter pagerAdapter;
     List<View> pieCharts = new ArrayList<>();
+    public List<Charts> chartMenu;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,19 +79,10 @@ public class TempPagerActivity extends AppCompatActivity {
         ab.setDisplayHomeAsUpEnabled(true);
 
         mDrawerLayout = findViewById(R.id.drawerLayout);
-
         navigationView = findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            setupDrawerContent(navigationView);
-        }
 
-        final Menu menu;
-        if (navigationView != null) {
-            menu = navigationView.getMenu();
-            MashPit.createSubMenu(menu, getApplicationContext());
-        }
-
-        subscriptionHandler = new SubscriptionHandler();
+        subscriptionsHandler = new SubscriptionsHandler();
+        sensorsHandler = new SensorsHandler();
 
         ViewPager pager = findViewById(R.id.pagerview);
         pagerAdapter = new TempPagerAdapter(pieCharts);
@@ -106,49 +103,30 @@ public class TempPagerActivity extends AppCompatActivity {
                     Log.i(DEBUG_TAG, "setupDrawerContent()");
 
                     int id = menuItem.getItemId();
-                    if (id < 100) {
-                        selectTempChart(id);
+                    if(id<100)
+                    {
+                        Intent k = new Intent(getApplicationContext(), TempChartActivity.class);
+                        startActivity(MashPit.selectTempChart(k,chartMenu.get(id).name,chartMenu.get(id).description));
                         return true;
                     }
 
-                    switch (id) {
-                        case android.R.id.home:
-                            mDrawerLayout.openDrawer(GravityCompat.START);
-                            return true;
-
-                        case R.id.nav_settings:
-                            Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
-                            startActivity(l);
-                            break;
-
-                        case R.id.nav_config:
-                            Intent m = new Intent(getApplicationContext(), MPStatusListActivity.class);
-                            startActivity(m);
-                            break;
-
-                        case R.id.nav_sensorconfig:
-                            Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
-                            startActivity(n);
-                            break;
-
-                        case R.id.nav_process:
-                            Log.i(DEBUG_TAG, "Process selected!");
-                            Intent o = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(o);
-                            finish();
-                            break;
+                    if (id == android.R.id.home) {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                        return true;
+                    } else if (id == R.id.nav_settings) {
+                        Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
+                        startActivity(l);
+                    } else if (id == R.id.nav_sensorconfig) {
+                        Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                        startActivity(n);
+                    } else if (id == R.id.nav_process) {
+                        Log.i(DEBUG_TAG, "Process selected!");
+                        Intent o = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(o);
+                        finish();
                     }
                     return true;
                 });
-    }
-
-    private void selectTempChart(int resid) {
-        Temperature temp = MashPit.TempModes.get(resid);
-        Log.i(DEBUG_TAG, "selectTempChart: " + temp.Mode);
-        Intent k = new Intent(getApplicationContext(), TempChartActivity.class);
-        k.putExtra("MODE", temp.Mode);
-        startActivity(k);
-        finish();
     }
 
     private PieChart createPiePage(String desc) {
@@ -214,8 +192,8 @@ public class TempPagerActivity extends AppCompatActivity {
     {
         View pieChart;
         for(SensorDataEvent myEvent : stickyEvent.sticky) {
-            String alias = subscriptionHandler.getSensorAlias(myEvent.getServer(), myEvent.getSensor());
-            if (subscriptionHandler.checkSubscription(myEvent.getTopicString(),"Pager")) {
+            String alias = sensorsHandler.getSensorAlias(myEvent.getDevice(), myEvent.getSensor());
+            if (subscriptionsHandler.checkSubscription(myEvent.getTopicString(),"Pager")) {
                 Log.i(DEBUG_TAG, "SensorDataEvent arrived: " + myEvent.getTopicString());
                 boolean found = false;
                 for (int i = 0; i < pieCharts.size(); i++) {
@@ -264,6 +242,10 @@ public class TempPagerActivity extends AppCompatActivity {
                     startService(startIntent);
                 });
 
+        if (navigationView != null) {
+            setupDrawerContent(navigationView);
+            updateSubMenu(navigationView.getMenu(), getApplicationContext());
+        }
     }
 
     @Override
@@ -275,5 +257,29 @@ public class TempPagerActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void updateSubMenu(Menu menu, Context context)
+    {
+        menu.removeGroup(1);
+        createSubMenu(menu,context);
+    }
+
+    public void createSubMenu(Menu menu, Context context)
+    {
+        ChartsHandler myCharts = new ChartsHandler();
+        chartMenu = myCharts.getallCharts();
+        if(chartMenu.isEmpty())
+        {
+            return;
+        }
+        int i=0;
+        SubMenu subMenu = menu.addSubMenu(1,0,0,context.getString(R.string.menu_title_charts));
+        for(Charts charts : chartMenu)
+        {
+            subMenu.add(1, i, 0, charts.description).setIcon(R.drawable.ic_chart_line_bw);
+            i++;
+        }
+        subMenu.setGroupCheckable(1, true, true);
     }
 }

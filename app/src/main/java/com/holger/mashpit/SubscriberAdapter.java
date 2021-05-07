@@ -48,11 +48,12 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
         {
             subscriberViewHolder.server.setText(sub.aliasServer);
         }
-        subscriberViewHolder.server.setTag(sub.topic);
+        subscriberViewHolder.server.setTag(this.subscriberList.get(i).id);
         subscriberViewHolder.sensor.setText(sub.sensor);
-        if(!sub.aliasSensor.isEmpty())
-        {
-            subscriberViewHolder.sensor.setText(sub.aliasSensor);
+        if(sub.aliasSensor != null) {
+            if (!sub.aliasSensor.isEmpty()) {
+                subscriberViewHolder.sensor.setText(sub.aliasSensor);
+            }
         }
         subscriberViewHolder.interval.setText(interval);
     }
@@ -82,19 +83,16 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
             deleteButton = v.findViewById(R.id.subDeleteButton);
             mCardView = v.findViewById(R.id.subscribbercard_view);
 
-           deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
-                    deleteButton.setPressed(true);
-                    deleteSubscriptionCallback.onSubscriptionDeleted((String)server.getTag());
-                }
-            });
+           deleteButton.setOnClickListener(view -> {
+               Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
+               deleteButton.setPressed(true);
+               deleteSubscriptionCallback.onSubscriptionDeleted((Long) server.getTag());
+           });
         }
     }
 
     public interface DeleteSubscriptionCallback {
-        void onSubscriptionDeleted(String position);
+        void onSubscriptionDeleted(long id);
     }
 
     void setOnItemClickListener(SubscriberAdapter.DeleteSubscriptionCallback callback){

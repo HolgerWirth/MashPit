@@ -11,9 +11,9 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.activeandroid.query.Select;
 import com.holger.mashpit.events.SensorEvent;
-import com.holger.mashpit.model.SensorStatus;
+import com.holger.mashpit.model.Devices;
+import com.holger.mashpit.model.DevicesHandler;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
 
@@ -31,6 +31,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
     Intent sintent;
     List<SensorEvent> result = new ArrayList<>();
     CoordinatorLayout coordinatorLayout=null;
+    DevicesHandler devicesHandler;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -49,6 +50,7 @@ public class SensorStatusListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensorstatus);
 
+        devicesHandler = new DevicesHandler();
         coordinatorLayout = findViewById(R.id.sensorstatus_content);
         Log.i(DEBUG_TAG, "OnCreate");
 
@@ -116,18 +118,19 @@ public class SensorStatusListActivity extends AppCompatActivity {
 
     private List<SensorEvent> updateServerList() {
         final List<SensorEvent> upresult = new ArrayList<>();
-        List<SensorStatus> sensorStatuses = new Select().all().from(SensorStatus.class).orderBy("server ASC").execute();
 
-        for (int i = 0; i < sensorStatuses.size(); i++) {
+        List<Devices> devices = devicesHandler.getDeviceStatus();
+
+        for (Devices dev : devices) {
             SensorEvent sensorevent = new SensorEvent();
-            sensorevent.setServer(sensorStatuses.get(i).server);
-            sensorevent.setName(sensorStatuses.get(i).alias);
-            sensorevent.setActive(sensorStatuses.get(i).active);
-            sensorevent.setSensor(sensorStatuses.get(i).sensor);
-            sensorevent.setSystem(sensorStatuses.get(i).system);
-            sensorevent.setTS(sensorStatuses.get(i).TS);
-            sensorevent.setVersion(sensorStatuses.get(i).version);
-            sensorevent.setIP(sensorStatuses.get(i).IP);
+            sensorevent.setServer(dev.device);
+            sensorevent.setName(dev.alias);
+            sensorevent.setActive(dev.active);
+            sensorevent.setSensor(dev.sensor);
+            sensorevent.setSystem(dev.system);
+            sensorevent.setTS(dev.TS);
+            sensorevent.setVersion(dev.version);
+            sensorevent.setIP(dev.IP);
             upresult.add(sensorevent);
         }
         return upresult;

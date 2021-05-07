@@ -13,14 +13,14 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.activeandroid.query.Select;
-import com.activeandroid.query.Update;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.Charts;
-import com.holger.mashpit.model.SensorStatus;
-import com.holger.mashpit.model.Sensors;
+import com.holger.mashpit.model.DevicesHandler;
+import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.model.Subscriptions;
+import com.holger.mashpit.model.ChartsHandler;
+import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.share.Constants;
 
 import java.util.ArrayList;
@@ -47,11 +47,20 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     boolean subListChanged = false;
     boolean unsaved=false;
     MaterialAlertDialogBuilder builder;
+    SubscriptionsHandler subscriptionsHandler;
+    DevicesHandler devicesHandler;
+    ChartsHandler chartsHandler;
+    SensorsHandler sensorsHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chartedit);
+
+        subscriptionsHandler = new SubscriptionsHandler();
+        chartsHandler = new ChartsHandler();
+        devicesHandler = new DevicesHandler();
+        sensorsHandler = new SensorsHandler();
 
         Toolbar toolbar = findViewById(R.id.chartedit_toolbar);
         setSupportActionBar(toolbar);
@@ -118,11 +127,15 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             Log.i(DEBUG_TAG, "Clicked the FAB 'OK' button");
             if (editAction.equals("insert")) {
                 setResult(1, null);
-                new Charts(chartname.getText().toString(), chartdesc.getText().toString(), "", "", 0, 0, 30).save();
+                Charts newChart = new Charts();
+                newChart.name=chartname.getText().toString();
+                newChart.description=chartdesc.getText().toString();
+                newChart.type="";
+                chartsHandler.addChart(newChart);
                 for (Subscriptions sub : topicList) {
                     if (!sub.deleted) {
-                        String topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
-                        new Subscriptions(topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
+                        sub.durable=1;
+                        subscriptionsHandler.addSubscription(sub);
                         subListChanged=true;
                         unsaved=false;
                     }
@@ -131,34 +144,21 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             if (editAction.equals("edit")) {
                 setResult(1, null);
                 if (!chartdesc.getText().toString().equals(desc)) {
-                    new Update(Charts.class)
-                            .set("description = ?", chartdesc.getText().toString())
-                            .where("name = ?", name)
-                            .execute();
+                    Charts upChart = new Charts();
+                    upChart.name=name;
+                    upChart.description=chartdesc.getText().toString();
+                    upChart.type="";
+                    chartsHandler.updateChart(upChart);
                 }
                 if (subListChanged) {
                     for (Subscriptions sub : topicList) {
                         if (sub.deleted) {
-                            if (sub.getId() != null) {
-                                new Update(Subscriptions.class)
-                                        .set("deleted = ?", 1)
-                                        .where("action = ? and name = ? and topic = ?", sub.action, sub.name, sub.topic)
-                                        .execute();
+                            if (sub.id != 0) {
+                                subscriptionsHandler.updateSubscription(sub);
                             }
                         } else {
-                            if (sub.getId() == null) {
-                                boolean exist = new Select().from(Subscriptions.class).where("action=?", action)
-                                        .and("name = ?", name)
-                                        .and("deleted=?", 1)
-                                        .orderBy("server ASC").exists();
-                                if (exist) {
-                                    new Update(Subscriptions.class)
-                                            .set("deleted = ?", 0)
-                                            .where("action = ? and name = ? and topic = ? and deleted = ?", sub.action, sub.name, sub.topic, 1)
-                                            .execute();
-                                } else {
-                                    new Subscriptions(sub.topic, sub.action, sub.name, sub.server, sub.sensor, sub.interval, 1, false).save();
-                                }
+                            if (sub.id == 0) {
+                                subscriptionsHandler.addSubscription(sub);
                             }
                         }
                     }
@@ -231,19 +231,23 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         super.onActivityResult(requestCode, resultCode, data);
         Log.i(DEBUG_TAG, "ResultCode=" + resultCode);
         String type = chartname.getText().toString();
-        Subscriptions subscriptions;
+        Subscriptions subscriptions = new Subscriptions();
         boolean exists = false;
 
         if (resultCode == 1) {
             unsaved=true;
-            String server = data.getStringExtra("server");
-            String sensor = data.getStringExtra("sensor");
-            int interval = data.getIntExtra("interval", 0);
-            String topic = "/SE/" + server + "/temp/" + sensor + "/" + interval;
-            Log.i(DEBUG_TAG, type + ": New subscription selected: " + topic);
+            subscriptions.action="Chart";
+            subscriptions.durable=1;
+            subscriptions.deleted=false;
+            subscriptions.server = data.getStringExtra("server");
+            subscriptions.sensor = data.getStringExtra("sensor");
+            subscriptions.interval = data.getIntExtra("interval", 0);
+            subscriptions.topic = "/SE/" + subscriptions.server + "/temp/" + subscriptions.sensor + "/" + subscriptions.interval;
+            subscriptions.name=type;
+            Log.i(DEBUG_TAG, type + ": New subscription selected: " + subscriptions.topic);
 
             for (Subscriptions sub : topicList) {
-                if (sub.topic.equals(topic)) {
+                if (sub.topic.equals(subscriptions.topic)) {
                     if (sub.deleted) {
                         Log.i(DEBUG_TAG, "Subscription was deleted before!");
                         sub.deleted = false;
@@ -257,7 +261,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             } else {
                 Log.i(DEBUG_TAG, "New subscription for: " + type);
                 subListChanged = true;
-                subscriptions = new Subscriptions(topic, "Chart", type, server, sensor, interval, 1, false);
+                subscriptionsHandler.addSubscription(subscriptions);
                 topicList.add(subscriptions);
                 name = type;
                 sa = new SubscriberAdapter(refreshSubscriber(topicList));
@@ -269,13 +273,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     }
 
     private List<Subscriptions> initSubscriber() {
-        List<Subscriptions> dbresult;
-        dbresult = new Select().from(Subscriptions.class).where("action=?", action)
-                .and("name = ?", name)
-                .and("deleted=?", false)
-                .orderBy("server ASC").execute();
-
-        return dbresult;
+        return subscriptionsHandler.getActiveSubscriptions(action,name);
     }
 
     private List<Subscriptions> refreshSubscriber(List<Subscriptions> subscriptions) {
@@ -283,23 +281,8 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         List<Subscriptions> tempSub = new ArrayList<>();
         for (Subscriptions sub : subscriptions) {
             if (!sub.deleted) {
-                List<SensorStatus> sensorStatuses = new Select().from(SensorStatus.class).where("server=?", sub.server).orderBy("server ASC").execute();
-                for (SensorStatus sensor : sensorStatuses) {
-                    if (sub.server.equals(sensor.server)) {
-                        serverId = sensor.server;
-                        if (!sensor.alias.isEmpty()) {
-                            sub.aliasServer = sensor.alias;
-                        }
-                        break;
-                    }
-                }
-                List<Sensors> sensorNames = new Select().from(Sensors.class).where("server=?", serverId).and("sensor=?", sub.sensor).execute();
-                for (Sensors sensorName : sensorNames) {
-                    if (!sensorName.name.isEmpty()) {
-                        sub.aliasSensor = sensorName.name;
-                    }
-                    break;
-                }
+                sub.aliasServer = devicesHandler.getDeviceAlias(sub.server);
+                sub.aliasSensor = sensorsHandler.getSensorAlias(serverId,sub.sensor);
                 tempSub.add(sub);
             }
         }
@@ -307,15 +290,15 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     }
 
     @Override
-    public void onSubscriptionDeleted(final String topic) {
-        Log.i(DEBUG_TAG, "Subscription deleted on position: " + topic);
+    public void onSubscriptionDeleted(final long id) {
+        Log.i(DEBUG_TAG, "Subscription deleted on position: " + id);
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
             subListChanged = true;
             List<Subscriptions> tempSub = new ArrayList<>();
             for (Subscriptions sub : topicList) {
-                if (!sub.topic.equals(topic)) {
+                if (sub.id!=id) {
                     tempSub.add(sub);
                 } else {
                     sub.deleted = true;

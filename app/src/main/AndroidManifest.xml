@@ -19,21 +19,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
 
-        <provider
-            android:name="com.activeandroid.content.ContentProvider"
-            android:authorities="com.holger.mashpit"
-            android:enabled="true"
-            android:exported="false" /> <!-- Notice this tag which provides the database name -->
-        <meta-data
-            android:name="AA_DB_NAME"
-            android:value="MashPitDB.db" /> <!-- Notice this tag which provides the database version -->
-        <meta-data
-            android:name="AA_DB_VERSION"
-            android:value="5" />
-        <meta-data
-            android:name="AA_MODELS"
-            android:value="com.holger.mashpit.model.Temperature,                          com.holger.mashpit.model.Process,                          com.holger.mashpit.model.MPStatus,                          com.holger.mashpit.model.Config,                          com.holger.mashpit.model.MPServer,                          com.holger.mashpit.model.SensorStatus,                          com.holger.mashpit.model.Sensors,                          com.holger.mashpit.model.Subscriptions,             com.holger.mashpit.model.Charts" />
-
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
@@ -59,18 +44,9 @@
             android:name=".prefs.SettingsActivity"
             android:label="Preferences" />
         <activity
-            android:name=".SubscribeEdit"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".FindServerActivity"
             android:label="@string/title_activity_find_server" />
-        <activity android:name=".ConfEdit" />
         <activity android:name=".TempPagerActivity" />
-        <activity
-            android:name=".MPStatusListActivity"
-            android:label="MashPit Server" />
-        <activity android:name=".MPProcListActivity" />
-        <activity android:name=".ServerEdit" />
         <activity android:name=".SensorStatusListActivity" />
         <activity
             android:name=".SensorDevListActivity"

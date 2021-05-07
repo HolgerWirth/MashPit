@@ -12,9 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
 
-import com.activeandroid.query.Select;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
@@ -26,16 +24,10 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.holger.mashpit.events.TemperatureEvent;
-import com.holger.mashpit.model.Temperature;
 import com.holger.mashpit.prefs.SettingsActivity;
 import com.holger.mashpit.prefs.ChartSettings;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -84,19 +76,17 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Toolbar toolbar= findViewById(R.id.my_chart_toolbar);
-
+/*
         if (toolbar != null) {
             toolbar.setTitle(MashPit.prefGetName(prefs,TempMode));
         }
+*/
         setSupportActionBar(toolbar);
 
         if (toolbar != null) {
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    overridePendingTransition(0,0);
-                    finish();
-                }
+            toolbar.setNavigationOnClickListener(v -> {
+                overridePendingTransition(0,0);
+                finish();
             });
         }
 
@@ -111,8 +101,8 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             mChart.setPinchZoom(true);
         }
 
-        tempMin= MashPit.prefGetMin(prefs,TempMode);
-        tempMax= MashPit.prefGetMax(prefs,TempMode);
+//        tempMin= MashPit.prefGetMin(prefs,TempMode);
+//        tempMax= MashPit.prefGetMax(prefs,TempMode);
 
         Description desc = new Description();
         desc.setText(descTitle);
@@ -121,11 +111,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         if(!setTempData()) return;
 
         mChart.animateXY(1000, 2000);
-
-        if(mpos<0)
-        {
-            EventBus.getDefault().register(this);
-        }
 
         Legend l = mChart.getLegend();
 
@@ -142,28 +127,15 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        switch (id) {
-
-            case R.id.action_tempsettings:
-                Log.i(DEBUG_TAG, "Settings selected");
-                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                intent.putExtra( PreferenceActivity.EXTRA_SHOW_FRAGMENT, ChartSettings.class.getName() );
-                intent.putExtra( PreferenceActivity.EXTRA_NO_HEADERS, true );
-                intent.putExtra("EXTRA_MODE",TempMode);
-                startActivity(intent);
-                break;
-
+        if (id == R.id.action_tempsettings) {
+            Log.i(DEBUG_TAG, "Settings selected");
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, ChartSettings.class.getName());
+            intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS, true);
+            intent.putExtra("EXTRA_MODE", TempMode);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public static List<Temperature> getAll(int hours) {
-        return new Select()
-                .from(Temperature.class)
-                .where("timeStamp > ?",getFromTimestamp(hours))
-                .and("mode = ?",TempMode)
-                .orderBy("timeStamp ASC")
-                .execute();
     }
 
     public static long getFromTimestamp(int hours)
@@ -174,29 +146,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getTemperatureEvent(TemperatureEvent myEvent) {
-
-        Log.i(DEBUG_TAG, "getTemperatureEvent");
-        if(myEvent != null) {
-            if (myEvent.getQoS() > 0) {
-
-                float entry=round(myEvent.getTemperature(),1);
-
-                if (!(sensors.contains(myEvent.getSensor()))) {
-                    sensors.add(myEvent.getSensor());
-                    yVals.add(new ArrayList<Entry>());
-                }
-
-                int sensindex = sensors.indexOf(myEvent.getSensor());
-                yVals.get(sensindex).add(new Entry((float)myEvent.getTimestamp(),entry));
-
-                mChart.notifyDataSetChanged();
-                Log.i(DEBUG_TAG, "DataSet changed");
-            }
-        }
-    }
-
     public boolean setTempData()
     {
         Log.i(DEBUG_TAG,"setTempData");
@@ -205,8 +154,8 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         leftAxis.setValueFormatter (new TempFormatter());
         leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
 
-        leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
-        leftAxis.setAxisMinimum(MashPit.prefGetMin(prefs,TempMode));
+//        leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
+//        leftAxis.setAxisMinimum(MashPit.prefGetMin(prefs,TempMode));
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setValueFormatter(new TimestampFormatter());
@@ -215,7 +164,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
         if(mpos<0) {
             ArrayList<ILineDataSet>  set = new ArrayList<>();
-
+/*
             List<Temperature> temps = getAll(24);
             if(temps.size()==0)
             {
@@ -223,7 +172,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             }
 
             if(temps.size()==0) return false;
-
+*/
             ArrayList<Integer> linecolor = new ArrayList<>();
             linecolor.add(Color.BLACK);
             linecolor.add(Color.RED);
@@ -234,6 +183,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             linecolor.add(Color.MAGENTA);
             linecolor.add(Color.GRAY);
 
+            /*
             for (Temperature temperature : temps) {
 
                 float entry=round(temperature.Temp,1);
@@ -241,16 +191,16 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
                 if (!(sensors.contains(temperature.Name))) {
                     Log.i(DEBUG_TAG,"Found sensor: "+temperature.Name);
                     sensors.add(temperature.Name);
-                    yVals.add(new ArrayList<Entry>());
+                    yVals.add(new ArrayList<>());
                 }
-
                 int sensindex = sensors.indexOf(temperature.Name);
                 yVals.get(sensindex).add(new Entry((float)temperature.timeStamp,entry));
-
             }
+            */
+
             LineDataSet xset;
             for (int j=0;j<sensors.size();j++) {
-                xset = new LineDataSet(yVals.get(j), MashPit.prefGetSensorName(prefs, TempMode, j, sensors.get(j)));
+                xset = new LineDataSet(yVals.get(j), "");
 
                 xset.setValueFormatter(new TempFormatter());
                 xset.setCubicIntensity(0.4f);
@@ -322,8 +272,5 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     protected void onDestroy() {
         Log.i(DEBUG_TAG, "OnDestroy()...");
         super.onDestroy();
-        if(mpos<0) {
-            EventBus.getDefault().unregister(this);
         }
-    }
 }

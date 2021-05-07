@@ -13,15 +13,14 @@ import java.util.Locale;
 public class SensorDataEvent
 {
     private String type;
-    private String server;
+    private String device;
     private String sensor;
     private int interval;
     private String data;
 
     public String getTopicString()
     {
-        return("/SE/"+getServer()+"/temp/"+getSensor()+"/"+getInterval());
-
+        return("/SE/"+getDevice()+"/temp/"+getSensor()+"/"+getInterval());
     }
 
     public String getType() {
@@ -32,12 +31,12 @@ public class SensorDataEvent
         this.type = type;
     }
 
-    public String getServer() {
-        return server;
+    public String getDevice() {
+        return device;
     }
 
-    public void setServer(String server) {
-        this.server = server;
+    public void setDevice(String device) {
+        this.device = device;
     }
 
     public String getSensor() {

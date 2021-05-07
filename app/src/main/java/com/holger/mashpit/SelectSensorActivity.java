@@ -12,13 +12,14 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.activeandroid.query.Select;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.SensorEvent;
-import com.holger.mashpit.model.SensorStatus;
+import com.holger.mashpit.model.Devices;
+import com.holger.mashpit.model.DevicesHandler;
 import com.holger.mashpit.model.Sensors;
+import com.holger.mashpit.model.SensorsHandler;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -41,12 +42,16 @@ public class SelectSensorActivity extends AppCompatActivity {
 
     FloatingActionButton actionButton;
     String topicString = "";
+    DevicesHandler devicesHandler;
+    SensorsHandler sensorsHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_sensor);
 
+        devicesHandler = new DevicesHandler();
+        sensorsHandler = new SensorsHandler();
         actionButton = findViewById(R.id.editButton);
         final FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
         cancelButton.show();
@@ -237,11 +242,11 @@ public class SelectSensorActivity extends AppCompatActivity {
 
     private List<SensorEvent> updateServerList() {
         final List<SensorEvent> upresult = new ArrayList<>();
-        List<SensorStatus> sensorStatuses = new Select().all().from(SensorStatus.class).orderBy("server ASC").execute();
+        List<Devices> devices = devicesHandler.getDeviceStatus();
 
-        for (SensorStatus status : sensorStatuses) {
+        for (Devices status : devices) {
             SensorEvent sensorevent = new SensorEvent();
-            sensorevent.setServer(status.server);
+            sensorevent.setServer(status.device);
             sensorevent.setName(status.alias);
             sensorevent.setActive(status.active);
             sensorevent.setSensor(status.sensor);
@@ -251,7 +256,7 @@ public class SelectSensorActivity extends AppCompatActivity {
     }
 
     private List<Sensors> updateSensorList(String device) {
-        sensorresult = new Select().from(Sensors.class).where("server = ?", device).orderBy("sensor ASC").execute();
+        sensorresult = sensorsHandler.getAllSensors(device);
         final List<Sensors> upresult = new ArrayList<>();
         String mySensor = "";
         for (Sensors sensors : sensorresult) {

@@ -3,14 +3,12 @@ package com.holger.mashpit;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.activeandroid.query.Delete;
-import com.activeandroid.query.Select;
-import com.activeandroid.query.Update;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.Charts;
-import com.holger.mashpit.model.Subscriptions;
+import com.holger.mashpit.model.ChartsHandler;
 import com.holger.mashpit.tools.ItemClickSupport;
+import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.share.Constants;
 
 import androidx.appcompat.app.ActionBar;
@@ -29,12 +27,16 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     private static final String DEBUG_TAG = "ChartListActivity";
     ChartListAdapter sa;
     List<Charts> charts = new ArrayList<>();
+    SubscriptionsHandler subscriptionsHandler;
+    ChartsHandler chartsHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chartlist);
 
+        subscriptionsHandler = new SubscriptionsHandler();
+        chartsHandler = new ChartsHandler();
         Toolbar toolbar = findViewById(R.id.chartList_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> {
@@ -77,13 +79,7 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     }
 
     private List<Charts> refreshCharts() {
-        List<Charts> charts = new ArrayList<>();
-        List<Charts> dbresult = new Select().from(Charts.class).orderBy("name ASC").execute();
-        for (Charts chart : dbresult) {
-            chart.id = chart.getId();
-            charts.add(chart);
-        }
-        return charts;
+        return chartsHandler.getallCharts();
     }
 
     @Override
@@ -105,26 +101,22 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
-            new Delete().from(Charts.class).where("name = ?", name).execute();
-            if(new Select().from(Subscriptions.class).where("action = ?","Chart").and("name = ?",name).and("deleted = ?",0).exists())
-            {
-                new Update(Subscriptions.class)
-                        .set("deleted = ?", 1)
-                        .where("action = ? and name = ?", "Chart", name)
-                        .execute();
+            Charts delChart = new Charts();
+            delChart.name=name;
+            chartsHandler.deleteChart(delChart);
+            subscriptionsHandler.setDeletedSubscriptions("Chart",name);
 
-                builder.setTitle(getString(R.string.Subchanged_alert_title));
-                builder.setMessage(getString(R.string.Subchanged_text));
-                builder.setPositiveButton(getString(R.string.Subchanged_button), (dialog1, which1) -> {
+            builder.setTitle(getString(R.string.Subchanged_alert_title));
+            builder.setMessage(getString(R.string.Subchanged_text));
+            builder.setPositiveButton(getString(R.string.Subchanged_button), (dialog1, which1) -> {
                     Log.i(DEBUG_TAG, "Reconnect pressed!");
                     Log.i(DEBUG_TAG, "Stop service!");
                     Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
                     serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
                     getApplicationContext().startService(serviceIntent);
                 });
-                builder.setNegativeButton(getString(R.string.Subchanged_cancel), null);
-                builder.show();
-            }
+            builder.setNegativeButton(getString(R.string.Subchanged_cancel), null);
+            builder.show();
             charts=refreshCharts();
             sa.refreshCharts(charts);
             sa.notifyDataSetChanged();

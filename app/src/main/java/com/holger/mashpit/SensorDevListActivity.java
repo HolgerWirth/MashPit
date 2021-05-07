@@ -21,11 +21,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.activeandroid.query.Select;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.events.SensorEvent;
 import com.holger.mashpit.model.Sensors;
+import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SensorPublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
@@ -66,6 +66,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
     private int resultCode=0;
     CoordinatorLayout coordinatorLayout=null;
+    SensorsHandler sensorsHandler;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -78,7 +79,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         coordinatorLayout = findViewById(R.id.snb_content);
         Log.i(DEBUG_TAG, "OnCreate");
 
-
+        sensorsHandler = new SensorsHandler();
         sensordevList = findViewById(R.id.sensordevList);
         final MaterialAlertDialogBuilder alertDialog;
         alertDialog = new MaterialAlertDialogBuilder(this);
@@ -275,8 +276,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     }
 
     private List<Sensors> refreshSensorList() {
-        List<Sensors> dbresult;
-        dbresult = new Select().from(Sensors.class).where("server = ?", server).orderBy("sensor ASC").execute();
+        List<Sensors> dbresult = sensorsHandler.getAllSensors(server);
         final List<Sensors> upresult = new ArrayList<>();
         String mySensor = "";
         int t = (-1);
