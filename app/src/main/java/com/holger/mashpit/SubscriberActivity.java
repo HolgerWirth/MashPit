@@ -29,6 +29,7 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     String action = "TEST";
     boolean durable;
     boolean subListChanged;
+    MaterialAlertDialogBuilder builder;
     SubscriptionsHandler subsHandler;
     DevicesHandler devicesHandler;
     SensorsHandler sensorsHandler;
@@ -43,15 +44,13 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         sensorsHandler = new SensorsHandler();
         Toolbar toolbar = findViewById(R.id.subscriber_toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> {
-            overridePendingTransition(0, 0);
-            finish();
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
         final ActionBar ab = getSupportActionBar();
         assert ab != null;
         ab.setTitle("Sensor Data");
 
         subListChanged=false;
+        builder = new MaterialAlertDialogBuilder(this);
         action=getIntent().getStringExtra("ACTION");
         durable = getIntent().getBooleanExtra("DURABLE",false);
         if(action==null)
@@ -78,11 +77,6 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         sa = new SubscriberAdapter(refreshSubscriber());
         sa.setOnItemClickListener(this);
         subscriberList.setAdapter(sa);
-    }
-
-    @Override
-    public void onBackPressed() {
-        finish();
     }
 
     private List<Subscriptions> refreshSubscriber() {
@@ -125,8 +119,6 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
 
     @Override
     public void onSubscriptionDeleted(final long id) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
@@ -140,9 +132,8 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     }
 
     @Override
-    protected void onStop() {
+    public void onBackPressed() {
         if (subListChanged) {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.Subchanged_alert_title));
             builder.setMessage(getString(R.string.Subchanged_text));
             builder.setPositiveButton(getString(R.string.Subchanged_button), (dialog, which) -> {
@@ -151,10 +142,13 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
                 Intent serviceIntent = new Intent(getApplicationContext(), TemperatureService.class);
                 serviceIntent.setAction(Constants.ACTION.RESTART_ACTION);
                 getApplicationContext().startService(serviceIntent);
+                super.onBackPressed();
             });
-            builder.setNegativeButton(getString(R.string.Subchanged_cancel), null);
+            builder.setNegativeButton(getString(R.string.Subchanged_cancel), (dialog, which) -> finish());
             builder.show();
         }
-        super.onStop();
+        else {
+            super.onBackPressed();
+        }
     }
 }
