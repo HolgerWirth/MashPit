@@ -117,7 +117,7 @@
             android:layout_margin="16dp"
             android:contentDescription="@string/intervaladddesc"
             android:src="@drawable/ic_add_white_24dp"
-            app:backgroundTint="@color/material_blue_500"
+            app:backgroundTint="@android:color/holo_blue_dark"
             android:tooltipText="@string/intervaladddesc" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

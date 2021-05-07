@@ -124,12 +124,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:background="@color/material_blue_500"
+                android:background="@android:color/holo_blue_dark"
                 android:elevation="6dp"
                 android:text="@string/new_output_event"
                 android:textColor="#fff"
                 android:textSize="18sp"
-                app:backgroundTint="@color/material_blue_500" />
+                app:backgroundTint="@android:color/holo_blue_dark" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/eventfabOutput"
@@ -138,7 +138,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                app:backgroundTint="@color/material_blue_500"
+                app:backgroundTint="@android:color/holo_blue_dark"
                 app:borderWidth="0dp"
                 app:fabSize="mini"
                 app:srcCompat="@drawable/ic_add_white_24dp" />
@@ -156,12 +156,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:background="@color/material_blue_500"
+                android:background="@android:color/holo_blue_dark"
                 android:elevation="6dp"
                 android:text="@string/new_input_event"
                 android:textColor="#fff"
                 android:textSize="18sp"
-                app:backgroundTint="@color/material_blue_500" />
+                app:backgroundTint="@android:color/holo_blue_dark" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/eventfabInput"
@@ -170,7 +170,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                app:backgroundTint="@color/material_blue_500"
+                app:backgroundTint="@android:color/holo_blue_dark"
                 app:borderWidth="0dp"
                 app:fabSize="mini"
                 app:srcCompat="@drawable/ic_add_white_24dp" />
@@ -184,7 +184,8 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:src="@drawable/ic_done_white_24dp"
-        app:backgroundTint="@android:color/holo_green_light" />
+        app:backgroundTint="@android:color/holo_green_light"
+        android:contentDescription="TODO" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/eventfabadd"
@@ -195,5 +196,5 @@
         android:contentDescription="@string/procfabadddesc"
         android:src="@drawable/ic_add_white_24dp"
         android:tooltipText="@string/devfabadddesc"
-        app:backgroundTint="@color/material_blue_500" />
+        app:backgroundTint="@android:color/holo_blue_dark" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

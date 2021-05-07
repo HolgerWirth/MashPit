@@ -35,6 +35,6 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="New sensor data"
-        app:backgroundTint="@color/material_blue_500"
+        app:backgroundTint="@android:color/holo_blue_dark"
         android:src="@drawable/ic_add_white_24dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

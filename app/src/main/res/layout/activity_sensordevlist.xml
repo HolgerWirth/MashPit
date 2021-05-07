@@ -163,8 +163,8 @@
                 android:elevation="6dp"
                 android:text="@string/devfabaddDHTdesc"
                 android:textColor="#fff"
-                android:background="@color/material_blue_500"
-                app:backgroundTint="@color/material_blue_500"
+                android:background="@android:color/holo_blue_dark"
+                app:backgroundTint="@android:color/holo_blue_dark"
                 android:textSize="18sp" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -177,7 +177,7 @@
                 android:tooltipText="@string/devfabaddDHTdesc"
                 app:borderWidth="0dp"
                 app:fabSize="mini"
-                app:backgroundTint="@color/material_blue_500"
+                app:backgroundTint="@android:color/holo_blue_dark"
                 app:srcCompat="@drawable/ic_add_white_24dp" />
         </LinearLayout>
     </LinearLayout>
@@ -198,7 +198,7 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/procfabadddesc"
-        app:backgroundTint="@color/material_blue_500"
+        app:backgroundTint="@android:color/holo_blue_dark"
         android:src="@drawable/ic_add_white_24dp"
         android:tooltipText="@string/devfabadddesc" />
 
