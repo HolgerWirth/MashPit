@@ -41,8 +41,9 @@ public class ChartDataHandler {
         Query<ChartData> query = dataBox.query(ChartData_.topic.oneOf(topic)
                 .and(ChartData_.TS.less(ts)))
                 .build();
+        long dels = (query.count());
         query.remove();
-        return (query.count());
+        return (dels);
     }
 
     public double[] getMaxChartData(String[] topic, long ts)
