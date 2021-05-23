@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,16 +43,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class SensorDevListActivity extends AppCompatActivity implements SensorPublishMQTT.OnPublishConfiguration {
-    private static final String DEBUG_TAG = "SensorDevListActivity";
+public class SensorListActivity extends AppCompatActivity implements SensorPublishMQTT.OnPublishConfiguration {
+    private static final String DEBUG_TAG = "SensorListActivity";
     SnackBar snb;
-    SensorDevAdapter sa;
+    SensorListAdapter sa;
     String server;
     String alias;
     String sensors;
     String IP;
     String system;
-    RecyclerView sensordevList;
+    RecyclerView sensorList;
     List<Sensors> result;
     boolean iscollapsed=false;
     boolean online=false;
@@ -80,15 +82,15 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         Log.i(DEBUG_TAG, "OnCreate");
 
         sensorsHandler = new SensorsHandler();
-        sensordevList = findViewById(R.id.sensordevList);
+        sensorList = findViewById(R.id.sensordevList);
         final MaterialAlertDialogBuilder alertDialog;
         alertDialog = new MaterialAlertDialogBuilder(this);
         final Context context = this;
 
-        sensordevList.setHasFixedSize(true);
+        sensorList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        sensordevList.setLayoutManager(llm);
+        sensorList.setLayoutManager(llm);
 
         Toolbar toolbar = findViewById(R.id.sensordev_toolbar);
         setSupportActionBar(toolbar);
@@ -137,6 +139,16 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
         fabOK.hide();
 
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                myresult -> {
+                    if (myresult.getResultCode() == 1) {
+                        result.clear();
+                        result.addAll(refreshSensorList());
+                        sa.notifyDataSetChanged();
+                    }
+                });
+
         fabadd.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked the FAB button");
             if (iscollapsed) {
@@ -160,7 +172,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
             l.putExtra("name","");
             l.putExtra("GPIO",0);
             l.putExtra("address","0");
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         fabOK.setOnClickListener(view -> {
@@ -192,7 +204,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
             l.putExtra("system", system);
             l.putExtra("IP", IP);
             l.putExtra("alias",alias);
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         sensorName.addTextChangedListener(new TextWatcher() {
@@ -225,10 +237,10 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
         });
 
         result=refreshSensorList();
-        sa = new SensorDevAdapter(result);
+        sa = new SensorListAdapter(result);
         startTimer(TS);
 
-        ItemClickSupport.addTo(sensordevList).setOnItemClickListener((recyclerView, position, v) -> {
+        ItemClickSupport.addTo(sensorList).setOnItemClickListener((recyclerView, position, v) -> {
             Log.i(DEBUG_TAG, "Clicked!");
 
             Intent l;
@@ -260,8 +272,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
             l.putExtra("event",sensors.event);
             l.putExtra("dir",sensors.dir);
             l.putExtra("hyst",sensors.hyst);
-
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         toolbar.setNavigationOnClickListener(v -> {
@@ -272,7 +283,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
 
         sa.setSensors(sensors);
         sa.setOnline(online);
-        sensordevList.setAdapter(sa);
+        sensorList.setAdapter(sa);
     }
 
     private List<Sensors> refreshSensorList() {
@@ -394,18 +405,6 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.i(DEBUG_TAG, "ResultCode="+resultCode);
-        if(resultCode == 1 )
-        {
-            result.clear();
-            result.addAll(refreshSensorList());
-            sa.notifyDataSetChanged();
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         setResult(resultCode,null);
         finish();
@@ -502,7 +501,7 @@ public class SensorDevListActivity extends AppCompatActivity implements SensorPu
     }
 
     @Override
-    public void PublishConfigurationCallback(Boolean success, int position) {
+    public void PublishConfigurationCallback(Boolean success) {
         if (success) {
             snb.displayInfo(R.string.pubConfOK);
             fabOK.hide();
