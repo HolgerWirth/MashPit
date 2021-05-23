@@ -47,9 +47,9 @@
             android:name=".FindServerActivity"
             android:label="@string/title_activity_find_server" />
         <activity android:name=".TempPagerActivity" />
-        <activity android:name=".SensorStatusListActivity" />
+        <activity android:name=".DeviceListActivity" />
         <activity
-            android:name=".SensorDevListActivity"
+            android:name=".SensorListActivity"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".SensorConfEdit"
