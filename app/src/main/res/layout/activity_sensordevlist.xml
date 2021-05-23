@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/snb_content"
-    tools:context="com.holger.mashpit.SensorDevListActivity">
+    tools:context="com.holger.mashpit.SensorListActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/sensordev_toolbar"
