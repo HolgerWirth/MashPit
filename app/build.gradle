@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion '31.0.0 rc3'
+    buildToolsVersion '31.0.0 rc4'
 
     defaultConfig {
         applicationId "com.holger.mashpit"
@@ -60,7 +60,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     def eventbus_version = '3.2.0'
     implementation "org.greenrobot:eventbus:$eventbus_version"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
