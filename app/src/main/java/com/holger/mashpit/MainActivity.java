@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(l);
                     }
                     if(id==R.id.nav_sensorconfig) {
-                        Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                        Intent n = new Intent(getApplicationContext(), DeviceListActivity.class);
                         startActivity(n);
                     }
                     if(id==R.id.nav_temppager) {

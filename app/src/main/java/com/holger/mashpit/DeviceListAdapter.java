@@ -15,13 +15,13 @@ import com.holger.mashpit.events.SensorEvent;
 
 import java.util.List;
 
-class SensorStatusAdapter extends RecyclerView.Adapter<SensorStatusAdapter.SensorStatusViewHolder> {
+class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.SensorStatusViewHolder> {
 
-    private static final String DEBUG_TAG = "SensorStatusAdapter";
+    private static final String DEBUG_TAG = "DeviceListAdapter";
     private Context context;
     private final List<SensorEvent> statusList;
 
-    SensorStatusAdapter(List<SensorEvent> statusList) {
+    DeviceListAdapter(List<SensorEvent> statusList) {
         this.statusList = statusList;
         if(statusList != null) Log.i(DEBUG_TAG, "Server: "+this.statusList.size());
     }

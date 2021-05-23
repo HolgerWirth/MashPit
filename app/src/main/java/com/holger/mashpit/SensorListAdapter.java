@@ -18,15 +18,15 @@ import com.holger.mashpit.model.Sensors;
 import java.util.Arrays;
 import java.util.List;
 
-class SensorDevAdapter extends RecyclerView.Adapter<SensorDevAdapter.SensorDevViewHolder> {
+class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.SensorDevViewHolder> {
 
-    private static final String DEBUG_TAG = "SensorDevAdapter";
+    private static final String DEBUG_TAG = "SensorListAdapter";
     private Context context;
     private final List<Sensors> devList;
     private List<String> sensor_list;
     private boolean online=false;
 
-    SensorDevAdapter(List<Sensors> devList) {
+    SensorListAdapter(List<Sensors> devList) {
         this.devList = devList;
         if(devList != null) Log.i(DEBUG_TAG, "Sensor devices: "+this.devList.size());
     }

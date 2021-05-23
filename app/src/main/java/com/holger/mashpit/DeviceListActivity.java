@@ -24,10 +24,10 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SensorStatusListActivity extends AppCompatActivity {
-    private static final String DEBUG_TAG = "SensorList";
+public class DeviceListActivity extends AppCompatActivity {
+    private static final String DEBUG_TAG = "DeviceList";
     SnackBar snb;
-    SensorStatusAdapter sa;
+    DeviceListAdapter sa;
     Intent sintent;
     List<SensorEvent> result = new ArrayList<>();
     CoordinatorLayout coordinatorLayout=null;
@@ -66,12 +66,12 @@ public class SensorStatusListActivity extends AppCompatActivity {
 
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        sa = new SensorStatusAdapter(result);
+        sa = new DeviceListAdapter(result);
 
         ItemClickSupport.addTo(sensorstatusList).setOnItemClickListener((recyclerView, position, v) -> {
             Log.i(DEBUG_TAG, "Clicked!");
 
-            sintent = new Intent(getApplicationContext(), SensorDevListActivity.class);
+            sintent = new Intent(getApplicationContext(), SensorListActivity.class);
             sintent.putExtra("ACTION", "list");
             sintent.putExtra("server", result.get(position).getServer());
             sintent.putExtra("alias", result.get(position).getName());
