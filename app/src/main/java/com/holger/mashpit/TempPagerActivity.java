@@ -117,7 +117,7 @@ public class TempPagerActivity extends AppCompatActivity {
                         Intent l = new Intent(getApplicationContext(), SettingsActivity.class);
                         startActivity(l);
                     } else if (id == R.id.nav_sensorconfig) {
-                        Intent n = new Intent(getApplicationContext(), SensorStatusListActivity.class);
+                        Intent n = new Intent(getApplicationContext(), DeviceListActivity.class);
                         startActivity(n);
                     } else if (id == R.id.nav_process) {
                         Log.i(DEBUG_TAG, "Process selected!");
