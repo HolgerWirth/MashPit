@@ -1,6 +1,7 @@
 package com.holger.mashpit;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -51,6 +54,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
     String action;
     boolean iscollapsed=false;
     boolean active;
+    String topic;
 
     int resultCode=0;
     SnackBar snb;
@@ -67,6 +71,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(DEBUG_TAG, "OnCreate");
         sensorsHandler = new SensorsHandler();
         family = getIntent().getStringExtra("family");
         action = getIntent().getStringExtra("ACTION");
@@ -77,6 +82,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
         GPIO = getIntent().getIntExtra("GPIO",0);
         mcpid=getIntent().getIntExtra("mcpid",0);
         active=getIntent().getBooleanExtra("active",false);
+        topic = getIntent().getStringExtra("topic");
 
         alertDialog = new MaterialAlertDialogBuilder(this);
 
@@ -94,6 +100,14 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
         FloatingActionButton fabinput = findViewById(R.id.eventfabInput);
 
         fabOK.hide();
+
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Log.i(DEBUG_TAG, "Activity.RESULT_OK");
+                    }
+                });
 
         fabadd.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked the FAB button");
@@ -116,7 +130,8 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
             l.putExtra("server",server);
             l.putExtra("dir","OUT");
             l.putExtra("hw","MCP");
-            startActivityForResult(l, 0);
+            l.putExtra("topic", topic);
+            myActivityResultLauncher.launch(l);
             speeddial.setVisibility(LinearLayout.GONE);
         });
 
@@ -131,7 +146,8 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
             l.putExtra("server",server);
             l.putExtra("dir","IN");
             l.putExtra("hw","MCP");
-            startActivityForResult(l, 0);
+            l.putExtra("topic", topic);
+            myActivityResultLauncher.launch(l);
             speeddial.setVisibility(LinearLayout.GONE);
         });
 
@@ -211,7 +227,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
             alertDialog.setPositiveButton("OK", (dialog, which) -> {
                 Log.i(DEBUG_TAG, "Clicked on OK! - OK");
                 SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                pubMQTT.PublishSensorConf(server, sensor, type, mcpid, createJSONConfig());
+                pubMQTT.PublishSensorConf(topic, createJSONConfig());
             });
             alertDialog.show();
         });
@@ -235,7 +251,8 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
             l.putExtra("reg",sensors.reg);
             l.putExtra("hyst",sensors.hyst);
             l.putExtra("hw","MCP");
-            startActivityForResult(l, 0);
+            l.putExtra("topic", sensors.topic);
+            myActivityResultLauncher.launch(l);
             speeddial.setVisibility(LinearLayout.GONE);
         });
     }
@@ -292,7 +309,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
     }
 
     @Override
-    public void PublishConfigurationCallback(Boolean success,int position) {
+    public void PublishConfigurationCallback(Boolean success) {
         if (success) {
             snb.displayInfo(R.string.pubConfOK);
             setResult(1, null);
