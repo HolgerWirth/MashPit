@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,21 +31,9 @@ public class DeviceListActivity extends AppCompatActivity {
     SnackBar snb;
     DeviceListAdapter sa;
     Intent sintent;
-    List<SensorEvent> result = new ArrayList<>();
+    List<SensorEvent> resultList = new ArrayList<>();
     CoordinatorLayout coordinatorLayout=null;
     DevicesHandler devicesHandler;
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==1)
-        {
-            List<SensorEvent> updateresult = updateServerList();
-            result.clear();
-            result.addAll(updateresult);
-            sa.notifyDataSetChanged();
-        }
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,23 +56,33 @@ public class DeviceListActivity extends AppCompatActivity {
 
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        sa = new DeviceListAdapter(result);
+        sa = new DeviceListAdapter(resultList);
+
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == 1) {
+                        List<SensorEvent> updateresult = updateServerList();
+                        resultList.clear();
+                        resultList.addAll(updateresult);
+                        sa.notifyDataSetChanged();
+                    }
+                });
 
         ItemClickSupport.addTo(sensorstatusList).setOnItemClickListener((recyclerView, position, v) -> {
             Log.i(DEBUG_TAG, "Clicked!");
 
             sintent = new Intent(getApplicationContext(), SensorListActivity.class);
             sintent.putExtra("ACTION", "list");
-            sintent.putExtra("server", result.get(position).getServer());
-            sintent.putExtra("alias", result.get(position).getName());
-            sintent.putExtra("sensors",result.get(position).getSensor());
-            sintent.putExtra("online",result.get(position).isActive());
-            sintent.putExtra("system",result.get(position).getSystem());
-            sintent.putExtra("version",result.get(position).getVersion());
-            sintent.putExtra("IP",result.get(position).getIP());
-            sintent.putExtra("TS",result.get(position).getTS());
-
-            startActivityForResult(sintent, 0);
+            sintent.putExtra("server", resultList.get(position).getServer());
+            sintent.putExtra("alias", resultList.get(position).getName());
+            sintent.putExtra("sensors",resultList.get(position).getSensor());
+            sintent.putExtra("online",resultList.get(position).isActive());
+            sintent.putExtra("system",resultList.get(position).getSystem());
+            sintent.putExtra("version",resultList.get(position).getVersion());
+            sintent.putExtra("IP",resultList.get(position).getIP());
+            sintent.putExtra("TS",resultList.get(position).getTS());
+            myActivityResultLauncher.launch(sintent);
         });
 
         sensorstatusList.setAdapter(sa);
@@ -94,8 +94,8 @@ public class DeviceListActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "OnStart");
         EventBus.getDefault().register(this);
         snb = new SnackBar(coordinatorLayout);
-        result.clear();
-        result.addAll(updateServerList());
+        resultList.clear();
+        resultList.addAll(updateServerList());
         sa.notifyDataSetChanged();
     }
 
@@ -111,8 +111,8 @@ public class DeviceListActivity extends AppCompatActivity {
     public void getSensorEvent(SensorEvent sensorEvent) {
         Log.i(DEBUG_TAG, "SensorEvent arrived: " + sensorEvent.getServer() + "/" + sensorEvent.getSensor());
         List<SensorEvent> updateresult = updateServerList();
-        result.clear();
-        result.addAll(updateresult);
+        resultList.clear();
+        resultList.addAll(updateresult);
         sa.notifyDataSetChanged();
     }
 
