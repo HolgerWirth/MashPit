@@ -1,5 +1,7 @@
 package com.holger.mashpit;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -72,6 +74,52 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         topicList = new ArrayList<>();
         builder = new MaterialAlertDialogBuilder(this);
 
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Log.i(DEBUG_TAG, "ResultCode=" + result.getResultCode());
+                    String type = chartname.getText().toString();
+                    Subscriptions subscriptions = new Subscriptions();
+                    boolean exists = false;
+                    if (result.getResultCode() == 1) {
+                        unsaved = true;
+                        subscriptions.action = "Chart";
+                        subscriptions.durable = 1;
+                        subscriptions.deleted = false;
+                        assert result.getData() != null;
+                        subscriptions.server = result.getData().getStringExtra("server");
+                        subscriptions.sensor = result.getData().getStringExtra("sensor");
+                        subscriptions.interval = result.getData().getIntExtra("interval", 0);
+                        subscriptions.topic = "/SE/" + subscriptions.server + "/temp/" + subscriptions.sensor + "/" + subscriptions.interval;
+                        subscriptions.name = type;
+                        Log.i(DEBUG_TAG, type + ": New subscription selected: " + subscriptions.topic);
+
+                        for (Subscriptions sub : topicList) {
+                            if (sub.topic.equals(subscriptions.topic)) {
+                                if (sub.deleted) {
+                                    Log.i(DEBUG_TAG, "Subscription was deleted before!");
+                                    sub.deleted = false;
+                                    exists = true;
+                                }
+                            }
+                        }
+
+                        if (exists) {
+                            Log.i(DEBUG_TAG, "Subscription already exists!");
+                        } else {
+                            Log.i(DEBUG_TAG, "New subscription for: " + type);
+                            subListChanged = true;
+                            subscriptionsHandler.addSubscription(subscriptions);
+                            topicList.add(subscriptions);
+                            name = type;
+                            sa = new SubscriberAdapter(refreshSubscriber(topicList));
+                            sa.setOnItemClickListener(this);
+                            subscriberList.setAdapter(sa);
+                            fabOK.show();
+                        }
+                    }
+                });
+
         chartname = findViewById(R.id.chartName);
         chartname.addTextChangedListener(new TextWatcher() {
             @Override
@@ -120,7 +168,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         fabadd.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
             Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         fabOK.setOnClickListener(view -> {
@@ -226,63 +274,16 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         subscriberList.setAdapter(sa);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.i(DEBUG_TAG, "ResultCode=" + resultCode);
-        String type = chartname.getText().toString();
-        Subscriptions subscriptions = new Subscriptions();
-        boolean exists = false;
-
-        if (resultCode == 1) {
-            unsaved=true;
-            subscriptions.action="Chart";
-            subscriptions.durable=1;
-            subscriptions.deleted=false;
-            subscriptions.server = data.getStringExtra("server");
-            subscriptions.sensor = data.getStringExtra("sensor");
-            subscriptions.interval = data.getIntExtra("interval", 0);
-            subscriptions.topic = "/SE/" + subscriptions.server + "/temp/" + subscriptions.sensor + "/" + subscriptions.interval;
-            subscriptions.name=type;
-            Log.i(DEBUG_TAG, type + ": New subscription selected: " + subscriptions.topic);
-
-            for (Subscriptions sub : topicList) {
-                if (sub.topic.equals(subscriptions.topic)) {
-                    if (sub.deleted) {
-                        Log.i(DEBUG_TAG, "Subscription was deleted before!");
-                        sub.deleted = false;
-                        exists = true;
-                    }
-                }
-            }
-
-            if (exists) {
-                Log.i(DEBUG_TAG, "Subscription already exists!");
-            } else {
-                Log.i(DEBUG_TAG, "New subscription for: " + type);
-                subListChanged = true;
-                subscriptionsHandler.addSubscription(subscriptions);
-                topicList.add(subscriptions);
-                name = type;
-                sa = new SubscriberAdapter(refreshSubscriber(topicList));
-                sa.setOnItemClickListener(this);
-                subscriberList.setAdapter(sa);
-                fabOK.show();
-            }
-        }
-    }
-
     private List<Subscriptions> initSubscriber() {
         return subscriptionsHandler.getActiveSubscriptions(action,name);
     }
 
     private List<Subscriptions> refreshSubscriber(List<Subscriptions> subscriptions) {
-        String serverId = "";
         List<Subscriptions> tempSub = new ArrayList<>();
         for (Subscriptions sub : subscriptions) {
             if (!sub.deleted) {
                 sub.aliasServer = devicesHandler.getDeviceAlias(sub.server);
-                sub.aliasSensor = sensorsHandler.getSensorAlias(serverId,sub.sensor);
+                sub.aliasSensor = sensorsHandler.getSensorAlias(sub.server,sub.sensor);
                 tempSub.add(sub);
             }
         }
