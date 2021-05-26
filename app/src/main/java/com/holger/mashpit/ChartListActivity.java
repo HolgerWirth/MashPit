@@ -11,6 +11,8 @@ import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.share.Constants;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -49,12 +51,23 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
 
         Log.i(DEBUG_TAG, "Activity started!");
 
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == 1) {
+                        Log.i(DEBUG_TAG, "Chartlist changed");
+                        charts=refreshCharts();
+                        sa.refreshCharts(charts);
+                        sa.notifyDataSetChanged();
+                    }
+                });
+
         FloatingActionButton fab = findViewById(R.id.chartfabadd);
         fab.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked on FAB");
             Intent l = new Intent(getApplicationContext(), ChartEditActivity.class);
             l.putExtra("ACTION", "insert");
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         final RecyclerView chartList = findViewById(R.id.chartList);
@@ -74,7 +87,7 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
             sintent.putExtra("ACTION", "edit");
             sintent.putExtra("name",charts.get(position).name);
             sintent.putExtra("desc",charts.get(position).description);
-            startActivityForResult(sintent, 0);
+            myActivityResultLauncher.launch(sintent);
         });
     }
 
@@ -83,18 +96,6 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.i(DEBUG_TAG, "Chartlist changed");
-        if(resultCode==1)
-        {
-            charts=refreshCharts();
-            sa.refreshCharts(charts);
-            sa.notifyDataSetChanged();
-        }
-    }
-
-        @Override
     public void onChartDeleted(final String name) {
         Log.i(DEBUG_TAG, "Clicked on delete on chart: "+name);
         final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
