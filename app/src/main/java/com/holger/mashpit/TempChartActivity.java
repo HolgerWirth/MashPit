@@ -172,19 +172,37 @@ public class TempChartActivity extends AppCompatActivity {
         new Thread(runnable).start();
     }
 
+    private long getXBounds(int position)
+    {
+        switch (position)
+        {
+            case 0:
+                return 24;
+            case 1:
+                return 7*24;
+            case 2:
+                return 30*24;
+        }
+        return 0;
+    }
+
+    private String getXDesc(int position)
+    {
+        switch (position)
+        {
+            case 0:
+                return getString(R.string.chart_24h);
+            case 1:
+                return getString(R.string.chart_7d);
+            case 2:
+                return getString(R.string.chart_30d);
+        }
+        return "";
+    }
+
     private void generateData() {
 
         int LINES = 3;
-        int[] HOURS = new int[LINES];
-        HOURS[0]=24;
-        HOURS[1]=7*24;
-        HOURS[2]=30*24;
-
-        String[] DESC = new String[LINES];
-        DESC[0]=getString(R.string.chart_24h);
-        DESC[1]=getString(R.string.chart_7d);
-        DESC[2]=getString(R.string.chart_30d);
-
         @SuppressWarnings({"unchecked"})
         List<List<Entry>>[] yVals = new ArrayList[LINES];
         @SuppressWarnings({"unchecked"})
@@ -196,7 +214,7 @@ public class TempChartActivity extends AppCompatActivity {
             yVals[i] = new ArrayList<>();
             set[i] = new ArrayList<>();
             count[i]=0;
-            ts[i]=getFromTimestamp(HOURS[i]);
+            ts[i]=getFromTimestamp(getXBounds(i));
         }
 
         ArrayList<Integer> linecolor = new ArrayList<>();
@@ -258,7 +276,7 @@ public class TempChartActivity extends AppCompatActivity {
             Log.i(DEBUG_TAG, "generated Data" + k + ": " + count[k]);
             if(count[k]>0) {
                 tempdata.setData(new LineData(set[k]));
-                tempdata.setDesc(DESC[k]);
+                tempdata.setDesc(getXDesc(k));
             }
         }
 
@@ -269,7 +287,7 @@ public class TempChartActivity extends AppCompatActivity {
         return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
     }
 
-    public static long getFromTimestamp(int hours)
+    public static long getFromTimestamp(long hours)
     {
         long unixTime = System.currentTimeMillis() / 1000L;
         return unixTime - (hours * 60 * 60);
@@ -314,7 +332,7 @@ public class TempChartActivity extends AppCompatActivity {
             YAxis leftAxis = holder.chart.getAxisLeft();
             leftAxis.setValueFormatter(new TempFormatter());
             leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-            minmax=chartDataHandler.getMaxChartData(topic,getFromTimestamp(30 * 24));
+            minmax=chartDataHandler.getMaxChartData(topic,getFromTimestamp(getXBounds(position)));
             if(tempMin==0)
             {
                 leftAxis.setAxisMinimum((float)(minmax[0]-2.0));
