@@ -11,6 +11,8 @@ import com.holger.mashpit.model.Subscriptions;
 import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.share.Constants;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -49,6 +51,29 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         assert ab != null;
         ab.setTitle("Sensor Data");
 
+        ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Log.i(DEBUG_TAG, "ResultCode=" + result.getResultCode());
+                    if (result.getResultCode() == 1) {
+                        Subscriptions sub = new Subscriptions();
+                        sub.action = action;
+                        sub.name = "";
+                        assert result.getData() != null;
+                        sub.server = result.getData().getStringExtra("server");
+                        sub.sensor = result.getData().getStringExtra("sensor");
+                        sub.interval = result.getData().getIntExtra("interval", 0);
+                        sub.topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
+                        sub.durable = durable ? 1 : 0;
+                        sub.name = "";
+                        Log.i(DEBUG_TAG, "New subscription added: " + sub.topic);
+                        subsHandler.addSubscription(sub);
+                        subListChanged = true;
+                        sa.refreshSubscribers(refreshSubscriber());
+                        sa.notifyDataSetChanged();
+                    }
+                });
+
         subListChanged=false;
         builder = new MaterialAlertDialogBuilder(this);
         action=getIntent().getStringExtra("ACTION");
@@ -65,7 +90,7 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
         addButton.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked on FAB");
             Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
-            startActivityForResult(l, 0);
+            myActivityResultLauncher.launch(l);
         });
 
         final RecyclerView subscriberList = findViewById(R.id.subscriberList);
@@ -92,29 +117,6 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
             }
         }
         return tempSub;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.i(DEBUG_TAG, "ResultCode="+resultCode);
-        if(resultCode==1) {
-            Subscriptions sub = new Subscriptions();
-
-            sub.action = action;
-            sub.name = "";
-            sub.server = data.getStringExtra("server");
-            sub.sensor = data.getStringExtra("sensor");
-            sub.interval = data.getIntExtra("interval", 0);
-            sub.topic = "/SE/"+sub.server+"/temp/"+sub.sensor+"/"+sub.interval;
-            sub.durable=durable ? 1 : 0;
-            sub.name="";
-            Log.i(DEBUG_TAG, "New subscription added: " + sub.topic);
-            subsHandler.addSubscription(sub);
-            subListChanged=true;
-            sa.refreshSubscribers(refreshSubscriber());
-            sa.notifyDataSetChanged();
-        }
     }
 
     @Override
