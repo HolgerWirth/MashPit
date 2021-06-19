@@ -25,6 +25,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     private final String MQTT_USER;
     private final String MQTT_BROKER;
     private final String MQTT_DOMAIN;
+
     String DEVICE_ID_FORMAT = "TEX_%s";
     private final String clientId;
     private final MySSlSocketFactory factory;
@@ -34,7 +35,6 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     int qos;
     boolean retained;
     boolean success;
-    int position=(-1);
 
     public OnPublishConfiguration mListener;
 
@@ -67,7 +67,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     }
 
     public interface OnPublishConfiguration {
-        void PublishConfigurationCallback(Boolean success, int position); // you can change the parameter here. depends on what you want.
+        void PublishConfigurationCallback(Boolean success); // you can change the parameter here. depends on what you want.
     }
 
     private MqttClient ConnectMQTT()
@@ -103,7 +103,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     public void PublishServerUpdate(String server, String send)
     {
         this.send=send;
-        this.topic="/SE/"+server+"/conf/update";
+        this.topic=MQTT_DOMAIN+"/SE/"+server+"/conf/update";
         this.retained=false;
         this.qos=2;
         execute();
@@ -112,32 +112,23 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     public void PublishServerStatus(String server, String send)
     {
         this.send=send;
-        this.topic="/SE/"+server+"/conf/server";
+        this.topic=MQTT_DOMAIN+"/SE/"+server+"/conf/server";
         this.qos=2;
         this.retained=false;
         execute();
     }
 
-    public void PublishSensorConf(String server, String sensor, String type, int interval, String send) {
+    public void PublishSensorConf(String topic, String send) {
         this.send=send;
-        this.topic="/SE/"+server+"/conf/"+type+"/"+sensor+"/"+interval;
+        this.topic=topic;
         this.qos=2;
         this.retained=true;
-        execute();
-    }
-
-    public void PublishSensorConf(String server, String sensor, String type, int interval, int position) {
-        this.send="";
-        this.topic="/SE/"+server+"/conf/"+type+"/"+sensor+"/"+interval;
-        this.qos=2;
-        this.retained=true;
-        this.position=position;
         execute();
     }
 
     public void PublishEventConf(String server, String dir, String hw, String eventname, String send) {
         this.send=send;
-        this.topic="/SE/"+server+"/conf/"+hw+"/"+dir+"/"+eventname;
+        this.topic=MQTT_DOMAIN+"/SE/"+server+"/conf/"+hw+"/"+dir+"/"+eventname;
         this.qos=2;
         this.retained=true;
         execute();
@@ -150,7 +141,7 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
             message.setQos(qos);
             message.setRetained(retained);
             Log.i(DEBUG_TAG, "Configration topic: "+topic);
-            mqttClient.publish(MQTT_DOMAIN + topic, message);
+            mqttClient.publish(topic, message);
             Log.i(DEBUG_TAG, "Configration message published");
             mqttClient.disconnect();
             Log.i(DEBUG_TAG, "Disconnected");
@@ -160,6 +151,11 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
             Log.i(DEBUG_TAG, "Cause: " + me.getCause());
             success=false;
         }
+    }
+
+    public String createSensorTopic(String device, String type, String sensor, int interval)
+    {
+        return(MQTT_DOMAIN+"/SE/"+device+"/conf/"+type+"/"+sensor+"/"+interval);
     }
 
     @Override
@@ -175,6 +171,6 @@ public class SensorPublishMQTT extends AsyncTask<Void, Void, Void>  {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        mListener.PublishConfigurationCallback(success,position);
+        mListener.PublishConfigurationCallback(success);
     }
 }

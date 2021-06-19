@@ -25,8 +25,8 @@ public class FTPUpdate extends AsyncTask<Void, Void, Void> {
     FTPClient myFTP;
     public OnFTPUpdateListener mListener;
 
-    private WeakReference<Context> weakContext;
-    private String localDirPath;
+    private final WeakReference<Context> weakContext;
+    private final String localDirPath;
 
     public FTPUpdate(Context mContext, String IP, String user, String pass, String path)
     {

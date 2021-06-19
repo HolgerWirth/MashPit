@@ -359,7 +359,7 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
     }
 
     @Override
-    public void PublishConfigurationCallback(Boolean success, int position) {
+    public void PublishConfigurationCallback(Boolean success) {
         if (success) {
             snb.displayInfo(R.string.pubConfOK);
         } else {

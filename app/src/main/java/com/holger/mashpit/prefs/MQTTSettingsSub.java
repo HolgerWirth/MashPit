@@ -19,8 +19,6 @@ import com.holger.mashpit.R;
 import com.holger.mashpit.TemperatureService;
 import com.holger.share.Constants;
 
-import java.util.Objects;
-
 public class MQTTSettingsSub extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String DEBUG_TAG = "MQTTSettingsSub";
     private boolean changed = false;

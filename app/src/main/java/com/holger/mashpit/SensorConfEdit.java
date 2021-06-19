@@ -48,6 +48,8 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     List<Sensors> sensors;
     Context context = this;
     String action;
+    String topic;
+    String params;
 
     int resultCode=0;
     boolean intervalInsert=false;
@@ -72,49 +74,61 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         server = getIntent().getStringExtra("server");
         GPIO = getIntent().getIntExtra("GPIO",0);
         ALT = getIntent().getIntExtra("ALT",0);
+        topic = getIntent().getStringExtra("topic");
 
         alertDialog = new MaterialAlertDialogBuilder(this);
 
-        switch (type) {
-            case "ds18b20":
-                setContentView(R.layout.activity_sensoredit_ds18b20);
-                coordinatorLayout = findViewById(R.id.layout_ds18b20);
-                typeField = findViewById(R.id.sensorType);
-                typeField.setText(type);
-                typeField.setEnabled(false);
-                break;
+        JSONObject jobj;
+        try {
+            jobj = new JSONObject();
+            jobj.put("type", type);
+            jobj.put("name", name);
+            jobj.put("active", false);
 
-            case "bme280":
-                setContentView(R.layout.activity_sensoredit_bme280);
-                typeField = findViewById(R.id.sensorType);
-                typeField.setText(type);
-                typeField.setEnabled(false);
-                altField = findViewById(R.id.sensorALT);
-                altField.setText(Integer.toString(ALT));
-                altField.setEnabled(false);
-                coordinatorLayout = findViewById(R.id.layout_bme280);
-                break;
+            switch (type) {
+                case "ds18b20":
+                    setContentView(R.layout.activity_sensoredit_ds18b20);
+                    coordinatorLayout = findViewById(R.id.layout_ds18b20);
+                    typeField = findViewById(R.id.sensorType);
+                    typeField.setText(type);
+                    typeField.setEnabled(false);
+                    break;
 
-            case "bh1750":
-                setContentView(R.layout.activity_sensoredit_i2c);
-                typeField = findViewById(R.id.sensorType);
-                typeField.setText(type);
-                typeField.setEnabled(false);
-                coordinatorLayout = findViewById(R.id.layout_i2c);
-                break;
+                case "bme280":
+                    setContentView(R.layout.activity_sensoredit_bme280);
+                    typeField = findViewById(R.id.sensorType);
+                    typeField.setText(type);
+                    typeField.setEnabled(false);
+                    altField = findViewById(R.id.sensorALT);
+                    altField.setText(Integer.toString(ALT));
+                    jobj.put("ALT",ALT);
+                    altField.setEnabled(false);
+                    coordinatorLayout = findViewById(R.id.layout_bme280);
+                    break;
 
-            default:
-                setContentView(R.layout.activity_sensoredit_gpio);
-                gpio = findViewById(R.id.sensorGPIO);
-                coordinatorLayout = findViewById(R.id.layout_gpio);
-                gpio.setEnabled(false);
-                gpio.setText(Integer.toString(GPIO));
-                typeDropdown = findViewById(R.id.sensorTypeDropdown);
-                typeDropdown.setText(type,true);
-                typeDropdown.setEnabled(false);
-                break;
+                case "bh1750":
+                    setContentView(R.layout.activity_sensoredit_i2c);
+                    typeField = findViewById(R.id.sensorType);
+                    typeField.setText(type);
+                    typeField.setEnabled(false);
+                    coordinatorLayout = findViewById(R.id.layout_i2c);
+                    break;
+
+                default:
+                    setContentView(R.layout.activity_sensoredit_gpio);
+                    gpio = findViewById(R.id.sensorGPIO);
+                    coordinatorLayout = findViewById(R.id.layout_gpio);
+                    gpio.setEnabled(false);
+                    gpio.setText(Integer.toString(GPIO));
+                    typeDropdown = findViewById(R.id.sensorTypeDropdown);
+                    typeDropdown.setText(type, true);
+                    typeDropdown.setEnabled(false);
+                    break;
+            }
+            params=jobj.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-
         actionButton = findViewById(R.id.editButton);
         final FloatingActionButton cancelButton = findViewById(R.id.cancelButton);
         final FloatingActionButton addButton = findViewById(R.id.intervalfabadd);
@@ -143,6 +157,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         sa = new SensorConfEditAdapter(sensors);
         sa.setOnItemClickListener(this);
         intervalList.setAdapter(sa);
+        sa.setNewIntervalMode(false);
 
         sensorName.setText(name);
         sensorId.setText(sensor);
@@ -291,14 +306,14 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
         addButton.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked on add FAB!");
-            Sensors newInterval = new Sensors();
-            newInterval.server = server;
-            newInterval.type = type;
-            newInterval.name = name;
+            Sensors newInterval;
+//            sa.setNewIntervalMode(true);
+            newInterval = new Sensors();
             newInterval.active = false;
             newInterval.interval = 0;
-            newInterval.sensor = sensor;
-            newInterval.port=GPIO;
+            SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
+            newInterval.topic = pubMQTT.createSensorTopic(server,type,sensor,0);
+            newInterval.params=params;
             sensors.add(0, newInterval);
             intervalInsert = true;
             sa.notifyItemInserted(0);
@@ -336,11 +351,9 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                 Log.i(DEBUG_TAG, "Clicked on OK! - OK");
                 if(intervalInsert) {
                     Log.i(DEBUG_TAG, "New interval added!");
-                    sa.getItem(0).name = name;
-                    sa.getItem(0).port = GPIO;
-                    sa.getItem(0).alt = ALT;
+                    sa.getItem(0).topic=createNewTopic(sa.getItem(0).topic,sa.getItem(0).interval);
                     SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                    pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(0).interval, createJSONConfig(0));
+                    pubMQTT.PublishSensorConf(sa.getItem(0).topic, sa.getItem(0).params);
                 }
                 else {
                     Log.i(DEBUG_TAG, "Number of defined intervals: " + sa.getItemCount());
@@ -348,13 +361,13 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
                         SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
                         if (!(name.equals(sa.getItem(i).name))) {
                             Log.i(DEBUG_TAG, "Sensor name change at position: " + i);
+                            sa.getItem(i).params=changeParams(sa.getItem(i).params,"name",name);
                             sa.getItem(i).name = name;
-                            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(i).interval, createJSONConfig(i));
+                            pubMQTT.PublishSensorConf(sa.getItem(i).topic, sa.getItem(i).params);
                         }
                     }
                 }
                 sensors.remove(0);
-                sa.notifyItemRemoved(0);
                 intervalList.setAdapter(sa);
                 intervalInsert = false;
                 cancelButton.hide();
@@ -405,8 +418,7 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
     private List<Sensors> refreshIntervalList(String sensor)
     {
-        List<Sensors> intervalList = sensorsHandler.getIntervals(server,sensor);
-        return  intervalList;
+        return sensorsHandler.getIntervals(server,sensor);
     }
 
     @Override
@@ -415,14 +427,11 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         alertDialog.setTitle(getString(R.string.pubConfig));
         alertDialog.setMessage(getString(R.string.confdelIntervalAlert,Integer.toString(sensors.get(position).interval), name));
         alertDialog.setIcon(R.drawable.ic_launcher);
-
         alertDialog.setNegativeButton("Cancel", (dialog, which) -> Log.i(DEBUG_TAG, "Clicked on Delete! - Cancel"));
-
         alertDialog.setPositiveButton("OK", (dialog, which) -> {
             Log.i(DEBUG_TAG, "Clicked on Delete! - OK");
-
             SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-            pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, position);
+            pubMQTT.PublishSensorConf(sa.getItem(position).topic, "");
         });
         alertDialog.show();
     }
@@ -435,55 +444,62 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
 
     @Override
     public void onIntervalActivated(final int position, boolean active) {
-        if (active) {
-            Log.i(DEBUG_TAG, "Clicked on Switch position "+position+": active");
-            sa.getItem(position).active=true;
-        } else {
-            Log.i(DEBUG_TAG, "Clicked on Switch position "+position+": not active");
-            sa.getItem(position).active=false;
-        }
+        Log.i(DEBUG_TAG, "Clicked on Switch position "+position+": active");
+        sa.getItem(position).params=changeParams(sa.getItem(position).params,"active",active);
 
         if (!intervalInsert) {
             alertDialog.setTitle(getString(R.string.pubConfig));
             alertDialog.setMessage(getString(R.string.confPublishAlert, name));
             alertDialog.setNegativeButton("Cancel", (dialog, which) -> {
                 Log.i(DEBUG_TAG, "Clicked on Publish! - Cancel");
-                sa.setIntervalList(refreshIntervalList(sensor));
+                sensors=refreshIntervalList(sensor);
+                sa.setIntervalList(sensors);
                 sa.notifyDataSetChanged();
             });
-
             alertDialog.setPositiveButton("OK", (dialog, which) -> {
                 Log.i(DEBUG_TAG, "Clicked on Publish! - OK");
-
                 SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
-                pubMQTT.PublishSensorConf(server, sensor, type, sa.getItem(position).interval, createJSONConfig(position));
+                pubMQTT.PublishSensorConf(createNewTopic(sa.getItem(position).topic,sa.getItem(position).interval),sa.getItem(position).params );
             });
-
             alertDialog.show();
         }
     }
 
-    private String createJSONConfig(int position)
+    private String createNewTopic(String oldtopic, int interval)
     {
-        JSONObject obj = new JSONObject();
+        String[] old = oldtopic.split("/");
+        StringBuilder newtopic= new StringBuilder();
+        for(int i =0;i<6;i++)
+        {
+            newtopic.append(old[i]).append("/");
+        }
+        return(newtopic.toString() +interval);
+    }
+
+    private String changeParams(String params,String name, boolean value)
+    {
+        JSONObject obj;
         try {
-            obj.put("type", type);
-            obj.put("name", sa.getItem(position).name);
-            assert type != null;
-            if(type.equals("dht11"))
-            {
-                obj.put("PIN",sa.getItem(position).port);
-            }
-            if(type.equals("bme280"))
-            {
-                obj.put("ALT",sa.getItem(position).alt);
-            }
-            obj.put("active", sa.getItem(position).active);
+            obj = new JSONObject(params);
+            obj.put(name,value);
+            return(obj.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i(DEBUG_TAG, "Config: " + obj.toString());
-        return obj.toString();
+        return (params);
+    }
+
+    private String changeParams(String params,String name, String value)
+    {
+        JSONObject obj;
+        try {
+            obj = new JSONObject(params);
+            obj.put(name,value);
+            return(obj.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return (params);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -491,24 +507,19 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
         String xSensor=sensorEvent.getSensor();
         Log.i(DEBUG_TAG, "SensorEvent arrived: " + xSensor);
         if(sensor.equals(xSensor)) {
-            sa.setIntervalList(refreshIntervalList(xSensor));
+            sensors=refreshIntervalList(xSensor);
+            sa.setIntervalList(sensors);
             sa.notifyDataSetChanged();
         }
     }
 
     @Override
-    public void PublishConfigurationCallback(Boolean success,int position) {
+    public void PublishConfigurationCallback(Boolean success) {
         if (success) {
             snb.displayInfo(R.string.pubConfOK);
-            if(position>=0)
-            {
-                sensors.remove(position);
-                sa.notifyItemRemoved(position);
-            }
             resultCode = 1;
         } else {
             snb.displayInfo(R.string.pubConfNOK);
         }
-        sa.notifyDataSetChanged();
     }
 }

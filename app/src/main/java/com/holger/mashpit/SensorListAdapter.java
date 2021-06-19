@@ -98,7 +98,7 @@ class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.SensorDev
         }
 
         if(devStatus.family.equals("EV")) {
-            sensorDevViewHolder.devGPIO.setText("GPIO: "+Integer.toString(devStatus.port));
+            sensorDevViewHolder.devGPIO.setText("GPIO: "+ devStatus.port);
             sensorDevViewHolder.devName.setText(devStatus.event);
             sensorDevViewHolder.devTypeTitle.setText("Event:");
 

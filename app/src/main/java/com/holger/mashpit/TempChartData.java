@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 class TempChartData {
     private static TempChartData instance;
-    private ArrayList<LineData> glist = new ArrayList<>();
-    private ArrayList<String> desc = new ArrayList<>();
+    private final ArrayList<LineData> glist = new ArrayList<>();
+    private final ArrayList<String> desc = new ArrayList<>();
 
     private static final String DEBUG_TAG = "TempChartData";
 

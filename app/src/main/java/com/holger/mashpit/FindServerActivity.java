@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 
 import com.holger.mashpit.tools.UdpServer;
 
@@ -27,43 +26,37 @@ public class FindServerActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.findServer_toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(DEBUG_TAG, "Cancelled!");
-                if(myUdp!=null){
-                    myUdp.closeSocket();
-                }
-                overridePendingTransition(0, 0);
-                finish();
+        toolbar.setNavigationOnClickListener(v -> {
+            Log.i(DEBUG_TAG, "Cancelled!");
+            if(myUdp!=null){
+                myUdp.closeSocket();
             }
+            overridePendingTransition(0, 0);
+            finish();
         });
 
         Log.i(DEBUG_TAG, "Find server clicked!");
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                Intent data = new Intent();
-                setResult(0,null);
+        Runnable runnable = () -> {
+            Intent data = new Intent();
+            setResult(0,null);
 
-                myUdp = new UdpServer();
-                if(myUdp.runUdpServer())
-                {
-                    Log.i(DEBUG_TAG, "Found server: "+myUdp.getSenderIP());
-                    Log.i(DEBUG_TAG, "Message: "+myUdp.getMessage());
+            myUdp = new UdpServer();
+            if(myUdp.runUdpServer())
+            {
+                Log.i(DEBUG_TAG, "Found server: "+myUdp.getSenderIP());
+                Log.i(DEBUG_TAG, "Message: "+myUdp.getMessage());
 
-                    String[] udpResult = myUdp.getMessage().split(":");
-                    data.putExtra("IP",udpResult[0]);
-                    data.putExtra("port",udpResult[1]);
-                    setResult(1,data);
-                }
-                Log.i(DEBUG_TAG, "Finished!");
-                if(myUdp!=null){
-                    myUdp.closeSocket();
-                }
-                finish();
+                String[] udpResult = myUdp.getMessage().split(":");
+                data.putExtra("IP",udpResult[0]);
+                data.putExtra("port",udpResult[1]);
+                setResult(1,data);
             }
+            Log.i(DEBUG_TAG, "Finished!");
+            if(myUdp!=null){
+                myUdp.closeSocket();
+            }
+            finish();
         };
 
         new Thread(runnable).start();

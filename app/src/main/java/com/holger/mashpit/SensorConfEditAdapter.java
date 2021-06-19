@@ -28,6 +28,7 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
     private IntervalChangeCallback listener;
     private Context context;
     private Sensors sensors;
+    private boolean newInterval;
 
     SensorConfEditAdapter(List<Sensors> intervalList) {
         this.intervalList = intervalList;
@@ -36,14 +37,7 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
 
     void setIntervalList(List<Sensors> intervalList)
     {
-        if(intervalList.size()==0)
-        {
-            this.intervalList=null;
-        }
-        else {
-            this.intervalList.removeAll(intervalList);
-            this.intervalList.addAll(intervalList);
-        }
+        this.intervalList=intervalList;
     }
 
     @Override
@@ -75,6 +69,11 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
             intervalViewHolder.deleteButton.setVisibility(View.VISIBLE);
         }
 
+        if(newInterval)
+        {
+            intervalViewHolder.sensorIntervalActive.setEnabled(false);
+        }
+
         if(intervalViewHolder.sensorIntervalView.getText().toString().equals("0"))
         {
             sensors.interval=0;
@@ -101,6 +100,11 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
         void onIntervalDeleted(int position);
         void onIntervalCreated(int interval, boolean active);
         void onIntervalActivated(int position, boolean active);
+    }
+
+    void setNewIntervalMode(boolean newInterval)
+    {
+        this.newInterval=newInterval;
     }
 
     void setOnItemClickListener(IntervalChangeCallback callback){
@@ -166,9 +170,9 @@ class SensorConfEditAdapter extends RecyclerView.Adapter<SensorConfEditAdapter.I
             });
 
             sensorIntervalActive.setOnClickListener(view -> {
-                Log.i(DEBUG_TAG, "New interval: onClick() Switch");
-                sensors.active=sensorIntervalActive.isChecked();
-                listener.onIntervalActivated((int) sensorIntervalView.getTag(), sensorIntervalActive.isChecked());
+                    Log.i(DEBUG_TAG, "New interval: onClick() Switch");
+                    sensors.active = sensorIntervalActive.isChecked();
+                    listener.onIntervalActivated((int) sensorIntervalView.getTag(), sensorIntervalActive.isChecked());
             });
         }
     }
