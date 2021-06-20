@@ -18,6 +18,7 @@ import com.holger.mashpit.model.Devices;
 import com.holger.mashpit.model.DevicesHandler;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SnackBar;
+import com.holger.share.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -94,6 +95,13 @@ public class DeviceListActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "OnStart");
         EventBus.getDefault().register(this);
         snb = new SnackBar(coordinatorLayout);
+        snb.setmOnClickListener(
+                v -> {
+                    Log.i(DEBUG_TAG, "Retry service");
+                    Intent startIntent = new Intent(this, TemperatureService.class);
+                    startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
+                    startService(startIntent);
+                });
         resultList.clear();
         resultList.addAll(updateServerList());
         sa.notifyDataSetChanged();

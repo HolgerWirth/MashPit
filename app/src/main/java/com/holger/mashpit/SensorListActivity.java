@@ -31,6 +31,7 @@ import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.tools.ItemClickSupport;
 import com.holger.mashpit.tools.SensorPublishMQTT;
 import com.holger.mashpit.tools.SnackBar;
+import com.holger.share.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -370,7 +371,13 @@ public class SensorListActivity extends AppCompatActivity implements SensorPubli
         super.onStart();
         EventBus.getDefault().register(this);
         snb = new SnackBar(coordinatorLayout);
-        Log.i(DEBUG_TAG, "onStart()");
+        snb.setmOnClickListener(
+                v -> {
+                    Log.i(DEBUG_TAG, "Retry service");
+                    Intent startIntent = new Intent(this, TemperatureService.class);
+                    startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
+                    startService(startIntent);
+                });
     }
 
     @Override
