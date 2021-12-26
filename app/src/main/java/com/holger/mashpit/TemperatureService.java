@@ -643,11 +643,16 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     String value = obj.getString(key);
                     if(!(key.equals("TS")))
                     {
-                        myData.TS=TS;
-                        myData.topic=topic;
-                        myData.value=Float.parseFloat(value);
-                        myData.var=key;
-                        chartData.add(myData);
+                        myData.TS = TS;
+                        myData.topic = topic;
+                        myData.var = key;
+                        try {
+                            myData.value = Float.parseFloat(value);
+                            chartData.add(myData);
+                        }
+                        catch(NumberFormatException ex) {
+                            Log.i(DEBUG_TAG, "Wrong number format!");
+                        }
                     }
                 }
                 chartDataHandler.addChartData(chartData);
@@ -739,6 +744,14 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 sens.sensor=topic[5];
                 sens.type=sensor_parts[0];
                 sens.event="";
+                break;
+
+            case "EXT":
+                sens.family = "SE";
+                sens.interval = Integer.parseInt(topic[6]);
+                sens.sensor=topic[5];
+                sens.event="";
+                sens.type="EXT";
                 break;
 
             default:
