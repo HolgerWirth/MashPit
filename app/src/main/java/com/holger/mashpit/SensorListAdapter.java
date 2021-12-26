@@ -64,7 +64,6 @@ class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.SensorDev
                     resID = res.getIdentifier("ic_temperature_sensor_icon", "drawable", "com.holger.mashpit");
                     sensorDevViewHolder.devIcon.setImageResource(resID);
                     break;
-
                 case ("bme280"):
                     sensorDevViewHolder.devType.setText("BME280");
                     resID = res.getIdentifier("ic_bme_sensor_icon", "drawable", "com.holger.mashpit");
@@ -90,9 +89,13 @@ class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.SensorDev
                     resID = res.getIdentifier("ic_adc_icon", "drawable", "com.holger.mashpit");
                     sensorDevViewHolder.devIcon.setImageResource(resID);
                     break;
-
+                case("EXT"):
+                    sensorDevViewHolder.devType.setText(devStatus.sensor);
+                    resID = res.getIdentifier("ic_ext_icon", "drawable", "com.holger.mashpit");
+                    sensorDevViewHolder.devIcon.setImageResource(resID);
+                    break;
                 default:
-                    sensorDevViewHolder.devType.setText("");
+                    sensorDevViewHolder.devType.setText(devStatus.sensor);
                     break;
             }
         }
