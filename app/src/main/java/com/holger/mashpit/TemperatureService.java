@@ -139,12 +139,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                            notificationIntent, 0);
+                            notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
                     Intent previousIntent = new Intent(this, TemperatureService.class);
                     previousIntent.setAction(Constants.ACTION.CANCEL_ACTION);
                     PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
-                            previousIntent, 0);
+                            previousIntent, PendingIntent.FLAG_IMMUTABLE);
 
                     Bitmap icon = BitmapFactory.decodeResource(getResources(),
                             R.drawable.ic_launcher);
