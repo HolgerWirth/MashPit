@@ -1,13 +1,22 @@
 package com.holger.mashpit;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Switch;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,14 +41,26 @@ public class DeviceListActivity extends AppCompatActivity {
     SnackBar snb;
     DeviceListAdapter sa;
     Intent sintent;
+    boolean showOnline=false;
+    SharedPreferences settings;
     List<SensorEvent> resultList = new ArrayList<>();
     CoordinatorLayout coordinatorLayout=null;
     DevicesHandler devicesHandler;
+
+    private void switchDeviceFilter() {
+        Log.i(DEBUG_TAG, "switchDeviceFilter");
+        resultList.clear();
+        resultList.addAll(updateServerList());
+        sa.notifyDataSetChanged();
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensorstatus);
+
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        showOnline = settings.getBoolean("showOnline", false);
 
         devicesHandler = new DevicesHandler();
         coordinatorLayout = findViewById(R.id.sensorstatus_content);
@@ -54,8 +75,15 @@ public class DeviceListActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.sensorstatus_toolbar);
         setSupportActionBar(toolbar);
-
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        SwitchCompat swOnline = findViewById(R.id.devicelist_filter);
+        swOnline.setChecked(showOnline);
+        swOnline.setOnClickListener(v -> {
+            showOnline = !showOnline;
+            settings.edit().putBoolean("showOnline", showOnline).apply();
+            switchDeviceFilter();
+        });
 
         sa = new DeviceListAdapter(resultList);
 
@@ -130,6 +158,10 @@ public class DeviceListActivity extends AppCompatActivity {
         List<Devices> devices = devicesHandler.getDeviceStatus();
 
         for (Devices dev : devices) {
+            if(showOnline)
+            {
+                if(!dev.active) continue;
+            }
             SensorEvent sensorevent = new SensorEvent();
             sensorevent.setServer(dev.device);
             sensorevent.setName(dev.alias);
