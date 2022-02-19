@@ -70,7 +70,7 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
                         subsHandler.addSubscription(sub);
                         subListChanged = true;
                         sa.refreshSubscribers(refreshSubscriber());
-                        sa.notifyDataSetChanged();
+                        sa.notifyItemInserted(sa.getItemCount()-1);
                     }
                 });
 
@@ -105,14 +105,11 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     }
 
     private List<Subscriptions> refreshSubscriber() {
-        String serverId="";
         List<Subscriptions> dbresult;
         List<Subscriptions> tempSub = new ArrayList<>();
         dbresult = subsHandler.getActiveSubscriptions(action,"");
         for (Subscriptions sub : dbresult) {
             if(!sub.deleted) {
-                sub.aliasServer = devicesHandler.getDeviceAlias(sub.server);
-                sub.aliasSensor = sensorsHandler.getSensorAlias(serverId,sub.sensor);
                 tempSub.add(sub);
             }
         }
@@ -120,14 +117,14 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
     }
 
     @Override
-    public void onSubscriptionDeleted(final long id) {
+    public void onSubscriptionDeleted(final long id,int pos) {
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
             subListChanged=true;
             subsHandler.setDeletedSubscriptions(id);
             sa.refreshSubscribers(refreshSubscriber());
-            sa.notifyDataSetChanged();
+            sa.notifyItemRemoved(pos);
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
         builder.show();

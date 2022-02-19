@@ -13,6 +13,8 @@ import io.objectbox.query.Query;
 public class SubscriptionsHandler {
 
     Box<Subscriptions> dataBox;
+    DevicesHandler devicesHandler = new DevicesHandler();
+    SensorsHandler sensorsHandler = new SensorsHandler();
 
     public SubscriptionsHandler() {
         dataBox = ObjectBox.get().boxFor(Subscriptions.class);
@@ -58,11 +60,19 @@ public class SubscriptionsHandler {
 
     public List<Subscriptions> getActiveSubscriptions(String action, String name)
     {
+        List<Subscriptions> subs;
         Query<Subscriptions> query = dataBox.query(Subscriptions_.deleted.equal(false)
                 .and(Subscriptions_.action.equal(action))
                 .and(Subscriptions_.name.equal(name)))
                 .order(Subscriptions_.server).build();
-        return (query.find());
+
+        subs = new ArrayList<>(query.find());
+        for(int i=0; i<subs.size(); i++)
+        {
+            subs.get(i).aliasServer = devicesHandler.getDeviceAlias(subs.get(i).server);
+            subs.get(i).aliasSensor = sensorsHandler.getSensorAlias(subs.get(i).server, subs.get(i).sensor);
+        }
+        return (subs);
     }
 
     public List<String> getAllSubscription(boolean durable) {
@@ -126,88 +136,5 @@ public class SubscriptionsHandler {
     {
         Query<Subscriptions> query = dataBox.query().build();
         query.remove();
-/*
-        List<Subscriptions> mysubs = new ArrayList<>();
-        Subscriptions subs;
-        subs= new Subscriptions();
-        subs.action="Pager";
-        subs.deleted=false;
-        subs.durable=0;
-        subs.interval=500;
-        subs.name="";
-        subs.sensor="bme280-76";
-        subs.server="ESP-58B6ED";
-        subs.topic="/SE/ESP-58B6ED/temp/bme280-76/500";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Pager";
-        subs.deleted=false;
-        subs.durable=0;
-        subs.interval=400;
-        subs.name="";
-        subs.sensor="bme280-76";
-        subs.server="ESP-862F92";
-        subs.topic="/SE/ESP-862F92/temp/bme280-76/400";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Service";
-        subs.deleted=false;
-        subs.durable=0;
-        subs.interval=600;
-        subs.name="";
-        subs.sensor="28-aa085a401401";
-        subs.server="ESP-E7BEF1";
-        subs.topic="/SE/ESP-E7BEF1/temp/28-aa085a401401/600";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Chart";
-        subs.deleted=false;
-        subs.durable=1;
-        subs.interval=500;
-        subs.name="Test1";
-        subs.sensor="bme280-76";
-        subs.server="ESP-58B6ED";
-        subs.topic="/SE/ESP-58B6ED/temp/bme280-76/500";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Chart";
-        subs.deleted=false;
-        subs.durable=1;
-        subs.interval=600;
-        subs.name="Temp";
-        subs.sensor="28-ff9a13631402";
-        subs.server="ESP-862F92";
-        subs.topic="/SE/ESP-862F92/temp/28-ff9a13631402/600";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Chart";
-        subs.deleted=false;
-        subs.durable=1;
-        subs.interval=600;
-        subs.name="Temp";
-        subs.sensor="28-aa085a401401";
-        subs.server="ESP-E7BEF1";
-        subs.topic="/SE/ESP-E7BEF1/temp/28-aa085a401401/600";
-        mysubs.add(subs);
-
-        subs = new Subscriptions();
-        subs.action="Chart";
-        subs.deleted=false;
-        subs.durable=1;
-        subs.interval=300;
-        subs.name="Druck";
-        subs.sensor="ads1115-48-0";
-        subs.server="ESP-E7BEF1";
-        subs.topic="/SE/ESP-E7BEF1/temp/ads1115-48-0/300";
-        mysubs.add(subs);
-
-        dataBox.put(mysubs);
-        Log.i("SubscriptionHandler", "Subscriptions count: "+dataBox.count());
-*/
     }
 }

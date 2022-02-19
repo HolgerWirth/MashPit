@@ -42,6 +42,7 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
     @Override
     public void onBindViewHolder(@NonNull SubscriberViewHolder subscriberViewHolder, int i) {
         Subscriptions sub = this.subscriberList.get(i);
+        subscriberViewHolder.pos= subscriberViewHolder.getAbsoluteAdapterPosition();
         String interval = Integer.toString(sub.interval);
         subscriberViewHolder.server.setText(sub.server);
         if(!sub.aliasServer.isEmpty())
@@ -74,6 +75,7 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
         TextView interval;
         ImageButton deleteButton;
         CardView mCardView;
+        int pos;
 
         SubscriberViewHolder(final View v) {
             super(v);
@@ -86,13 +88,13 @@ class SubscriberAdapter extends RecyclerView.Adapter<SubscriberAdapter.Subscribe
            deleteButton.setOnClickListener(view -> {
                Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
                deleteButton.setPressed(true);
-               deleteSubscriptionCallback.onSubscriptionDeleted((Long) server.getTag());
+               deleteSubscriptionCallback.onSubscriptionDeleted((Long) server.getTag(),pos);
            });
         }
     }
 
     public interface DeleteSubscriptionCallback {
-        void onSubscriptionDeleted(long id);
+        void onSubscriptionDeleted(long id,int pos);
     }
 
     void setOnItemClickListener(SubscriberAdapter.DeleteSubscriptionCallback callback){
