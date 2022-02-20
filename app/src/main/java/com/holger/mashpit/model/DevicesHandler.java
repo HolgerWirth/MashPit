@@ -59,7 +59,7 @@ public class DevicesHandler {
 
     public String getDeviceAlias(String device) {
         PropertyQuery query = dataBox.query(Devices_.device.equal(device)).build().property(Devices_.alias);
-        if(query.count()>0)
+        if(!query.findString().isEmpty())
         {
             return query.findString();
         }
