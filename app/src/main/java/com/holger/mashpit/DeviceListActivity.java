@@ -5,15 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Switch;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -49,9 +43,10 @@ public class DeviceListActivity extends AppCompatActivity {
 
     private void switchDeviceFilter() {
         Log.i(DEBUG_TAG, "switchDeviceFilter");
+        sa.notifyItemRangeRemoved(0,resultList.size()-1);
         resultList.clear();
         resultList.addAll(updateServerList());
-        sa.notifyDataSetChanged();
+        sa.notifyItemRangeInserted(0,resultList.size()-1);
     }
 
     @Override
@@ -65,6 +60,9 @@ public class DeviceListActivity extends AppCompatActivity {
         devicesHandler = new DevicesHandler();
         coordinatorLayout = findViewById(R.id.sensorstatus_content);
         Log.i(DEBUG_TAG, "OnCreate");
+
+        resultList.clear();
+        resultList.addAll(updateServerList());
 
         final RecyclerView sensorstatusList = findViewById(R.id.sensorstatusList);
 
@@ -91,10 +89,11 @@ public class DeviceListActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == 1) {
+                        sa.notifyItemRangeRemoved(0,resultList.size()-1);
                         List<SensorEvent> updateresult = updateServerList();
                         resultList.clear();
                         resultList.addAll(updateresult);
-                        sa.notifyDataSetChanged();
+                        sa.notifyItemRangeInserted(0,resultList.size()-1);
                     }
                 });
 
@@ -130,9 +129,6 @@ public class DeviceListActivity extends AppCompatActivity {
                     startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
                     startService(startIntent);
                 });
-        resultList.clear();
-        resultList.addAll(updateServerList());
-        sa.notifyDataSetChanged();
     }
 
     @Override
@@ -147,9 +143,10 @@ public class DeviceListActivity extends AppCompatActivity {
     public void getSensorEvent(SensorEvent sensorEvent) {
         Log.i(DEBUG_TAG, "SensorEvent arrived: " + sensorEvent.getServer() + "/" + sensorEvent.getSensor());
         List<SensorEvent> updateresult = updateServerList();
+        sa.notifyItemRangeRemoved(0,resultList.size()-1);
         resultList.clear();
         resultList.addAll(updateresult);
-        sa.notifyDataSetChanged();
+        sa.notifyItemRangeInserted(0,resultList.size()-1);
     }
 
     private List<SensorEvent> updateServerList() {
