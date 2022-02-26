@@ -1,0 +1,12 @@
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context="com.holger.mashpit.TempChartActivity">
+    <item
+        android:id="@+id/action_chartParamsSetting"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_menu_settings"
+        android:title="Mash Process Settings"/>
+</menu>
+

@@ -293,7 +293,7 @@ public class SensorEventListActivity extends AppCompatActivity implements Sensor
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i(DEBUG_TAG, "Config: " + obj.toString());
+        Log.i(DEBUG_TAG, "Config: " + obj);
         return obj.toString();
     }
 

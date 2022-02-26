@@ -7,13 +7,15 @@ import java.text.DecimalFormat;
 public class TempFormatter extends ValueFormatter {
 
     private final DecimalFormat mFormat;
+    private final String unit;
 
-    public TempFormatter() {
-        mFormat = new DecimalFormat("0.0");
+    public TempFormatter(String format,String unit) {
+        this.unit=unit;
+        this.mFormat = new DecimalFormat(format);
     }
 
     @Override
     public String getFormattedValue(float value) {
-        return mFormat.format(value) + "°";
+        return mFormat.format(value) + unit;
     }
 }

@@ -37,8 +37,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="$USER_HOME$/Downloads/mashpit-icons/oled_1.png" />
-                                                <entry key="opacityPercent" value="80" />
+                                                <entry key="imagePath" value="$USER_HOME$/Downloads/grabber-icon-27.png" />
+                                                <entry key="opacityPercent" value="60" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -71,9 +71,8 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/mashpit-icons/oled_1.png" />
-                                      <entry key="outputName" value="ic_oled_icon" />
-                                      <entry key="theme" value="CUSTOM" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/grabber-icon-27.png" />
+                                      <entry key="outputName" value="ic_grabber_bw" />
                                       <entry key="themeColor" value="34b4e3" />
                                     </map>
                                   </option>

@@ -17,6 +17,7 @@ import io.objectbox.annotation.Transient;
     public int interval;
     public int durable;
     public boolean deleted;
+    public int deldays;
     @Transient
     public String aliasSensor;
     @Transient

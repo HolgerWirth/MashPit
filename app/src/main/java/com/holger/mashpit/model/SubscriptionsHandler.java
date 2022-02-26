@@ -66,7 +66,7 @@ public class SubscriptionsHandler {
                 .and(Subscriptions_.name.equal(name)))
                 .order(Subscriptions_.server).build();
 
-        subs = new ArrayList<>(query.find());
+        subs = query.find();
         for(int i=0; i<subs.size(); i++)
         {
             subs.get(i).aliasServer = devicesHandler.getDeviceAlias(subs.get(i).server);
@@ -93,6 +93,31 @@ public class SubscriptionsHandler {
         return query.count() > 0;
     }
 
+    public int getMaxDelDays(String topic, String action)
+    {
+        return(dataBox.query(Subscriptions_.deleted.equal(false)
+                .and(Subscriptions_.topic.equal(topic))
+                .and(Subscriptions_.action.equal(action))).build().property(Subscriptions_.deldays).distinct()).findInt();
+    }
+
+    public int getMaxDelDays(String name)
+    {
+        return(dataBox.query(Subscriptions_.deleted.equal(false)
+                .and(Subscriptions_.name.equal(name))).build().property(Subscriptions_.deldays).distinct().findInt());
+    }
+
+    public void setMaxDelDays(String name,int deldays)
+    {
+        Query<Subscriptions> query = dataBox.query(Subscriptions_.name.equal(name)).build();
+        if(query.count()>0) {
+            for(Subscriptions sub : query.find())
+            {
+                sub.deldays=deldays;
+                dataBox.put(sub);
+            }
+        }
+    }
+
     public void addSubscription(Subscriptions sub)
     {
         Query<Subscriptions> query = dataBox.query(Subscriptions_.topic.equal(sub.topic)
@@ -103,6 +128,7 @@ public class SubscriptionsHandler {
             Subscriptions found = query.findFirst();
             assert found != null;
             found.deleted=false;
+            found.deldays=sub.deldays;
             dataBox.put(found);
         }
         else

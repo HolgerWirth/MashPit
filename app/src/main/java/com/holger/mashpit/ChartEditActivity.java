@@ -13,13 +13,13 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.holger.mashpit.model.Charts;
 import com.holger.mashpit.model.DevicesHandler;
-import com.holger.mashpit.model.SensorsHandler;
 import com.holger.mashpit.model.Subscriptions;
 import com.holger.mashpit.model.ChartsHandler;
 import com.holger.mashpit.model.SubscriptionsHandler;
@@ -38,11 +38,13 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
 
     private TextView chartname;
     private TextView chartdesc;
+    private TextView chartdeldays;
 
     private String editAction;
 
     private String name = "";
     private String desc = "";
+    private long id;
     SubscriberAdapter sa;
     RecyclerView subscriberList;
     List<Subscriptions> topicList;
@@ -52,7 +54,6 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     SubscriptionsHandler subscriptionsHandler;
     DevicesHandler devicesHandler;
     ChartsHandler chartsHandler;
-    SensorsHandler sensorsHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,6 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         subscriptionsHandler = new SubscriptionsHandler();
         chartsHandler = new ChartsHandler();
         devicesHandler = new DevicesHandler();
-        sensorsHandler = new SensorsHandler();
 
         Toolbar toolbar = findViewById(R.id.chartedit_toolbar);
         setSupportActionBar(toolbar);
@@ -73,6 +73,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         FloatingActionButton fabcancel = findViewById(R.id.cancelButton);
         topicList = new ArrayList<>();
         builder = new MaterialAlertDialogBuilder(this);
+        Button posButton = findViewById(R.id.chartParamsButton);
 
         ActivityResultLauncher<Intent> myActivityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -109,9 +110,9 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                         } else {
                             Log.i(DEBUG_TAG, "New subscription for: " + type);
                             subListChanged = true;
-                            subscriptionsHandler.addSubscription(subscriptions);
-                            topicList.add(subscriptions);
                             name = type;
+                            subscriptionsHandler.addSubscription(subscriptions);
+                            topicList = subscriptionsHandler.getActiveSubscriptions("Chart",name);
                             sa = new SubscriberAdapter(refreshSubscriber(topicList));
                             sa.setOnItemClickListener(this);
                             subscriberList.setAdapter(sa);
@@ -165,16 +166,47 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             }
         });
 
-        fabadd.setOnClickListener(view -> {
-            Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
-            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+        chartdeldays = findViewById(R.id.chartDeleteDays);
+        chartdeldays.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()) {
+                    fabOK.show();
+                } else {
+                    chartdeldays.setError("Mandatory!");
+                    fabOK.hide();
+                }
+            }
+        });
+
+        posButton.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the 'Position' button");
+            Intent l = new Intent(getApplicationContext(), ChartParamsListActivity.class);
+            l.putExtra("NAME",name);
             myActivityResultLauncher.launch(l);
         });
 
+         fabadd.setOnClickListener(view -> {
+            Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
+            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+             l.putExtra("ACTION", "insert");
+             myActivityResultLauncher.launch(l);
+        });
+
         fabOK.setOnClickListener(view -> {
+            Intent result = new Intent();
             Log.i(DEBUG_TAG, "Clicked the FAB 'OK' button");
             if (editAction.equals("insert")) {
-                setResult(1, null);
                 Charts newChart = new Charts();
                 newChart.name=chartname.getText().toString();
                 newChart.description=chartdesc.getText().toString();
@@ -182,17 +214,21 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                 chartsHandler.addChart(newChart);
                 for (Subscriptions sub : topicList) {
                     if (!sub.deleted) {
+                        sub.deldays= Integer.parseInt(chartdeldays.getText().toString());
                         sub.durable=1;
                         subscriptionsHandler.addSubscription(sub);
                         subListChanged=true;
                         unsaved=false;
                     }
                 }
+                result.putExtra("ACTION","insert");
+                setResult(1, result);
             }
             if (editAction.equals("edit")) {
-                setResult(1, null);
+                subscriptionsHandler.setMaxDelDays(name,Integer.parseInt(chartdeldays.getText().toString()));
                 if (!chartdesc.getText().toString().equals(desc)) {
                     Charts upChart = new Charts();
+                    upChart.id=id;
                     upChart.name=name;
                     upChart.description=chartdesc.getText().toString();
                     upChart.type="";
@@ -211,6 +247,8 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                         }
                     }
                 }
+                result.putExtra("ACTION","edit");
+                setResult(1, result);
             }
             if(subListChanged) {
                 builder.setTitle(getString(R.string.Subchanged_alert_title));
@@ -246,6 +284,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             fabOK.hide();
             fabadd.hide();
             fabcancel.show();
+            chartdeldays.setText("0");
             assert ab != null;
             ab.setTitle("New Chart");
         }
@@ -255,20 +294,22 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             fabadd.show();
             name = getIntent().getStringExtra("name");
             desc = getIntent().getStringExtra("desc");
+            id = getIntent().getLongExtra("id",0);
             chartname.setText(name);
             chartdesc.setText(desc);
             chartname.setEnabled(false);
+            chartdeldays.setText(String.valueOf(subscriptionsHandler.getMaxDelDays(name)));
             assert ab != null;
             ab.setTitle(name);
         }
 
+        topicList = initSubscriber();
         subscriberList = findViewById(R.id.chartSubscriberList);
         subscriberList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         subscriberList.setLayoutManager(llm);
 
-        topicList = initSubscriber();
         sa = new SubscriberAdapter(refreshSubscriber(topicList));
         sa.setOnItemClickListener(this);
         subscriberList.setAdapter(sa);
@@ -282,8 +323,6 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
         List<Subscriptions> tempSub = new ArrayList<>();
         for (Subscriptions sub : subscriptions) {
             if (!sub.deleted) {
-                sub.aliasServer = devicesHandler.getDeviceAlias(sub.server);
-                sub.aliasSensor = sensorsHandler.getSensorAlias(sub.server,sub.sensor);
                 tempSub.add(sub);
             }
         }
@@ -291,7 +330,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
     }
 
     @Override
-    public void onSubscriptionDeleted(final long id) {
+    public void onSubscriptionDeleted(final long id, int pos) {
         Log.i(DEBUG_TAG, "Subscription deleted on position: " + id);
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
@@ -306,7 +345,7 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                 }
             }
             sa.refreshSubscribers(tempSub);
-            sa.notifyDataSetChanged();
+            sa.notifyItemRemoved(pos);
             fabOK.show();
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);

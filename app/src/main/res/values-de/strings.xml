@@ -67,7 +67,6 @@
     <string name="menu_temppager">Temperatur</string>
     <string name="mqtt_settings_title">MQTT Einstellungen</string>
     <string name="prefs_same_broker">Use a different broker for publishing</string>
-    <string name="prefs_mqtt_send_password">Passwort</string>
     <string name="prefs_mqtt_send_user">Benutzer</string>
     <string name="mpstatServer">Server ID:</string>
     <string name="mpstatProcesses">Prozesse:</string>
@@ -179,4 +178,28 @@
     <string name="NotSaved_text">Die Einstellungen wurden nicht gespeichert! Willst du wirklich abbrechen?</string>
     <string name="NotSaved_button">Ja</string>
     <string name="NotSaved_cancel">Nein</string>
+    <string name="chartparams_delete">Willst du wirklich das Diagramm löschen?</string>
+    <string name="chart_days">Tage</string>
+    <string name="chart_months">Monate</string>
+    <string name="chart_hours">Stunden</string>
+    <string name="chart_weeks">Wochen</string>
+    <string name="prefs_mqtt_send_password">Passwort</string>
+    <string name="chartparams_XDescError">Bitte eine Beschreibung eingeben</string>
+    <string name="chartparams_XBoundsError">Bitte eine Zeitspanne eingeben</string>
+    <string name="chart_lines">Chart Lines</string>
+    <string name="chart_del_time">Delete data after</string>
+    <string name="chart_cancel">Cancel</string>
+    <string name="chart_add">Add a new chart</string>
+    <string name="chart_OK">Save</string>
+    <string name="chartparams_autoscale">Auto Skalierung</string>
+    <string name="chartparams_timespan">Zeitspanne</string>
+    <string name="chartparams_min">Min.</string>
+    <string name="chartparams_minoffset">Min. Offset</string>
+    <string name="chartparams_max">Max.</string>
+    <string name="chartparams_maxoffset">Max. Offset</string>
+    <string name="chartparams_decimals">Dezimalstellen</string>
+    <string name="chartparams_format">Format</string>
+    <string name="chartparams_unit">Einheit</string>
+    <string name="chartparams_add">Neue Zeile</string>
+    <string name="chart_move">Neu ordnen</string>
 </resources>

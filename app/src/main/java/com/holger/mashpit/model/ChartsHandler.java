@@ -32,23 +32,10 @@ public class ChartsHandler {
 
     public void updateChart(Charts chart)
     {
-        Query<Charts> query = dataBox.query(Charts_.name.equal(chart.name)).build();
-        if(query.count()>0)
-        {
-            Charts found = query.findFirst();
-            assert found != null;
-            chart.id=found.id;
-            dataBox.put(chart);
-        }
+        dataBox.put(chart);
     }
 
     public void deleteChart(Charts chart) {
-        Query<Charts> query = dataBox.query(Charts_.name.equal(chart.name)).build();
-        if (query.count() > 0) {
-            Charts found = query.findFirst();
-            assert found != null;
-            chart.id = found.id;
-            dataBox.remove(chart);
-        }
+        dataBox.remove(chart);
     }
 }

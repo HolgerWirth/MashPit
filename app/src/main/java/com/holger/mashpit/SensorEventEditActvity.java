@@ -173,9 +173,6 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
             deleteButton.show();
             actionButton.hide();
 
-//            eventReg.setVisibility(View.GONE);
-//            regField.setVisibility(View.GONE);
-
             if(eventActive.isChecked())
             {
                 eventValue.setEnabled(false);
@@ -354,7 +351,7 @@ public class SensorEventEditActvity extends AppCompatActivity implements SensorP
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i(DEBUG_TAG, "Config: " + obj.toString());
+        Log.i(DEBUG_TAG, "Config: " + obj);
         return obj.toString();
     }
 

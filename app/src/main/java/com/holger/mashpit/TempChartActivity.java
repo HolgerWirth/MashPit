@@ -3,8 +3,10 @@ package com.holger.mashpit;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Handler;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,8 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +36,8 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.holger.mashpit.model.ChartData;
 import com.holger.mashpit.model.ChartDataHandler;
+import com.holger.mashpit.model.ChartParamsHandler;
+import com.holger.mashpit.model.SubscriptionsHandler;
 import com.holger.mashpit.tools.SnackBar;
 import com.holger.mashpit.tools.TempFormatter;
 import com.holger.mashpit.tools.TimestampFormatter;
@@ -40,14 +46,12 @@ import com.holger.share.Constants;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class TempChartActivity extends AppCompatActivity {
 
     private static final String DEBUG_TAG = "TempChartActivity" ;
     private List<ChartData> temps = null;
-    private String[] topic;
     private ProgressBar progress;
     Handler handler = new Handler();
     SnackBar snb;
@@ -57,6 +61,12 @@ public class TempChartActivity extends AppCompatActivity {
     ChartDataAdapter cda;
     TempChartData tempdata;
     ChartDataHandler chartDataHandler;
+    ChartParamsHandler chartParamsHandler;
+    SubscriptionsHandler subHandler;
+    String name;
+    int chartLinesExist=0;
+    View chartView;
+    ActivityResultLauncher<Intent> myActivityResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,28 +75,20 @@ public class TempChartActivity extends AppCompatActivity {
         Log.i(DEBUG_TAG, "OnCreate");
 
         setContentView(R.layout.activity_temp_chart);
-
-        chartDataHandler = new ChartDataHandler();
+        chartView=findViewById(R.id.chartLayout);
 
         tempdata = TempChartData.getInstance();
         tempdata.clearData();
 
-        Toolbar toolbar = findViewById(R.id.chart_toolbar);
-
         Intent intent = getIntent();
-        topic = intent.getStringArrayExtra("topics");
+        name = intent.getStringExtra("name");
+
+        Toolbar toolbar = findViewById(R.id.chart_toolbar);
         toolbar.setTitle(intent.getStringExtra("title"));
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        tempMin = 0;
-        tempMax = 0;
-
-        progress = findViewById(R.id.progressBar1);
-        startLoadingData();
         CoordinatorLayout coordinatorLayout = findViewById(R.id.main_content);
-
-        snb= new SnackBar(coordinatorLayout);
+        snb = new SnackBar(coordinatorLayout);
         snb.setmOnClickListener(
                 mOnClickListener = v -> {
                     Log.i(DEBUG_TAG, "Reconnect service");
@@ -94,6 +96,71 @@ public class TempChartActivity extends AppCompatActivity {
                     startIntent.setAction(Constants.ACTION.CONNECT_ACTION);
                     startService(startIntent);
                 });
+
+        myActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == 1) {
+                        Log.i(DEBUG_TAG, "Change received");
+                        recreate();
+                    }
+                });
+
+        chartDataHandler = new ChartDataHandler();
+        chartParamsHandler = new ChartParamsHandler(name);
+        chartLinesExist = chartParamsHandler.getTopics().length;
+        if(chartLinesExist==0)
+        {
+            chartView.setEnabled(false);
+            chartView.setVisibility(View.GONE);
+            Log.i(DEBUG_TAG, "No chart lines exist!");
+        }
+        else {
+            subHandler = new SubscriptionsHandler();
+
+            tempMin = 0;
+            tempMax = 0;
+
+            progress = findViewById(R.id.progressBar1);
+            startLoadingData();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_chart, menu);
+        MenuItem chartParamsSetting = menu.findItem(R.id.action_chartParamsSetting);
+        if(chartLinesExist==0) {
+            chartParamsSetting.setEnabled(true);
+            chartParamsSetting.getIcon().setAlpha(130);
+        }
+        else
+        {
+            chartParamsSetting.setEnabled(true);
+            chartParamsSetting.getIcon().setAlpha(255);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Log.i(DEBUG_TAG, "Settings selected");
+        if(item.getItemId()==R.id.action_chartParamsSetting) {
+            Intent intent = new Intent(getApplicationContext(), ChartParamsListActivity.class);
+            intent.putExtra("NAME", name);
+            myActivityResultLauncher.launch(intent);
+        }
+        else
+        {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -152,9 +219,12 @@ public class TempChartActivity extends AppCompatActivity {
     public void startLoadingData() {
         // do something long
         Runnable runnable = () -> {
-            long delData = chartDataHandler.deleteChartData(topic,getDeleteTimestamp());
-            Log.i(DEBUG_TAG, "Deleted chart data: "+delData);
-            temps=chartDataHandler.queryChartData(topic,getFromTimestamp(30*60));
+            String[] topic = chartParamsHandler.getTopics();
+            for(String mtopic : topic) {
+                long delData = chartDataHandler.deleteChartData(mtopic, getDeleteTimestamp(mtopic));
+                Log.i(DEBUG_TAG, mtopic + " deleted chart data: " + delData);
+            }
+            temps=chartDataHandler.queryChartData(topic,getFromTimestamp(chartParamsHandler.getOldestData()));
             generateData();
             progress.post(() -> progress.setProgress(1));
 
@@ -171,116 +241,66 @@ public class TempChartActivity extends AppCompatActivity {
         };
         new Thread(runnable).start();
     }
-
-    private long getXBounds(int position)
-    {
-        switch (position)
-        {
-            case 0:
-                return 24;
-            case 1:
-                return 7*24;
-            case 2:
-                return 30*24;
-        }
-        return 0;
-    }
-
-    private String getXDesc(int position)
-    {
-        switch (position)
-        {
-            case 0:
-                return getString(R.string.chart_24h);
-            case 1:
-                return getString(R.string.chart_7d);
-            case 2:
-                return getString(R.string.chart_30d);
-        }
-        return "";
-    }
-
     private void generateData() {
-
-        int LINES = 3;
+        int LINES = chartParamsHandler.getPositions();
         @SuppressWarnings({"unchecked"})
         List<List<Entry>>[] yVals = new ArrayList[LINES];
         @SuppressWarnings({"unchecked"})
         ArrayList<ILineDataSet>[]  set = new ArrayList[LINES];
-        int[] count = new int[LINES];
+        @SuppressWarnings({"unchecked"})
+        ArrayList<String>[] Xdescs = new ArrayList[LINES];
+
+//        int[] count = new int[LINES];
         long[] ts = new long[LINES];
 
         for(int i=0;i<LINES;i++) {
             yVals[i] = new ArrayList<>();
+            for(int t=0;t<chartParamsHandler.numVarInPos(i);t++) {
+                yVals[i].add(new ArrayList<>());
+            }
+            Xdescs[i] = new ArrayList<>();
+            Xdescs[i].addAll(chartParamsHandler.getAllXDescs(i));
             set[i] = new ArrayList<>();
-            count[i]=0;
-            ts[i]=getFromTimestamp(getXBounds(i));
+//            count[i]=0;
+            ts[i]=getFromTimestamp(chartParamsHandler.getXBounds(i));
         }
 
-        ArrayList<Integer> linecolor = new ArrayList<>();
-        ArrayList<String> sensors = new ArrayList<>();
-        ArrayList<String> topics = new ArrayList<>(Arrays.asList(topic));
-
-        linecolor.add(Color.BLACK);
-        linecolor.add(Color.RED);
-        linecolor.add(Color.BLUE);
-        linecolor.add(Color.YELLOW);
-        linecolor.add(Color.CYAN);
-        linecolor.add(Color.GREEN);
-        linecolor.add(Color.MAGENTA);
-        linecolor.add(Color.GRAY);
-
-        Log.i(DEBUG_TAG, "generateData "+temps.size());
-
         for (ChartData chartData : temps) {
-            float entry=round(chartData.value,1);
-            String var = chartData.var+"-"+topics.indexOf(chartData.topic);
-            if(topics.indexOf(chartData.topic)==0)
-            {
-                var=chartData.var;
-            }
+            boolean varexists=chartParamsHandler.topicExists(chartData.topic,chartData.var);
 
-            if (!(sensors.contains(var))) {
-                Log.i(DEBUG_TAG,"Found var: "+var);
-                sensors.add(var);
-            }
-            int sensindex = sensors.indexOf(var);
-
-            for(int i=0;i<LINES;i++) {
-                yVals[i].add(new ArrayList<>());
-                if (chartData.TS > ts[i]) {
-                    yVals[i].get(sensindex).add(new Entry((float)chartData.TS,entry));
-                    count[i]++;
+            if(varexists) {
+                for (int i = 0; i < LINES; i++) {
+                    if (chartData.TS > ts[i]) {
+                        if(chartParamsHandler.varExistsInPos(i,chartData.var)) {
+                            float entry=round(chartData.value,chartParamsHandler.getRoundDec(i));
+                            yVals[i].get(chartParamsHandler.getVarInPos(i,chartData.var)).add(new Entry((float) chartData.TS, entry));
+//                            count[i]++;
+                        }
+                    }
                 }
             }
         }
 
         LineDataSet xset;
-        for(int k=0;k<LINES;k++) {
-            for (int j=0;j<sensors.size();j++) {
-                    xset=new LineDataSet(yVals[k].get(j),sensors.get(j));
-                    xset.setValueFormatter(new TempFormatter());
-                    xset.setValueTextSize(9f);
-//                    xset.setDrawCubic(true);
-                    xset.setCubicIntensity(0.4f);
-                    xset.setLineWidth(2f);
-                    xset.setDrawCircleHole(false);
-                    xset.setFillAlpha(65);
-                    xset.setColor(linecolor.get(j));
-                    xset.setCircleColor(linecolor.get(j));
-                    xset.setFillColor(linecolor.get(j));
+        for (int k = 0; k < LINES; k++) {
+            for (int j = 0; j < Xdescs[k].size(); j++) {
+                xset = new LineDataSet(yVals[k].get(j), Xdescs[k].get(j));
+                xset.setValueFormatter(new TempFormatter(chartParamsHandler.getFormat(k),chartParamsHandler.getUnit(k)));
+                xset.setValueTextSize(9f);
+                xset.setCubicIntensity(0.4f);
+                xset.setLineWidth(2f);
+                xset.setDrawCircleHole(false);
+                xset.setFillAlpha(65);
+                int color = chartParamsHandler.getColor(k,j);
+                xset.setColor(color);
+                xset.setCircleColor(color);
+                xset.setFillColor(color);
 
-                    set[k].add(xset);
-
+                set[k].add(xset);
             }
-            Log.i(DEBUG_TAG, "generated Data" + k + ": " + count[k]);
-            if(count[k]>0) {
-                tempdata.setData(new LineData(set[k]));
-                tempdata.setDesc(getXDesc(k));
-            }
+            tempdata.setData(new LineData(set[k]));
+            tempdata.setDesc(chartParamsHandler.getDescription(k));
         }
-
-        Log.i(DEBUG_TAG, "generateData finished!");
     }
 
     public static float round(float d, int decimalPlace) {
@@ -293,14 +313,19 @@ public class TempChartActivity extends AppCompatActivity {
         return unixTime - (hours * 60 * 60);
     }
 
-    public long getDeleteTimestamp()
+    public long getDeleteTimestamp(String mtopic)
     {
-        int deldays = 30;
+        long days = subHandler.getMaxDelDays(mtopic,"Chart");
+        if(days==0)
+        {
+            return(0);
+        }
         long unixTime = System.currentTimeMillis() / 1000L;
-        return unixTime - (deldays * 24 * 60 * 60);
+        return unixTime - (days * 24 * 60 * 60);
     }
 
     private class ChartDataAdapter extends ArrayAdapter<LineData> {
+
 
         ChartDataAdapter(Context context, List<LineData> objects) {
             super(context, 0, objects);
@@ -312,8 +337,6 @@ public class TempChartActivity extends AppCompatActivity {
         public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
 
             LineData data = getItem(position);
-            double[] minmax;
-
             ViewHolder holder;
 
             if (convertView == null) {
@@ -330,35 +353,16 @@ public class TempChartActivity extends AppCompatActivity {
             }
 
             YAxis leftAxis = holder.chart.getAxisLeft();
-            leftAxis.setValueFormatter(new TempFormatter());
+            leftAxis.setValueFormatter(new TempFormatter(chartParamsHandler.getFormat(position),chartParamsHandler.getUnit(position)));
             leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-            minmax=chartDataHandler.getMaxChartData(topic,getFromTimestamp(getXBounds(position)));
-            if(tempMin==0)
-            {
-                leftAxis.setAxisMinimum((float)(minmax[0]-2.0));
-            }
-            if(tempMax==0)
-            {
-                leftAxis.setAxisMaximum((float)(minmax[1]+2.0));
-            }
 
 // set the formatter
             holder.chart.getAxisRight().setEnabled(false);
 
             XAxis xAxis = holder.chart.getXAxis();
-//            xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
             xAxis.setValueFormatter(new TimestampFormatter());
-
-            // apply styling
-//            holder.chart.setDescription("");
-//            holder.chart.setDrawGridBackground(false);
-
-            // set data
             holder.chart.setData(data);
-//            holder.chart.setAutoScaleMinMaxEnabled(true);
 
-
-            // do not forget to refresh the chart
             holder.chart.invalidate();
             holder.chart.animateXY(1000, 2000);
 
@@ -366,6 +370,15 @@ public class TempChartActivity extends AppCompatActivity {
             Description desc = new Description();
             desc.setText(tempdata.getDesc(position));
             holder.chart.setDescription(desc);
+
+            if(chartParamsHandler.getAutoscale(position)) {
+                holder.chart.setAutoScaleMinMaxEnabled(chartParamsHandler.getAutoscale(position));
+            }
+            else
+            {
+                leftAxis.setAxisMinimum(chartParamsHandler.getMinValue(position) - chartParamsHandler.getMinOffset(position));
+                leftAxis.setAxisMaximum(chartParamsHandler.getMaxValue(position) + chartParamsHandler.getMaxOffset(position));
+            }
 
             holder.chart.setOnChartGestureListener(new OnChartGestureListener() {
 

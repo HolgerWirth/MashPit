@@ -41,7 +41,7 @@
     },
     {
       "id": "2:3424322956999903523",
-      "lastPropertyId": "9:1639218816551445745",
+      "lastPropertyId": "11:6900685943682416480",
       "name": "Subscriptions",
       "properties": [
         {
@@ -91,6 +91,12 @@
           "id": "9:1639218816551445745",
           "name": "deleted",
           "type": 1,
+          "flags": 4
+        },
+        {
+          "id": "11:6900685943682416480",
+          "name": "deldays",
+          "type": 5,
           "flags": 4
         }
       ],
@@ -301,9 +307,129 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "6:5007285457942311932",
+      "lastPropertyId": "21:410968593928673850",
+      "name": "ChartParams",
+      "properties": [
+        {
+          "id": "1:9136609836029451776",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4655328046672130926",
+          "name": "pos",
+          "type": 5,
+          "flags": 4
+        },
+        {
+          "id": "3:941264332541518412",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:8841308013647694952",
+          "name": "comment",
+          "type": 9
+        },
+        {
+          "id": "5:2353814572839388136",
+          "name": "sort",
+          "type": 5,
+          "flags": 4
+        },
+        {
+          "id": "6:228316898745085581",
+          "name": "autoscale",
+          "type": 1,
+          "flags": 4
+        },
+        {
+          "id": "7:3901194880973321211",
+          "name": "minValue",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "8:6448569625917807115",
+          "name": "maxValue",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "9:3649539835681387021",
+          "name": "maxOffset",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "10:4344905394774697481",
+          "name": "minOffset",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "11:6329328745994957032",
+          "name": "topic",
+          "type": 9
+        },
+        {
+          "id": "12:2267029518288532691",
+          "name": "Xvar",
+          "type": 9
+        },
+        {
+          "id": "13:511967075443361631",
+          "name": "XvarDesc",
+          "type": 9
+        },
+        {
+          "id": "14:923170333430295483",
+          "name": "roundDec",
+          "type": 5,
+          "flags": 4
+        },
+        {
+          "id": "15:2683788522781972922",
+          "name": "XBounds",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "16:7884670045147823997",
+          "name": "XDesc",
+          "type": 9
+        },
+        {
+          "id": "18:8327745749071682284",
+          "name": "color",
+          "type": 5,
+          "flags": 4
+        },
+        {
+          "id": "19:535409634466099588",
+          "name": "YFormat",
+          "type": 9
+        },
+        {
+          "id": "20:7115191131869029577",
+          "name": "YUnit",
+          "type": 9
+        },
+        {
+          "id": "21:410968593928673850",
+          "name": "XBfactor",
+          "type": 5,
+          "flags": 4
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "5:4064539482039549828",
+  "lastEntityId": "6:5007285457942311932",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -311,7 +437,10 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    2249551106556021261,
+    7545861532150355222
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

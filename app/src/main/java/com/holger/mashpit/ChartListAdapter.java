@@ -75,13 +75,13 @@ class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.ChartListVi
            deleteButton.setOnClickListener(view -> {
                Log.i(DEBUG_TAG, "ViewHolder: Click on delete");
                deleteButton.setPressed(true);
-               deleteChartCallback.onChartDeleted((String) name.getTag());
+               deleteChartCallback.onChartDeleted(getAbsoluteAdapterPosition());
            });
         }
     }
 
     public interface DeleteChartCallback {
-        void onChartDeleted(String name);
+        void onChartDeleted(int pos);
     }
 
     void setOnItemClickListener(ChartListAdapter.DeleteChartCallback callback){

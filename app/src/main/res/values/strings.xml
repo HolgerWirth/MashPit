@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">MashPit</string>
 
     <string name="action_settings">Settings</string>
@@ -136,7 +136,7 @@
     <string name="devGPIOExists">GPIO-port is already used</string>
     <string name="devNotConnected">NOT CONNECTED</string>
     <string name="devBME280">BME280</string>
-    <string name="devDHT11">DHT11</string>
+    <string name="devDHT11" tools:ignore="Typos">DHT11</string>
     <string name="devDS18B20">DS18B20</string>
     <string name="serverSystemTypeTitle">System</string>
     <string name="sensorUptimeTitle">Uptime</string>
@@ -187,4 +187,27 @@
     <string name="NotSaved_text">The configuration was not saved. Do you really want to exit?</string>
     <string name="NotSaved_button">Yes</string>
     <string name="NotSaved_cancel">No</string>
+    <string name="chartparams_delete">Do you really want to delete this chart?</string>
+    <string name="chart_days">Days</string>
+    <string name="chart_months">Months</string>
+    <string name="chart_hours">Hours</string>
+    <string name="chart_weeks">Weeks</string>
+    <string name="chartparams_XDescError">Please enter a description</string>
+    <string name="chartparams_XBoundsError">Please enter a timespan</string>
+    <string name="chart_lines">Chart Lines</string>
+    <string name="chart_del_time">Delete data after</string>
+    <string name="chart_cancel">Cancel</string>
+    <string name="chart_add">Add a new chart</string>
+    <string name="chart_OK">Save</string>
+    <string name="chartparams_autoscale">Autoscale</string>
+    <string name="chartparams_timespan">Timespan</string>
+    <string name="chartparams_min">Min.</string>
+    <string name="chartparams_minoffset">Min. Offset</string>
+    <string name="chartparams_max">Max.</string>
+    <string name="chartparams_maxoffset">Max. Offset</string>
+    <string name="chartparams_decimals">Decimals</string>
+    <string name="chartparams_format">Format</string>
+    <string name="chartparams_unit">Unit</string>
+    <string name="chartparams_add">Add a new line</string>
+    <string name="chart_move">Reorder</string>
 </resources>

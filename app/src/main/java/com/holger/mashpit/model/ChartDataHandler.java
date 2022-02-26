@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.objectbox.Box;
+import io.objectbox.query.PropertyQuery;
 import io.objectbox.query.Query;
 
 public class ChartDataHandler {
@@ -36,25 +37,25 @@ public class ChartDataHandler {
         return (new ArrayList<>());
     }
 
-    public long deleteChartData(String[] topic, long ts)
+    public long deleteChartData(String topic, long ts)
     {
-        Query<ChartData> query = dataBox.query(ChartData_.topic.oneOf(topic)
+        Query<ChartData> query = dataBox.query(ChartData_.topic.equal(topic)
                 .and(ChartData_.TS.less(ts)))
                 .build();
-        long dels = (query.count());
-        query.remove();
-        return (dels);
+        return (query.remove());
     }
 
-    public double[] getMaxChartData(String[] topic, long ts)
+    public long deleteChartData(String topic)
     {
-        double[] minmax = new double[2];
-        Query<ChartData> query = dataBox.query(ChartData_.topic.oneOf(topic)
-                .and(ChartData_.TS.greater(ts)))
+        Query<ChartData> query = dataBox.query(ChartData_.topic.equal(topic))
                 .build();
-        minmax[0]=query.property(ChartData_.value).minDouble();
-        minmax[1]=query.property(ChartData_.value).maxDouble();
-        return(minmax);
+        return (query.remove());
     }
 
+
+    public String[] getChartVars(String topic)
+    {
+        PropertyQuery query = dataBox.query(ChartData_.topic.equal(topic)).build().property(ChartData_.var);
+        return(query.distinct().findStrings());
+    }
 }

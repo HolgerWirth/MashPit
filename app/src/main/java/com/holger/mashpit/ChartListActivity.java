@@ -29,6 +29,7 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     private static final String DEBUG_TAG = "ChartListActivity";
     ChartListAdapter sa;
     List<Charts> charts = new ArrayList<>();
+    int chartPos=0;
     SubscriptionsHandler subscriptionsHandler;
     ChartsHandler chartsHandler;
 
@@ -55,10 +56,17 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == 1) {
-                        Log.i(DEBUG_TAG, "Chartlist changed");
                         charts=refreshCharts();
                         sa.refreshCharts(charts);
-                        sa.notifyDataSetChanged();
+                        if(result.getData() != null && result.getData().getStringExtra("ACTION").equals("insert"))
+                        {
+                            Log.i(DEBUG_TAG, "Chartlist: chart added");
+                            sa.notifyItemRangeChanged(0,charts.size());
+                        }
+                        else {
+                            Log.i(DEBUG_TAG, "Chartlist changed");
+                            sa.notifyItemChanged(chartPos);
+                        }
                     }
                 });
 
@@ -67,6 +75,7 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
             Log.i(DEBUG_TAG, "Clicked on FAB");
             Intent l = new Intent(getApplicationContext(), ChartEditActivity.class);
             l.putExtra("ACTION", "insert");
+            chartPos=charts.size()+1;
             myActivityResultLauncher.launch(l);
         });
 
@@ -82,11 +91,13 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
         chartList.setAdapter(sa);
 
         ItemClickSupport.addTo(chartList).setOnItemClickListener((recyclerView, position, v) -> {
-            Log.i(DEBUG_TAG, "Clicked!");
+            Log.i(DEBUG_TAG, "Clicked on pos: "+position);
+            chartPos=position;
             Intent sintent = new Intent(getApplicationContext(), ChartEditActivity.class);
             sintent.putExtra("ACTION", "edit");
             sintent.putExtra("name",charts.get(position).name);
             sintent.putExtra("desc",charts.get(position).description);
+            sintent.putExtra("id",charts.get(position).id);
             myActivityResultLauncher.launch(sintent);
         });
     }
@@ -96,17 +107,14 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
     }
 
     @Override
-    public void onChartDeleted(final String name) {
-        Log.i(DEBUG_TAG, "Clicked on delete on chart: "+name);
+    public void onChartDeleted(final int pos) {
+        Log.i(DEBUG_TAG, "Clicked on delete on chart: "+charts.get(pos).name);
         final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.sub_delete);
         builder.setMessage(R.string.sub_delete_text);
         builder.setPositiveButton(getString(R.string.delete_key), (dialog, which) -> {
-            Charts delChart = new Charts();
-            delChart.name=name;
-            chartsHandler.deleteChart(delChart);
-            subscriptionsHandler.setDeletedSubscriptions("Chart",name);
-
+            chartsHandler.deleteChart(charts.get(pos));
+            subscriptionsHandler.setDeletedSubscriptions("Chart",charts.get(pos).name);
             builder.setTitle(getString(R.string.Subchanged_alert_title));
             builder.setMessage(getString(R.string.Subchanged_text));
             builder.setPositiveButton(getString(R.string.Subchanged_button), (dialog1, which1) -> {
@@ -120,7 +128,7 @@ public class ChartListActivity extends AppCompatActivity implements ChartListAda
             builder.show();
             charts=refreshCharts();
             sa.refreshCharts(charts);
-            sa.notifyDataSetChanged();
+            sa.notifyItemRemoved(pos);
         });
         builder.setNegativeButton(getString(R.string.MQTTchanged_cancel), null);
         builder.show();

@@ -106,7 +106,9 @@ public class TempPagerActivity extends AppCompatActivity {
                     if(id<100)
                     {
                         Intent k = new Intent(getApplicationContext(), TempChartActivity.class);
-                        startActivity(MashPit.selectTempChart(k,chartMenu.get(id).name,chartMenu.get(id).description));
+                        k.putExtra("name",chartMenu.get(id).name);
+                        k.putExtra("title",chartMenu.get(id).description);
+                        startActivity(k);
                         return true;
                     }
 

@@ -39,8 +39,6 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
 
     private static String TempMode = "";
     SharedPreferences prefs;
-    float tempMin;
-    float tempMax;
     int mpos;
     LineData data;
     TempChartData tempdata;
@@ -142,7 +140,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
     {
         long unixTime = System.currentTimeMillis() / 1000L;
 //        return unixTime - (30 * 24 * 60 * 60);
-        return unixTime - (hours * 60 * 60 );
+        return unixTime - ((long) hours * 60 * 60 );
 
     }
 
@@ -151,7 +149,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
         Log.i(DEBUG_TAG,"setTempData");
 
         YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setValueFormatter (new TempFormatter());
+        leftAxis.setValueFormatter (new TempFormatter("0.0","°"));
         leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
 
 //        leftAxis.setAxisMaximum(MashPit.prefGetMax(prefs,TempMode));
@@ -202,7 +200,7 @@ public class LineChartActivity extends AppCompatActivity implements OnChartGestu
             for (int j=0;j<sensors.size();j++) {
                 xset = new LineDataSet(yVals.get(j), "");
 
-                xset.setValueFormatter(new TempFormatter());
+                xset.setValueFormatter(new TempFormatter("0.0","°"));
                 xset.setCubicIntensity(0.4f);
                 xset.setLineWidth(2f);
                 xset.setDrawCircleHole(false);
