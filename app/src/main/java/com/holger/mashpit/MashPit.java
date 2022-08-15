@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.holger.mashpit.tools.ObjectBox;
 
-import io.objectbox.android.AndroidObjectBrowser;
+import io.objectbox.android.Admin;
 
 public class MashPit extends Application {
     private static final String DEBUG_TAG = "MashPit";
@@ -20,8 +20,8 @@ public class MashPit extends Application {
         ObjectBox.init(this);
 
         if (BuildConfig.DEBUG) {
-            boolean started = new AndroidObjectBrowser(ObjectBox.get()).start(this);
-            Log.i(DEBUG_TAG, "Object Browser Started: " + started);
+            boolean started = new Admin(ObjectBox.get()).start(this);
+            Log.i("ObjectBoxAdmin", "Started: " + started);
             Log.i(DEBUG_TAG, "Use: adb forward tcp:8090 tcp:8090");
         }
 
