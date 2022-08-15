@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion '33-rc1'
+    compileSdkVersion 32
+    buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "com.holger.mashpit"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
     }
@@ -22,6 +22,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.holger.mashpit'
 }
 
 repositories {
@@ -39,7 +40,7 @@ dependencies {
     implementation 'androidx.wear:wear:1.2.0'
     implementation 'com.google.android.gms:play-services-wearable:17.1.0'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
-    compileOnly 'com.google.android.wearable:wearable:2.8.1'
-    implementation 'com.google.android.support:wearable:2.8.1'
+    compileOnly 'com.google.android.wearable:wearable:2.9.0'
+    implementation 'com.google.android.support:wearable:2.9.0'
     implementation project(':share')
 }
