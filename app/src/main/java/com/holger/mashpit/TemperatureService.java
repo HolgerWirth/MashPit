@@ -106,6 +106,11 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
+        if(intent==null)
+        {
+            return START_STICKY;
+        }
+
         Log.i(DEBUG_TAG, "onStartCommand: Action received: "+intent.getAction());
 /*
         if(intent==null)
@@ -536,6 +541,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         /**
      * @return whether the android service can be regarded as online
      */
+    @SuppressLint("MissingPermission")
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         return cm != null && cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected();
@@ -934,7 +940,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     Log.d(DEBUG_TAG, "Unrecognized path: " + path);
                 }
             } else if (event.getType() == DataEvent.TYPE_DELETED) {
-                Log.d(DEBUG_TAG, "Data deleted : " + event.getDataItem().toString());
+                Log.d(DEBUG_TAG, "Data deleted : " + event.getDataItem());
             } else {
                 Log.d(DEBUG_TAG, "Unknown data event Type = " + event.getType());
             }

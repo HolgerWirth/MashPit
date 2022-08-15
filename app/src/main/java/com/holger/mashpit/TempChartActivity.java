@@ -45,6 +45,7 @@ import com.holger.mashpit.tools.TimestampFormatter;
 import com.holger.share.Constants;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +101,7 @@ public class TempChartActivity extends AppCompatActivity {
         myActivityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == 1) {
+                    if (result.getResultCode() == 2) {
                         Log.i(DEBUG_TAG, "Change received");
                         recreate();
                     }
@@ -304,7 +305,7 @@ public class TempChartActivity extends AppCompatActivity {
     }
 
     public static float round(float d, int decimalPlace) {
-        return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
+        return BigDecimal.valueOf(d).setScale(decimalPlace, RoundingMode.HALF_UP).floatValue();
     }
 
     public static long getFromTimestamp(long hours)

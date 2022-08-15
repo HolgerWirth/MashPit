@@ -138,34 +138,13 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
                 if (!s.toString().isEmpty()) {
                     fabadd.show();
                 } else {
+                    fabOK.hide();
                     fabadd.hide();
                 }
             }
         });
 
         chartdesc = findViewById(R.id.chartDesc);
-        chartdesc.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    if(!chartdesc.getText().toString().equals(desc)) {
-                        fabOK.show();
-                    }
-                } else {
-                    fabOK.hide();
-                }
-            }
-        });
-
         chartdeldays = findViewById(R.id.chartDeleteDays);
         chartdeldays.addTextChangedListener(new TextWatcher() {
             @Override
@@ -207,6 +186,15 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             Intent result = new Intent();
             Log.i(DEBUG_TAG, "Clicked the FAB 'OK' button");
             if (editAction.equals("insert")) {
+                if(chartname.getText().toString().isEmpty())
+                {
+                    chartname.setError("Mandatory!");
+                    return;
+                }
+                if(topicList.isEmpty())
+                {
+                    return;
+                }
                 Charts newChart = new Charts();
                 newChart.name=chartname.getText().toString();
                 newChart.description=chartdesc.getText().toString();
@@ -284,6 +272,8 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
             fabOK.hide();
             fabadd.hide();
             fabcancel.show();
+            chartname.setText("");
+            chartdesc.setText("");
             chartdeldays.setText("0");
             assert ab != null;
             ab.setTitle("New Chart");

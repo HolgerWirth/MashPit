@@ -51,7 +51,7 @@ public class ChartParamsListActivity extends AppCompatActivity implements ChartP
         toolbar.setNavigationOnClickListener(v -> {
             overridePendingTransition(0, 0);
             setResult(0,null);
-            if(listUpdated) setResult(1,null);
+            if(listUpdated) setResult(2,null);
             finish();
         });
 
@@ -71,8 +71,9 @@ public class ChartParamsListActivity extends AppCompatActivity implements ChartP
                         assert result.getData() != null;
                         if (result.getData().getStringExtra("ACTION").equals("insert")) {
                             Log.i(DEBUG_TAG, "Chartlist added");
+                            paramsHandler.saveParamPos(params);
                             sa.refreshCharts(params);
-                            sa.notifyItemInserted(params.size() - 1);
+                            sa.notifyItemInserted(params.size()-1);
                         } else {
                             Log.i(DEBUG_TAG, "Chartlist changed");
                             sa.refreshCharts(params);
@@ -111,7 +112,7 @@ public class ChartParamsListActivity extends AppCompatActivity implements ChartP
             sintent.putExtra("ACTION", "edit");
             sintent.putExtra("name", name);
             sintent.putExtra("sort", params.get(position).sort);
-            sintent.putExtra("pos",position);
+            sintent.putExtra("pos",chartListPos);
             myActivityResultLauncher.launch(sintent);
         });
 
@@ -138,15 +139,13 @@ public class ChartParamsListActivity extends AppCompatActivity implements ChartP
                 Log.i(DEBUG_TAG, "OnSelectedChanged(); " + dragged);
                 if (dragged) {
                     if (moved) {
-                        for (int i = 0; i < mparams.size(); i++) {
-                            if (!mparams.get(i).equals(params.get(i))) {
-                                Log.i(DEBUG_TAG, "Position changed! ");
-                                paramsHandler.saveParamPos(mparams);
-                                break;
-                            }
-                        }
+                        Log.i(DEBUG_TAG, "Position changed: " + moved);
+                        listUpdated=true;
+                        paramsHandler.saveParamPos(mparams);
+                        params = mparams;
                         moved = false;
                     }
+                    sa.refreshCharts(mparams);
                 }
                 dragged = !dragged;
             }
@@ -191,7 +190,7 @@ public class ChartParamsListActivity extends AppCompatActivity implements ChartP
     public void onBackPressed() {
         Log.i(DEBUG_TAG, "OnBackPressed()");
         setResult(0,null);
-        if(listUpdated) setResult(1,null);
+        if(listUpdated) setResult(2,null);
         super.onBackPressed();
     }
 }

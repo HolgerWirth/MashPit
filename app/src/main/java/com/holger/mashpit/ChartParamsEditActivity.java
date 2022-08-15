@@ -163,8 +163,9 @@ public class ChartParamsEditActivity extends AppCompatActivity implements ChartP
             name = getIntent().getStringExtra("name");
             paramsHandler = new ChartParamsHandler(name);
             newParams.name=name;
-            newParams.pos=0;
-            newParams.sort=getIntent().getIntExtra("sort",0)+10;
+            newParams.pos=99;
+            sort=getIntent().getIntExtra("sort",0)+10;
+            newParams.sort=sort;
             paramsMin.setText("0.0");
             paramsMax.setText("0.0");
             paramsMinOffset.setText("0.0");
@@ -237,12 +238,8 @@ public class ChartParamsEditActivity extends AppCompatActivity implements ChartP
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    fabOK.show();
-                    unsaved=true;
-                } else {
-                    fabOK.hide();
-                }
+                fabOK.show();
+                unsaved=true;
             }
         });
 
@@ -438,12 +435,10 @@ public class ChartParamsEditActivity extends AppCompatActivity implements ChartP
     private boolean UpdateChartParams()
     {
         List<ChartParams> params = new ArrayList<>(sa.getChartLines());
-        int pos=0;
         for(ChartParams param : params)
         {
             param.name= name;
             param.sort=sort;
-            param.pos=pos;
             if(paramsXDesc.getText().toString().isEmpty())
             {
                 paramsXDesc.setError(getString(R.string.chartparams_XDescError));
@@ -478,7 +473,6 @@ public class ChartParamsEditActivity extends AppCompatActivity implements ChartP
             else {
                 param.roundDec = Integer.parseInt(paramsRound.getText().toString());
             }
-            pos++;
         }
         paramsHandler.saveParams(params);
         paramsHandler.deleteParams(sa.getDeletedLines());
