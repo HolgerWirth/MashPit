@@ -67,7 +67,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     def eventbus_version = '3.3.1'
     implementation "org.greenrobot:eventbus:$eventbus_version"
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment:2.5.1'
     implementation 'androidx.navigation:navigation-ui:2.5.1'
@@ -75,6 +75,7 @@ dependencies {
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
     implementation 'com.google.android.gms:play-services-wearable:17.1.0'
     implementation 'commons-net:commons-net:20030805.205232'
+    implementation 'com.ernestoyaquello.stepperform:vertical-stepper-form:2.7.0'
     implementation group: 'com.jwebmp', name: 'commons-io', version: '0.66.0.1'
     apply plugin: 'com.android.application'
     releaseImplementation 'io.objectbox:objectbox-android:3.2.1'
