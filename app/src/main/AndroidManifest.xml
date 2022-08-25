@@ -62,8 +62,6 @@
             android:name=".SensorConfEdit"
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity android:name=".SelectSensorActivity"
-            android:exported="false" />
         <activity android:name=".SubscriberActivity"
             android:exported="false" />
         <activity android:name=".SensorUpdateActivity"
@@ -80,5 +78,6 @@
             android:exported="false" />
         <activity android:name=".ChartParamsEditActivity"
             android:exported="false" />
+        <activity android:name=".SubscriptionStepper" />
     </application>
 </manifest>

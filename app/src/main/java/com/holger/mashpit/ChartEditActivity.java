@@ -177,9 +177,10 @@ public class ChartEditActivity extends AppCompatActivity implements SubscriberAd
 
          fabadd.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked the FAB 'add' button");
-            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
-             l.putExtra("ACTION", "insert");
-             myActivityResultLauncher.launch(l);
+//            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+            Intent l = new Intent(getApplicationContext(), SubscriptionStepper.class);
+            l.putExtra("ACTION", "insert");
+            myActivityResultLauncher.launch(l);
         });
 
         fabOK.setOnClickListener(view -> {

@@ -210,4 +210,10 @@
     <string name="chartparams_unit">Unit</string>
     <string name="chartparams_add">Add a new line</string>
     <string name="chart_move">Reorder</string>
+    <string name="vertical_stepper_form_continue_button">Continue</string>
+    <string name="vertical_stepper_form_cancel_button">Cancel</string>
+    <string name="vertical_stepper_form_confirm_button">Confirm</string>
+    <string name="vertical_stepper_form_confirmation_step_title">Confirmation</string>
+    <string name="stepper_sensor_create">Create datasource</string>
+    <string name="subscription_already_exists">Datasource already exists</string>
 </resources>

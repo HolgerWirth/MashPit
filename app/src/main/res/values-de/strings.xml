@@ -202,4 +202,10 @@
     <string name="chartparams_unit">Einheit</string>
     <string name="chartparams_add">Neue Zeile</string>
     <string name="chart_move">Neu ordnen</string>
+    <string name="vertical_stepper_form_continue_button">Weiter</string>
+    <string name="vertical_stepper_form_cancel_button">Cancel</string>
+    <string name="vertical_stepper_form_confirm_button">OK</string>
+    <string name="vertical_stepper_form_confirmation_step_title">Bestätigung</string>
+    <string name="stepper_sensor_create">Erstelle Datenquelle</string>
+    <string name="subscription_already_exists">Datenquelle wurde schon angelegt</string>
 </resources>

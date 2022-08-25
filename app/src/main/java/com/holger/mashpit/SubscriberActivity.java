@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,11 +67,17 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
                         sub.topic = "/SE/" + sub.server + "/temp/" + sub.sensor + "/" + sub.interval;
                         sub.durable = durable ? 1 : 0;
                         sub.name = "";
-                        Log.i(DEBUG_TAG, "New subscription added: " + sub.topic);
-                        subsHandler.addSubscription(sub);
-                        subListChanged = true;
-                        sa.refreshSubscribers(refreshSubscriber());
-                        sa.notifyItemInserted(sa.getItemCount()-1);
+                        if(!subsHandler.checkSubscription(sub.topic)) {
+                            Log.i(DEBUG_TAG, "New subscription added: " + sub.topic);
+                            subsHandler.addSubscription(sub);
+                            subListChanged = true;
+                            sa.refreshSubscribers(refreshSubscriber());
+                            sa.notifyItemInserted(sa.getItemCount() - 1);
+                        }
+                        else
+                        {
+                            Toast.makeText(this, R.string.subscription_already_exists, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
@@ -89,7 +96,9 @@ public class SubscriberActivity extends AppCompatActivity implements SubscriberA
 
         addButton.setOnClickListener(view -> {
             Log.i(DEBUG_TAG, "Clicked on FAB");
-            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+//            Intent l = new Intent(getApplicationContext(), SelectSensorActivity.class);
+            Intent l = new Intent(getApplicationContext(), SubscriptionStepper.class);
+
             myActivityResultLauncher.launch(l);
         });
 
