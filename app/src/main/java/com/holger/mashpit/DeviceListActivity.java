@@ -147,6 +147,7 @@ public class DeviceListActivity extends AppCompatActivity {
         resultList.clear();
         resultList.addAll(updateresult);
         sa.notifyItemRangeInserted(0,resultList.size()-1);
+        sa.notifyItemRangeChanged(0,resultList.size()-1);
     }
 
     private List<SensorEvent> updateServerList() {
