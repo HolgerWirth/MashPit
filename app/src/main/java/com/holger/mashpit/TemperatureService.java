@@ -19,9 +19,10 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
-import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.DataClient;
@@ -41,9 +42,13 @@ import com.holger.mashpit.model.ChartDataHandler;
 import com.holger.mashpit.model.Devices;
 import com.holger.mashpit.model.DevicesHandler;
 import com.holger.mashpit.model.Sensors;
+import com.holger.mashpit.model.SensorsHandler;
+import com.holger.mashpit.model.SubscriptionsHandler;
+import com.holger.mashpit.tools.MySSlSocketFactory;
+import com.holger.share.Constants;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -58,12 +63,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.holger.mashpit.model.SensorsHandler;
-import com.holger.mashpit.tools.MySSlSocketFactory;
-import com.holger.mashpit.model.SubscriptionsHandler;
-import com.holger.share.Constants;
-
-public class TemperatureService extends Service implements MqttCallback,DataClient.OnDataChangedListener {
+public class TemperatureService extends Service implements MqttCallbackExtended,DataClient.OnDataChangedListener {
 
     private static final String DEBUG_TAG = "TemperatureService";
 
@@ -73,6 +73,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
     private Boolean isConnected=false;
     private Boolean isConnecting=false;
+    private Boolean isReconnect=false;
     private NotificationCompat.Builder builder;
     private String MQTT_DOMAIN="";
 
@@ -106,87 +107,76 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action;
-        if(intent==null)
-        {
-            return START_STICKY;
-        }
-
-        Log.i(DEBUG_TAG, "onStartCommand: Action received: "+intent.getAction());
-/*
-        if(intent==null)
-        {
-                Log.i(DEBUG_TAG, "onStartCommand: received null intent");
-                action=Constants.ACTION.STARTFOREGROUND_ACTION;
-        }
-        else
-        {
-                action = intent.getAction();
-                Log.i(DEBUG_TAG, "onStartCommand: Received action of " + action);
-        }
-*/
-
         action = intent.getAction();
-        if (action != null) {
-            switch (action) {
-                case Constants.ACTION.STARTFOREGROUND_ACTION:
-                    Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
-                    restart=false;
+        if (action == null) {
+            Log.i(DEBUG_TAG, "onStartCommand: Null received!");
+            action = Constants.ACTION.STOPFOREGROUND_ACTION;
+        }
+        Log.i(DEBUG_TAG, "onStartCommand: Action received: " + intent.getAction());
 
+        switch (action) {
+            case Constants.ACTION.STARTFOREGROUND_ACTION:
+                Log.i(DEBUG_TAG, "Received Start Foreground Intent ");
+                restart = false;
+
+                    /*
                     Log.i(DEBUG_TAG, "Create WakeLock!");
                     PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
                     assert powerManager != null;
                     wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                             "MashPit::MQTTWakeLock");
                     wakeLock.acquire();
+*/
 
-                    Intent notificationIntent = new Intent(this, MainActivity.class);
-                    notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
-                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                            notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+                Intent notificationIntent = new Intent(this, MainActivity.class);
+                notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                        notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
-                    Intent previousIntent = new Intent(this, TemperatureService.class);
-                    previousIntent.setAction(Constants.ACTION.CANCEL_ACTION);
-                    PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
-                            previousIntent, PendingIntent.FLAG_IMMUTABLE);
+                Intent previousIntent = new Intent(this, TemperatureService.class);
+                previousIntent.setAction(Constants.ACTION.CANCEL_ACTION);
+                PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
+                        previousIntent, PendingIntent.FLAG_IMMUTABLE);
 
-                    Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                            R.drawable.ic_launcher);
+                Bitmap icon = BitmapFactory.decodeResource(getResources(),
+                        R.drawable.ic_launcher);
 
-                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_DEFAULT);
-                        if (notificationManager != null) {
-                            notificationManager.createNotificationChannel(notificationChannel);
-                        }
+                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_DEFAULT);
+                    if (notificationManager != null) {
+                        notificationManager.createNotificationChannel(notificationChannel);
                     }
+                }
 
-                    builder = new NotificationCompat.Builder(this,NOTIFICATION_CHANNEL_ID)
-                            .setContentTitle("")
-                            .setTicker("")
-                            .setContentText("")
-                            .setSmallIcon(R.drawable.ic_stat_name)
-                            .setLargeIcon(
-                                    Bitmap.createScaledBitmap(icon, 128, 128, false))
-                            .setContentIntent(pendingIntent)
-                            .setOngoing(true)
-                            .addAction(android.R.drawable.ic_menu_close_clear_cancel,
-                                    "Stop Service", ppreviousIntent);
+                builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                        .setContentTitle("")
+                        .setTicker("")
+                        .setContentText("")
+                        .setSmallIcon(R.drawable.ic_stat_name)
+                        .setLargeIcon(
+                                Bitmap.createScaledBitmap(icon, 128, 128, false))
+                        .setContentIntent(pendingIntent)
+                        .setOngoing(true)
+                        .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                                "Stop Service", ppreviousIntent);
 
-                    startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                            builder.build());
+                startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                        builder.build());
 
-                    registerBroadcastReceivers();
-                    Wearable.getDataClient(this).addListener(this);
+                registerBroadcastReceivers();
+                Wearable.getDataClient(this).addListener(this);
 
-                    try {
-                        connect();
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                        return(START_STICKY);
-                    }
+                try {
+                    connect();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                    return (START_STICKY);
+                }
 
+                if (!isReconnect) {
                     sensorsHandler.deleteAllSensors();
 //                    subsHandler.create();
 
@@ -204,12 +194,12 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     List<String> topics = subsHandler.getAllSubscription(false);
                     List<String> topics_durable = subsHandler.getAllSubscription(true);
-                    topics.add("/SE/"+"+/"+"conf/#");
-                    topics.add("/SE/"+"+/"+"status");
+                    topics.add("/SE/" + "+/" + "conf/#");
+                    topics.add("/SE/" + "+/" + "status");
 
                     try {
                         for (String sub : topics) {
-                            if(!topics_durable.contains(sub)) {
+                            if (!topics_durable.contains(sub)) {
                                 Log.i(DEBUG_TAG, "Nondurable subsctiption to: " + MQTT_DOMAIN + sub + " with qos: 0");
                                 mClient.subscribe(MQTT_DOMAIN + sub, 0);
                             }
@@ -220,72 +210,71 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
                     try {
                         for (String sub : topics_durable) {
-                            Log.i(DEBUG_TAG, "Durable subscription to: " +MQTT_DOMAIN+ sub + " with qos: 2");
-                            mClient.subscribe(MQTT_DOMAIN+sub, 2);
+                            Log.i(DEBUG_TAG, "Durable subscription to: " + MQTT_DOMAIN + sub + " with qos: 2");
+                            mClient.subscribe(MQTT_DOMAIN + sub, 2);
                         }
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
-                    break;
+                }
+                break;
 
-                case Constants.ACTION.RESTART_ACTION:
-                    Log.i(DEBUG_TAG, "Received Restart Intent");
-                    restart=true;
-                case Constants.ACTION.STOPFOREGROUND_ACTION:
-                    Log.i(DEBUG_TAG, "Received Stop Foreground Intent with restart="+restart);
-                    if(wakeLock!=null)
-                    {
-                        Log.i(DEBUG_TAG, "Remove WakeLock");
-                        wakeLock.release();
-                    }
-                    unregisterBroadcastReceivers();
-                    Wearable.getDataClient(this).removeListener(this);
-                    disconnect();
-                    stopForeground(true);
-                    stopSelf();
-                    break;
-                case Constants.ACTION.CANCEL_ACTION:
-                    Log.i(DEBUG_TAG, "Clicked Cancel");
-                    unregisterBroadcastReceivers();
-                    Wearable.getDataClient(this).removeListener(this);
-                    disconnect();
-                    stopForeground(true);
-                    stopSelf();
-                    break;
-                case Constants.ACTION.CONNECT_ACTION:
-                    Log.i(DEBUG_TAG, "Clicked Connect");
-                    try {
-                        connect();
-                        refreshRetainedMessages();
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case Constants.ACTION.RECONNECT_ACTION:
-                    Log.i(DEBUG_TAG, "Clicked Reconnect");
-                    disconnect();
-                    try {
-                        connect();
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                    break;
+            case Constants.ACTION.RESTART_ACTION:
+                Log.i(DEBUG_TAG, "Received Restart Intent");
+                restart = true;
+            case Constants.ACTION.STOPFOREGROUND_ACTION:
+                Log.i(DEBUG_TAG, "Received Stop Foreground Intent with restart=" + restart);
+                if (wakeLock != null) {
+                    Log.i(DEBUG_TAG, "Remove WakeLock");
+                    wakeLock.release();
+                }
+                unregisterBroadcastReceivers();
+                Wearable.getDataClient(this).removeListener(this);
+                disconnect();
+                stopForeground(true);
+                stopSelf();
+                break;
+            case Constants.ACTION.CANCEL_ACTION:
+                Log.i(DEBUG_TAG, "Clicked Cancel");
+                unregisterBroadcastReceivers();
+                Wearable.getDataClient(this).removeListener(this);
+                disconnect();
+                stopForeground(true);
+                stopSelf();
+                break;
+            case Constants.ACTION.CONNECT_ACTION:
+                Log.i(DEBUG_TAG, "Clicked Connect");
+                try {
+                    connect();
+                    refreshRetainedMessages();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case Constants.ACTION.RECONNECT_ACTION:
+                Log.i(DEBUG_TAG, "Clicked Reconnect");
+                disconnect();
+                try {
+                    connect();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                break;
 
-                case Constants.ACTION.CHECK_ACTION:
-                    Log.i(DEBUG_TAG, "Check action");
-                    checkConnection();
-                    break;
+            case Constants.ACTION.CHECK_ACTION:
+                Log.i(DEBUG_TAG, "Check action");
+                checkConnection();
+                break;
 
-                case Constants.ACTION.SUBSCRIBE_ACTION:
-                    Log.i(DEBUG_TAG, "Subscribe action");
-                    subscribeTopic(intent.getStringExtra("TOPIC"),intent.getBooleanExtra("DURABLE",false));
-                    break;
+            case Constants.ACTION.SUBSCRIBE_ACTION:
+                Log.i(DEBUG_TAG, "Subscribe action");
+                subscribeTopic(intent.getStringExtra("TOPIC"), intent.getBooleanExtra("DURABLE", false));
+                break;
 
-                case Constants.ACTION.UNSUBSCRIBE_ACTION:
-                    Log.i(DEBUG_TAG, "Unsubscribe action");
-                    unsubscribeTopic(intent.getStringExtra("TOPIC"));
-                    break;
-            }
+            case Constants.ACTION.UNSUBSCRIBE_ACTION:
+                Log.i(DEBUG_TAG, "Unsubscribe action");
+                unsubscribeTopic(intent.getStringExtra("TOPIC"));
+                break;
         }
         return START_STICKY;
     }
@@ -359,12 +348,15 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         Log.i(DEBUG_TAG,"Connecting with URL: " + url);
 
         MqttConnectOptions mOpts = new MqttConnectOptions();
+
 //        mOpts.setKeepAliveInterval(0);
         if(mqtt_ssl) {
             mOpts.setSocketFactory(factory.getSslSocketFactory(null));
         }
         mOpts.setConnectionTimeout(2);
         mOpts.setCleanSession(false);
+        mOpts.setAutomaticReconnect(true);
+
         if(!MQTT_USER.isEmpty()) {
             mOpts.setUserName(MQTT_USER);
             mOpts.setPassword(MQTT_PASSWORD.toCharArray());
@@ -372,7 +364,6 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
 
         mClient = new MqttClient(url,mDeviceId,new MemoryPersistence());
         mClient.setCallback(this);
-
         try {
             mClient.connect(mOpts);
         } catch (MqttException e) {
@@ -411,45 +402,19 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
         Log.i(DEBUG_TAG, "checkConnection()");
         statusEvent.setTopic("mqttstatus");
 
-        if(mClient==null)
+        if(isConnected)
         {
-            isConnected=false;
-            statusEvent.setMode("error");
-            statusEvent.setStatus("Can't connect to broker");
-            Log.i(DEBUG_TAG, "checkConnection()=false");
+            statusEvent.setMode("info");
+            statusEvent.setStatus("Connected to broker");
+            Log.i(DEBUG_TAG, "checkConnection()=true");
         }
         else {
-            if (mClient.isConnected()) {
-                isConnected = true;
-                statusEvent.setMode("info");
-                statusEvent.setStatus("Connected to broker");
-                Log.i(DEBUG_TAG, "checkConnection()=true");
-            } else {
-                isConnected = false;
-                statusEvent.setMode("error");
-                statusEvent.setStatus("Can't connect to broker");
-                Log.i(DEBUG_TAG, "checkConnection()=false");
-            }
+            isConnected = false;
+            statusEvent.setMode("error");
+            statusEvent.setStatus("Can't connect to broker");
         }
         if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
             EventBus.getDefault().post(statusEvent);
-        }
-    }
-
-    /**
-     * Checkes the current connectivity
-     * and reconnects if it is required.
-     */
-    private synchronized void reconnectIfNecessary() {
-        Log.i(DEBUG_TAG, "reconnectIfNecessary()");
-        if(mClient== null) {
-                Log.i(DEBUG_TAG, "reconnectIfNecessary(): try to connect");
-            try {
-                                connect();
-                                refreshRetainedMessages();
-                        } catch (MqttException e) {
-                                e.printStackTrace();
-                        }
         }
     }
 
@@ -462,6 +427,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             } catch (MqttException ignored) {
             }
         }
+        isConnected=false;
     }
 
     private void registerBroadcastReceivers() {
@@ -488,6 +454,8 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 // we protect against the phone switching off
                 // by requesting a wake lock - we request the minimum possible wake
                 // lock - just enough to keep the CPU running until we've finished
+
+            /*
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             PowerManager.WakeLock wl = null;
             if (pm != null) {
@@ -497,6 +465,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                 wl.acquire(1);
             }
 
+*/
             Log.i(DEBUG_TAG, "Internal network status receive called with: "+intent);
 
                 boolean noConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
@@ -522,19 +491,17 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                if (!isConnecting) {
                    if (isOnline()) {
                        Log.i(DEBUG_TAG, "isOnline:TRUE");
-                       if (!isConnected) {
-                           mClient = null;
-                           Log.i(DEBUG_TAG, "Not connected: trying to reconnect");
-                           reconnectIfNecessary();
-                       }
                    } else {
                        Log.i(DEBUG_TAG, "isOnline:FALSE");
                    }
             }
 
+               /*
             if (wl != null) {
                 wl.release();
             }
+
+                */
         }
     }
 
@@ -548,46 +515,27 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
     }
 
     @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        Log.i(DEBUG_TAG, "connectComplete: "+reconnect);
+        isReconnect=reconnect;
+        isConnected=true;
+    }
+
+    @Override
     public void connectionLost(Throwable arg0) {
         StatusEvent statusEvent = new StatusEvent();
         if (!isConnecting) {
             Log.i(DEBUG_TAG, "Connection lost from broker! Reason: ", arg0);
             isConnected = false;
+            /*
             statusEvent.setTopic("mqttstatus");
             statusEvent.setMode("error");
             statusEvent.setStatus("Connection lost!");
             if (EventBus.getDefault().hasSubscriberForEvent(StatusEvent.class)) {
                 EventBus.getDefault().post(statusEvent);
             }
-            if (mClient != null) {
-
-                try {
-                    Log.i(DEBUG_TAG, "Disconnecting...");
-                    mClient.disconnect();
-                    mClient = null;
-                    reconnectIfNecessary();
-                } catch (MqttException e) {
-                    Log.i(DEBUG_TAG, "Disconnect failed");
-                    mClient = null;
-                }
-            }
-
-            reconnectIfNecessary();
+             */
         }
-    }
-
-    private void updateNotification(SensorDataEvent event) {
-        Log.i(DEBUG_TAG, "updateNotification");
-        builder.setColor(Color.BLACK);
-        String server = devicesHandler.getDeviceAlias(event.getDevice());
-        String sensor = sensorsHandler.getSensorAlias(event.getDevice(),event.getSensor());
-        builder.setContentTitle(event.getData("Temp") + "°");
-        builder.setContentText(new StringBuilder().append(server).append(" / ").append(sensor).append("  ").append(event.getTimestamp()));
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (mNotificationManager != null) {
-            mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
-        }
-        sendDatatoWear(server, sensor, event.getData("Temp") + "°");
     }
 
     @Override
@@ -604,6 +552,20 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
             }
             handleSensorData(topic,mess);
         }
+    }
+
+    private void updateNotification(SensorDataEvent event) {
+        Log.i(DEBUG_TAG, "updateNotification");
+        builder.setColor(Color.BLACK);
+        String server = devicesHandler.getDeviceAlias(event.getDevice());
+        String sensor = sensorsHandler.getSensorAlias(event.getDevice(),event.getSensor());
+        builder.setContentTitle(event.getData("Temp") + "°");
+        builder.setContentText(new StringBuilder().append(server).append(" / ").append(sensor).append("  ").append(event.getTimestamp()));
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (mNotificationManager != null) {
+            mNotificationManager.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, builder.build());
+        }
+        sendDatatoWear(server, sensor, event.getData("Temp") + "°");
     }
 
     private void submitSensorData(String[] parts, String mess) {
@@ -651,6 +613,7 @@ public class TemperatureService extends Service implements MqttCallback,DataClie
                     {
                         myData.TS = TS;
                         myData.topic = topic;
+                        myData.sensor = parts[4];
                         myData.var = key;
                         try {
                             myData.value = Float.parseFloat(value);
