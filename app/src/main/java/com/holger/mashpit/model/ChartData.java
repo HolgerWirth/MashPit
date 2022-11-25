@@ -9,6 +9,7 @@ public class ChartData {
     public long id;
 
     public String topic;
+    public String sensor;
     public long TS;
     public String var;
     public float value;

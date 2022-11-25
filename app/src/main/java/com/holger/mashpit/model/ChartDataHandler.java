@@ -53,9 +53,9 @@ public class ChartDataHandler {
     }
 
 
-    public String[] getChartVars(String topic)
+    public String[] getChartVars(String sensor)
     {
-        PropertyQuery query = dataBox.query(ChartData_.topic.equal(topic)).build().property(ChartData_.var);
+        PropertyQuery query = dataBox.query(ChartData_.sensor.equal(sensor)).build().property(ChartData_.var);
         return(query.distinct().findStrings());
     }
 }
