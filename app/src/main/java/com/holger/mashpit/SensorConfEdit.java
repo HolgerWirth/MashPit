@@ -314,6 +314,11 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
             SensorPublishMQTT pubMQTT = new SensorPublishMQTT(context);
             newInterval.topic = pubMQTT.createSensorTopic(server,type,sensor,0);
             newInterval.params=params;
+            if(type.equals("bme280"))
+            {
+                newInterval.alt=ALT;
+                newInterval.params=changeParams(params,"ALT",ALT);
+            }
             sensors.add(0, newInterval);
             intervalInsert = true;
             sa.notifyItemInserted(0);
@@ -490,6 +495,19 @@ public class SensorConfEdit extends AppCompatActivity implements SensorConfEditA
     }
 
     private String changeParams(String params,String name, String value)
+    {
+        JSONObject obj;
+        try {
+            obj = new JSONObject(params);
+            obj.put(name,value);
+            return(obj.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return (params);
+    }
+
+    private String changeParams(String params,String name, int value)
     {
         JSONObject obj;
         try {
